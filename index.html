@@ -20,9 +20,10 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏡</text></svg>" />
   <!-- Edit domain-config.js when going live on a custom domain -->
   <script src="domain-config.js"></script>
+  <script src="js/auth-client.js"></script>
 </head>
 <body>
-  <!-- Password gate for private demos (set password in app.js) -->
+  <!-- Access gate — redirects to auth.html for full sign-in / create account -->
   <div class="gate" id="demoGate">
     <div class="gate-card glass">
       <div class="logo" style="justify-content:center;margin-bottom:1rem">
@@ -32,15 +33,22 @@
           <small>USA</small>
         </span>
       </div>
-      <p class="gate-badge">PRIVATE DEMO</p>
-      <h2>Enter access password</h2>
-      <p class="gate-sub">This demo is password-protected. Contact <a href="mailto:ai@smartrealty.us">ai@smartrealty.us</a> for access.</p>
-      <form id="gateForm" class="gate-form">
+      <p class="gate-badge">MEMBER ACCESS</p>
+      <h2>Sign in to continue</h2>
+      <p class="gate-sub">
+        Create a free account, sign in, or use demo access.
+        Contact <a href="mailto:ai@smartrealty.us">ai@smartrealty.us</a> if you need help.
+      </p>
+      <div class="gate-actions" style="display:grid;gap:0.65rem">
+        <a class="btn btn-primary btn-block" href="auth.html?next=index.html">Sign in / Create account</a>
+        <a class="btn btn-ghost btn-block" href="auth.html?tab=demo&next=index.html">Demo password access</a>
+      </div>
+      <form id="gateForm" class="gate-form" style="margin-top:1rem">
         <label>
-          Password
-          <input type="password" id="gatePassword" placeholder="Demo password" autocomplete="current-password" required />
+          Quick demo password
+          <input type="password" id="gatePassword" placeholder="Shared demo password" autocomplete="current-password" />
         </label>
-        <button type="submit" class="btn btn-primary btn-block">Unlock Demo</button>
+        <button type="submit" class="btn btn-primary btn-block">Unlock with demo password</button>
         <p class="gate-error hidden" id="gateError">Incorrect password. Try again.</p>
       </form>
       <p class="gate-rights">Demo Version · All Rights Reserved © 2026 Smart Realty USA</p>
@@ -117,6 +125,11 @@
       </nav>
 
       <div class="header-actions">
+        <div class="header-user hidden" id="headerUser">
+          <span>Hi, <strong id="headerUserName">Guest</strong></span>
+          <button type="button" class="btn btn-ghost btn-sm btn-sm-auth" id="signOutBtn">Sign out</button>
+        </div>
+        <a class="btn btn-ghost btn-sm btn-sm-auth hidden" id="signInNav" href="auth.html?next=index.html">Sign in</a>
         <button class="btn btn-icon" id="openFavDrawer" type="button" aria-label="Saved homes" title="Saved homes">
           ♥ <span class="count-badge hidden" id="favCount">0</span>
         </button>

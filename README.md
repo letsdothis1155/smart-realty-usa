@@ -9,12 +9,19 @@ Exclusive real-estate demo: transparent **House Blue Book** pricing, live **Bitc
 ## Quick start (local)
 
 ```bash
+# 1) Auth API (sign-in / create account)
+cd ~/Projects/smart-realty-usa/server
+npm install && npm start
+
+# 2) Website (new terminal)
 cd ~/Projects/smart-realty-usa
 python3 -m http.server 8766
-# open http://127.0.0.1:8766
+# open http://127.0.0.1:8766/auth.html
 ```
 
-**In-app password:** `SmartRealty2026`
+**Demo password:** `SmartRealty2026`  
+**Accounts:** create on `/auth.html` (passwords hashed by the Auth API)  
+**Hosting question:** see [AUTH-AND-HOSTING.md](./AUTH-AND-HOSTING.md) — **you do not need classic web hosting** for sign-in
 
 ---
 

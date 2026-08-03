@@ -14,7 +14,7 @@ echo "→ Staging from: $ROOT"
 mkdir -p "$STAGING/images"
 
 # Core site files
-for f in index.html styles.css app.js domain-config.js robots.txt .htaccess .htpasswd; do
+for f in index.html auth.html styles.css app.js domain-config.js robots.txt .htaccess .htpasswd CNAME; do
   if [[ -f "$ROOT/$f" ]]; then
     cp "$ROOT/$f" "$STAGING/"
     echo "  + $f"
@@ -23,6 +23,13 @@ for f in index.html styles.css app.js domain-config.js robots.txt .htaccess .htp
   fi
 done
 
+# Client JS
+mkdir -p "$STAGING/js"
+if [[ -d "$ROOT/js" ]]; then
+  cp -R "$ROOT/js/"* "$STAGING/js/" 2>/dev/null || true
+  echo "  + js/ ($(find "$STAGING/js" -type f | wc -l | tr -d ' ') files)"
+fi
+
 # Images
 if [[ -d "$ROOT/images" ]]; then
   cp -R "$ROOT/images/"* "$STAGING/images/" 2>/dev/null || true
@@ -30,7 +37,7 @@ if [[ -d "$ROOT/images" ]]; then
 fi
 
 # Optional docs (handy on server for you; not required for visitors)
-for f in CUSTOM-DOMAIN-WALKTHROUGH.md GO-LIVE-CHECKLIST.md SHARE-EMAIL.txt DEPLOY-GODADDY.md README.md DUNS-AND-COMPANY-SETUP.md; do
+for f in CUSTOM-DOMAIN-WALKTHROUGH.md GO-LIVE-CHECKLIST.md SHARE-EMAIL.txt DEPLOY-GODADDY.md README.md DUNS-AND-COMPANY-SETUP.md AUTH-AND-HOSTING.md SHIP-NOW.md; do
   [[ -f "$ROOT/$f" ]] && cp "$ROOT/$f" "$STAGING/" && echo "  + $f (doc)"
 done
 

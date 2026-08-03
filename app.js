@@ -415,9 +415,11 @@ const GECKO_REFRESH_MS = 60 * 1000;
 const WS_COINBASE = "wss://ws-feed.exchange.coinbase.com";
 const WS_BINANCE = "wss://stream.binance.com:9443/ws/btcusdt@trade";
 
-// Private demo password — change this before sharing
-// Tip: also use GoDaddy/cPanel password protection for real server-side security
-const DEMO_PASSWORD = "SmartRealty2026";
+// Private demo password — prefer domain-config.js auth.demoPassword
+// Real accounts use the Auth API (server/) with bcrypt-hashed passwords
+const DEMO_PASSWORD =
+  (window.SRU_CONFIG && window.SRU_CONFIG.auth && window.SRU_CONFIG.auth.demoPassword) ||
+  "SmartRealty2026";
 const DEMO_GATE_KEY = "sru_demo_unlocked";
 
 // ---------- Utilities ----------
@@ -2277,12 +2279,34 @@ function jumpToBtc(id) {
   toast("Bitcoin checkout loaded with live stream rates.");
 }
 
-// ---------- Demo password gate ----------
+// ---------- Auth gate (accounts + demo password) ----------
 function unlockSite() {
   const gate = $("#demoGate");
   if (gate) {
     gate.classList.add("unlocked");
     document.body.classList.add("gate-open");
+  }
+  updateHeaderUser();
+}
+
+function authMode() {
+  return (window.SRU_CONFIG && window.SRU_CONFIG.auth && window.SRU_CONFIG.auth.mode) || "accounts";
+}
+
+function updateHeaderUser() {
+  const box = $("#headerUser");
+  const nav = $("#signInNav");
+  const nameEl = $("#headerUserName");
+  const user =
+    (window.SRU_AUTH && window.SRU_AUTH.getUser && window.SRU_AUTH.getUser()) || null;
+  if (user && box && nameEl) {
+    const first = (user.name || "Member").split(" ")[0];
+    nameEl.textContent = first;
+    box.classList.remove("hidden");
+    if (nav) nav.classList.add("hidden");
+  } else {
+    if (box) box.classList.add("hidden");
+    if (nav && authMode() !== "open") nav.classList.remove("hidden");
   }
 }
 
@@ -2290,29 +2314,74 @@ function initDemoGate() {
   const gate = $("#demoGate");
   if (!gate) return;
 
-  // Already unlocked this browser session/local
-  if (sessionStorage.getItem(DEMO_GATE_KEY) === "1") {
+  const mode = authMode();
+
+  if (mode === "open") {
     unlockSite();
     return;
   }
 
-  document.body.classList.remove("gate-open");
-  gate.classList.remove("unlocked");
+  // Valid account / demo session?
+  const hasToken = window.SRU_AUTH && window.SRU_AUTH.isSignedIn && window.SRU_AUTH.isSignedIn();
+  const legacy = sessionStorage.getItem(DEMO_GATE_KEY) === "1";
 
-  $("#gateForm").addEventListener("submit", (e) => {
-    e.preventDefault();
-    const entered = $("#gatePassword").value;
-    if (entered === DEMO_PASSWORD) {
-      sessionStorage.setItem(DEMO_GATE_KEY, "1");
-      $("#gateError").classList.add("hidden");
-      unlockSite();
-      toast("Demo unlocked. Welcome to Smart Realty USA.");
+  if (hasToken || legacy) {
+    // Soft-verify with API when available
+    if (window.SRU_AUTH && window.SRU_AUTH.me) {
+      window.SRU_AUTH.me().then((user) => {
+        if (user || legacy) {
+          unlockSite();
+          if (user && user.role !== "demo") {
+            toast(`Welcome back, ${(user.name || "member").split(" ")[0]}.`);
+          }
+        } else {
+          document.body.classList.remove("gate-open");
+          gate.classList.remove("unlocked");
+        }
+      });
     } else {
-      $("#gateError").classList.remove("hidden");
-      $("#gatePassword").value = "";
-      $("#gatePassword").focus();
+      unlockSite();
     }
-  });
+  } else {
+    document.body.classList.remove("gate-open");
+    gate.classList.remove("unlocked");
+  }
+
+  const form = $("#gateForm");
+  if (form) {
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const entered = $("#gatePassword").value;
+      const err = $("#gateError");
+      try {
+        if (window.SRU_AUTH && window.SRU_AUTH.demoLogin) {
+          await window.SRU_AUTH.demoLogin(entered, false);
+        } else if (entered === DEMO_PASSWORD) {
+          sessionStorage.setItem(DEMO_GATE_KEY, "1");
+        } else {
+          throw new Error("Incorrect password");
+        }
+        if (err) err.classList.add("hidden");
+        unlockSite();
+        toast("Demo unlocked. Welcome to Smart Realty USA.");
+      } catch {
+        if (err) err.classList.remove("hidden");
+        $("#gatePassword").value = "";
+        $("#gatePassword").focus();
+      }
+    });
+  }
+
+  const signOut = $("#signOutBtn");
+  if (signOut) {
+    signOut.addEventListener("click", () => {
+      if (window.SRU_AUTH) window.SRU_AUTH.logout();
+      sessionStorage.removeItem(DEMO_GATE_KEY);
+      location.href = "auth.html?next=index.html";
+    });
+  }
+
+  updateHeaderUser();
 }
 
 // ---------- Live chat (human-style responses) ----------
