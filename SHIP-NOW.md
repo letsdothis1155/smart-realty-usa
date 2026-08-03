@@ -88,37 +88,58 @@ Browser: open https://smartrealty.us → unlock with `SmartRealty2026`.
 
 ---
 
-# Path B — Free host + GoDaddy DNS (fastest live)
+# Path B — GitHub Pages (already set up — only DNS left)
 
-Use **GitHub Pages** (or Cloudflare Pages / Netlify). Domain stays at GoDaddy; only DNS changes.
+**Repo:** https://github.com/letsdothis1155/smart-realty-usa  
+**Pages:** custom domain `smartrealty.us` · branch `main` · root `/`  
+**In-app password still required:** `SmartRealty2026`
 
-### B1. Publish site files (agent can do this with your OK)
+### B1. Done for you
+
+- Demo code pushed to GitHub  
+- GitHub Pages enabled with `CNAME` = `smartrealty.us`  
+- Upload zip also on Desktop if you prefer Path A later  
+
+### B2. YOU — change GoDaddy DNS (required)
+
+1. Sign in → [godaddy.com](https://www.godaddy.com) → **My Products** → **Domains** → **smartrealty.us** → **DNS** / **Manage DNS**
+2. **Turn off** Website Builder for this domain if it keeps overriding DNS (My Products → Website → disconnect / cancel trial, or remove builder A records)
+3. **Delete** old A / CNAME / forwarding for `@` and `www` that point at Website Builder
+4. **Add** these records:
+
+| Type | Name | Value | TTL |
+|------|------|--------|-----|
+| **A** | `@` | `185.199.108.153` | 600 |
+| **A** | `@` | `185.199.109.153` | 600 |
+| **A** | `@` | `185.199.110.153` | 600 |
+| **A** | `@` | `185.199.111.153` | 600 |
+| **CNAME** | `www` | `letsdothis1155.github.io` | 600 |
+
+5. Save. Wait 5–30 minutes (sometimes up to a few hours).
+
+### B3. Verify DNS then HTTPS
 
 ```bash
+dig +short smartrealty.us A
+# expect 185.199.108–111.153
+
 cd ~/Projects/smart-realty-usa
-# private or public repo; Pages site URL is public either way
-# in-app password still required to use the demo
+./scripts/verify-live.sh smartrealty.us
 ```
 
-### B2. GoDaddy DNS for GitHub Pages
+Then open: **https://smartrealty.us** → unlock with **`SmartRealty2026`**
 
-After the Pages site exists (example: `YOURUSER.github.io/smart-realty-usa` or custom Pages domain setup):
+### B4. Enforce HTTPS in GitHub
 
-**GitHub → repo → Settings → Pages → Custom domain:** `smartrealty.us`  
-Then at GoDaddy DNS set the A/CNAME values GitHub shows (they publish current IPs in their docs).
+1. Open: https://github.com/letsdothis1155/smart-realty-usa/settings/pages  
+2. Confirm custom domain **smartrealty.us**  
+3. After DNS shows green / certificate ready → check **Enforce HTTPS**
 
-Typical pattern (confirm in GitHub UI — IPs can change):
+### B5. If domain still shows “Luxury Condos” builder
 
-| Type | Name | Value |
-|------|------|--------|
-| **A** | `@` | GitHub Pages IPs (4 records, from GitHub docs) |
-| **CNAME** | `www` | `YOURUSER.github.io` |
-
-Enable **Enforce HTTPS** in GitHub Pages after DNS verifies.
-
-### B3. Disable Website Builder parking
-
-In GoDaddy, turn off Website Builder / forwarding for this domain so DNS isn’t overridden.
+- DNS not updated yet, or builder still owns the domain  
+- Re-check A records with `dig`  
+- In GoDaddy, remove domain **forwarding** and builder parking
 
 ---
 

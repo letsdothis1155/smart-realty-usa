@@ -18,6 +18,20 @@ python3 -m http.server 8766
 
 ---
 
+## Live deploy status
+
+| Item | Value |
+|------|--------|
+| **GitHub** | https://github.com/letsdothis1155/smart-realty-usa |
+| **Pages** | Built · custom domain `smartrealty.us` |
+| **Upload zip** | `~/Desktop/smart-realty-usa-upload.zip` |
+| **Ship steps** | [SHIP-NOW.md](./SHIP-NOW.md) |
+
+**Next (you):** point GoDaddy DNS A records for `@` at GitHub Pages IPs (see SHIP-NOW.md Path B).  
+Until then, the public domain may still show Website Builder.
+
+
+
 ## Custom domain (GoDaddy → live HTTPS)
 
 **Start here → [CUSTOM-DOMAIN-WALKTHROUGH.md](./CUSTOM-DOMAIN-WALKTHROUGH.md)**
