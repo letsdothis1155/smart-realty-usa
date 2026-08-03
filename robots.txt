@@ -1,0 +1,8 @@
+# Private demo — discourage search engine indexing
+User-agent: *
+Disallow: /
+
+# When you go fully public, replace with:
+# User-agent: *
+# Allow: /
+# Sitemap: https://smartrealty.us/sitemap.xml
