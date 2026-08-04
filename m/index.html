@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, user-scalable=no" />
+  <meta name="theme-color" content="#0b1220" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="application-name" content="Smart Realty" />
+  <meta name="apple-mobile-web-app-title" content="Smart Realty" />
+  <title>Smart Realty</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏡</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Google+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <script src="../domain-config.js"></script>
+  <script src="../js/properties.js"></script>
+  <script src="../js/auth-client.js"></script>
+</head>
+<body>
+  <!-- Android system bars -->
+  <div class="status-bar" aria-hidden="true">
+    <span class="sb-time" id="sbTime">9:41</span>
+    <span class="sb-icons">
+      <span class="sb-sig"></span>
+      <span class="sb-wifi"></span>
+      <span class="sb-bat"></span>
+    </span>
+  </div>
+
+  <div id="app" class="app">
+    <!-- ===== HOME ===== -->
+    <section class="screen active" data-screen="home" id="screen-home">
+      <header class="top-app-bar">
+        <div class="brand-row">
+          <div class="app-icon">SR</div>
+          <div>
+            <div class="app-title">Smart Realty</div>
+            <div class="app-sub">USA · Homes</div>
+          </div>
+        </div>
+        <button type="button" class="icon-btn" id="homeNotif" aria-label="Alerts">🔔</button>
+      </header>
+
+      <!-- Primary search (Android / Material search) -->
+      <div class="search-dock">
+        <button type="button" class="search-bar" id="openSearchHome" aria-label="Search homes">
+          <span class="search-ico" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M20 20l-3.5-3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          </span>
+          <span class="search-placeholder">
+            <strong>Search homes</strong>
+            <small>City, ZIP, neighborhood, address…</small>
+          </span>
+          <span class="search-mic" aria-hidden="true">🎙</span>
+        </button>
+      </div>
+
+      <div class="scroll-body">
+        <div class="btc-chip" id="btcChip">
+          <span class="btc-dot"></span>
+          <span>₿ BTC <strong id="btcPrice">…</strong></span>
+          <span class="btc-chg" id="btcChg">—</span>
+        </div>
+
+        <div class="chip-row" id="quickCities"></div>
+
+        <div class="section-head">
+          <h2>Featured</h2>
+          <button type="button" class="text-btn" data-go="search">See all</button>
+        </div>
+        <div class="h-scroll" id="featuredRail"></div>
+
+        <div class="section-head">
+          <h2>Near popular markets</h2>
+        </div>
+        <div class="card-list" id="homeList"></div>
+      </div>
+    </section>
+
+    <!-- ===== SEARCH ===== -->
+    <section class="screen" data-screen="search" id="screen-search">
+      <header class="top-app-bar search-app-bar">
+        <div class="live-search">
+          <button type="button" class="icon-btn" id="searchBack" aria-label="Back">←</button>
+          <div class="live-search-field">
+            <svg class="ls-ico" width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M20 20l-3.5-3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            <input
+              type="search"
+              id="searchInput"
+              placeholder="City, ZIP, neighborhood, home name…"
+              autocomplete="off"
+              enterkeyhint="search"
+              autocapitalize="off"
+              spellcheck="false"
+            />
+            <button type="button" class="ls-clear hidden" id="searchClear" aria-label="Clear">×</button>
+          </div>
+          <button type="button" class="icon-btn" id="filterToggle" aria-label="Filters">⚙</button>
+        </div>
+      </header>
+
+      <div class="filter-sheet hidden" id="filterSheet">
+        <div class="filter-grid">
+          <label>Min price
+            <select id="fMin">
+              <option value="0">Any</option>
+              <option value="300000">$300k</option>
+              <option value="500000">$500k</option>
+              <option value="1000000">$1M</option>
+              <option value="3000000">$3M</option>
+              <option value="8000000">$8M</option>
+            </select>
+          </label>
+          <label>Max price
+            <select id="fMax">
+              <option value="0">Any</option>
+              <option value="500000">$500k</option>
+              <option value="1000000">$1M</option>
+              <option value="2000000">$2M</option>
+              <option value="5000000">$5M</option>
+              <option value="15000000">$15M</option>
+            </select>
+          </label>
+          <label>Beds
+            <select id="fBeds">
+              <option value="0">Any</option>
+              <option value="2">2+</option>
+              <option value="3">3+</option>
+              <option value="4">4+</option>
+              <option value="5">5+</option>
+            </select>
+          </label>
+          <label>Sort
+            <select id="fSort">
+              <option value="savings">Biggest savings</option>
+              <option value="price-asc">Price ↑</option>
+              <option value="price-desc">Price ↓</option>
+              <option value="newest">Featured</option>
+            </select>
+          </label>
+        </div>
+        <label class="check-row"><input type="checkbox" id="fRent" /> Try-before-buy only</label>
+        <div class="chip-row filters-style" id="styleChips">
+          <button type="button" class="chip on" data-tag="all">All</button>
+          <button type="button" class="chip" data-tag="mansion">Mansions</button>
+          <button type="button" class="chip" data-tag="vegas">Vegas</button>
+          <button type="button" class="chip" data-tag="modern">Modern</button>
+          <button type="button" class="chip" data-tag="family">Family</button>
+          <button type="button" class="chip" data-tag="waterfront">Waterfront</button>
+        </div>
+      </div>
+
+      <div class="suggest-panel hidden" id="suggestPanel"></div>
+
+      <div class="results-meta">
+        <span id="resultCount">0 homes</span>
+        <div class="view-toggle">
+          <button type="button" class="vt on" data-view="list">List</button>
+          <button type="button" class="vt" data-view="grid">Grid</button>
+        </div>
+      </div>
+      <div class="scroll-body results" id="results"></div>
+    </section>
+
+    <!-- ===== SAVED ===== -->
+    <section class="screen" data-screen="saved" id="screen-saved">
+      <header class="top-app-bar">
+        <div class="app-title-lg">Saved</div>
+      </header>
+      <div class="scroll-body" id="savedList">
+        <div class="empty-state">
+          <div class="empty-ico">♡</div>
+          <h3>No saved homes yet</h3>
+          <p>Tap the heart on any listing to keep it here.</p>
+          <button type="button" class="btn-filled" data-go="search">Search homes</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== BLUE BOOK ===== -->
+    <section class="screen" data-screen="tools" id="screen-tools">
+      <header class="top-app-bar">
+        <div class="app-title-lg">Blue Book</div>
+      </header>
+      <div class="scroll-body">
+        <div class="tool-card">
+          <p class="eyebrow">Free House Blue Book</p>
+          <h2>Transparent value like a car Blue Book</h2>
+          <p class="muted">Enter basics — we estimate fair value vs our lowest offer stack (demo model).</p>
+          <label>ZIP or city
+            <input type="text" id="bbLoc" placeholder="e.g. 89135 or Austin" />
+          </label>
+          <label>Beds
+            <input type="number" id="bbBeds" min="1" max="20" value="3" />
+          </label>
+          <label>Sq ft
+            <input type="number" id="bbSqft" min="400" step="50" value="1800" />
+          </label>
+          <button type="button" class="btn-filled" id="bbRun">Get Blue Book</button>
+          <div class="bb-result hidden" id="bbResult"></div>
+        </div>
+        <div class="tool-card soft">
+          <h3>₿ Live Bitcoin</h3>
+          <p class="muted">Every home shows offer price in BTC from live market feeds when online.</p>
+          <div class="btc-big" id="btcBig">—</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== YOU / ACCOUNT ===== -->
+    <section class="screen" data-screen="you" id="screen-you">
+      <header class="top-app-bar">
+        <div class="app-title-lg">You</div>
+      </header>
+      <div class="scroll-body">
+        <div class="profile-card" id="profileCard">
+          <div class="avatar" id="avatar">SR</div>
+          <div>
+            <div class="p-name" id="pName">Guest</div>
+            <div class="p-email" id="pEmail">Not signed in</div>
+          </div>
+        </div>
+        <div class="menu-list">
+          <a class="menu-row" href="../auth.html?next=m/index.html">
+            <span>🔐</span><span>Sign in / Create account</span><span class="chev">›</span>
+          </a>
+          <button type="button" class="menu-row" id="btnSignOut">
+            <span>🚪</span><span>Sign out</span><span class="chev">›</span>
+          </button>
+          <a class="menu-row" href="mailto:ai@smartrealty.us">
+            <span>✉️</span><span>ai@smartrealty.us</span><span class="chev">›</span>
+          </a>
+          <a class="menu-row" href="../index.html">
+            <span>🖥</span><span>Open full desktop site</span><span class="chev">›</span>
+          </a>
+        </div>
+        <p class="legal">Demo Version · © 2026 Smart Realty USA · Not a licensed brokerage transaction system.</p>
+      </div>
+    </section>
+
+    <!-- ===== DETAIL SHEET ===== -->
+    <div class="detail-sheet hidden" id="detailSheet" role="dialog" aria-modal="true">
+      <div class="detail-handle"></div>
+      <button type="button" class="detail-close icon-btn" id="detailClose" aria-label="Close">✕</button>
+      <div class="detail-scroll" id="detailBody"></div>
+    </div>
+    <div class="scrim hidden" id="scrim"></div>
+
+    <!-- Android bottom navigation -->
+    <nav class="bottom-nav" aria-label="Main">
+      <button type="button" class="nav-item active" data-nav="home">
+        <span class="nav-ico">🏠</span><span>Home</span>
+      </button>
+      <button type="button" class="nav-item" data-nav="search">
+        <span class="nav-ico">🔍</span><span>Search</span>
+      </button>
+      <button type="button" class="nav-item" data-nav="saved">
+        <span class="nav-ico">♡</span><span>Saved</span>
+        <span class="nav-badge hidden" id="savedBadge">0</span>
+      </button>
+      <button type="button" class="nav-item" data-nav="tools">
+        <span class="nav-ico">📘</span><span>Blue Book</span>
+      </button>
+      <button type="button" class="nav-item" data-nav="you">
+        <span class="nav-ico">👤</span><span>You</span>
+      </button>
+    </nav>
+  </div>
+
+  <div class="toast hidden" id="toast"></div>
+  <script src="app.js"></script>
+</body>
+</html>

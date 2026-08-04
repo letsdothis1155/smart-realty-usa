@@ -21,6 +21,8 @@ python3 -m http.server 8766
 
 **Demo password:** `SmartRealty2026`  
 **Accounts:** create on `/auth.html` (passwords hashed by the Auth API)  
+**Android-style app:** open **http://127.0.0.1:8766/m/** — Material search + bottom nav (not a pasted link)  
+**Native Android shell:** [android/](./android/) · sync with `./scripts/sync-android-assets.sh`  
 **Hosting question:** see [AUTH-AND-HOSTING.md](./AUTH-AND-HOSTING.md) — **you do not need classic web hosting** for sign-in
 
 ---
