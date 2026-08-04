@@ -1,0 +1,22 @@
+# Smart Realty USA — API (GoDaddy Apache)
+# Pretty paths → PHP files (matches Node client routes)
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /api/
+
+  # health
+  RewriteRule ^health$ health.php [L,QSA]
+
+  # auth
+  RewriteRule ^auth/register$ auth/register.php [L,QSA]
+  RewriteRule ^auth/login$ auth/login.php [L,QSA]
+  RewriteRule ^auth/demo$ auth/demo.php [L,QSA]
+  RewriteRule ^auth/me$ auth/me.php [L,QSA]
+</IfModule>
+
+# Pass Authorization header through on some Apache/CGI setups
+<IfModule mod_rewrite.c>
+  RewriteCond %{HTTP:Authorization} .
+  RewriteRule ^ - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+</IfModule>

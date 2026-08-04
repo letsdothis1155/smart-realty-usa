@@ -17,8 +17,36 @@
   }
 
   function apiBase() {
-    const url = (authCfg().apiUrl || "").replace(/\/$/, "");
-    return url;
+    const raw = authCfg().apiUrl;
+    // Explicit empty / "auto" / missing → same origin (GoDaddy website + PHP api/)
+    if (raw === "" || raw === "auto" || raw == null) {
+      if (typeof location !== "undefined" && /^https?:$/i.test(location.protocol)) {
+        return location.origin;
+      }
+      return "";
+    }
+    return String(raw).replace(/\/$/, "");
+  }
+
+  /** GoDaddy PHP uses .php files; local Node API does not */
+  function usePhp() {
+    if (typeof authCfg().usePhp === "boolean") return authCfg().usePhp;
+    // default: PHP when same-origin / empty apiUrl; Node when localhost:8787
+    const base = apiBase();
+    if (/:8787\b/.test(base) || /localhost:87/.test(base)) return false;
+    return true;
+  }
+
+  function ep(name) {
+    const php = usePhp();
+    const map = {
+      register: php ? "/api/auth/register.php" : "/api/auth/register",
+      login: php ? "/api/auth/login.php" : "/api/auth/login",
+      demo: php ? "/api/auth/demo.php" : "/api/auth/demo",
+      me: php ? "/api/auth/me.php" : "/api/auth/me",
+      health: php ? "/api/health.php" : "/health",
+    };
+    return map[name] || name;
   }
 
   function getToken() {
@@ -101,7 +129,7 @@
   }
 
   async function register({ name, email, password, remember }) {
-    const data = await api("/api/auth/register", {
+    const data = await api(ep("register"), {
       method: "POST",
       body: { name, email, password },
     });
@@ -110,7 +138,7 @@
   }
 
   async function login({ email, password, remember }) {
-    const data = await api("/api/auth/login", {
+    const data = await api(ep("login"), {
       method: "POST",
       body: { email, password },
     });
@@ -121,7 +149,7 @@
   async function demoLogin(password, remember) {
     // Prefer server so password is not only client-side
     if (apiBase()) {
-      const data = await api("/api/auth/demo", {
+      const data = await api(ep("demo"), {
         method: "POST",
         body: { password },
       });
@@ -153,7 +181,7 @@
     if (token === "offline-demo") return getUser();
     if (!apiBase()) return getUser();
     try {
-      const data = await api("/api/auth/me", { method: "GET" });
+      const data = await api(ep("me"), { method: "GET" });
       if (data.user) {
         // refresh cached user
         const remember = !!localStorage.getItem(TOKEN_KEY);
@@ -183,6 +211,8 @@
     TOKEN_KEY,
     USER_KEY,
     apiBase,
+    usePhp,
+    ep,
     getToken,
     getUser,
     saveSession,

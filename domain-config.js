@@ -50,19 +50,25 @@ window.SRU_CONFIG = {
   demoPasswordHint: false,
 
   /**
-   * Account auth (sign in / create account)
-   * - mode "accounts": require sign-in page (auth.html)
-   * - mode "demo": shared password gate only (legacy)
+   * Account auth (sign in / create account) — website only
+   * - mode "accounts": auth.html gate
+   * - mode "demo": shared password only
    * - mode "open": no gate
    *
-   * apiUrl: Auth API base (no trailing slash). Local: http://127.0.0.1:8787
-   * When empty, create-account is disabled; demo password still works offline.
-   * See AUTH-AND-HOSTING.md — you do NOT need classic web hosting for this.
+   * GoDaddy production:
+   *   apiUrl: ""          → same origin (https://smartrealty.us)
+   *   usePhp: true        → /api/auth/*.php on cPanel (default when not Node)
+   *
+   * Local Node (optional):
+   *   apiUrl: "http://127.0.0.1:8787"
+   *   usePhp: false
+   *
+   * Guide: GODADDY-ORGANIZER.md
    */
   auth: {
     mode: "accounts", // "accounts" | "demo" | "open"
-    apiUrl: "http://127.0.0.1:8787",
-    /** Shared demo unlock (also DEMO_PASSWORD env on the API) */
+    apiUrl: "", // "" = same website origin (GoDaddy). Local Node: "http://127.0.0.1:8787"
+    usePhp: true, // true for GoDaddy PHP api/; false for Node server/
     demoPassword: "SmartRealty2026",
     allowDemoAccess: true,
   },

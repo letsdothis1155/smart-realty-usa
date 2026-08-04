@@ -6,24 +6,27 @@ Exclusive real-estate demo: transparent **House Blue Book** pricing, live **Bitc
 
 ---
 
-## Quick start (local)
+## Quick start (website)
 
 ```bash
-# 1) Auth API (sign-in / create account)
-cd ~/Projects/smart-realty-usa/server
-npm install && npm start
-
-# 2) Website (new terminal)
 cd ~/Projects/smart-realty-usa
 python3 -m http.server 8766
-# open http://127.0.0.1:8766/auth.html
+# open http://127.0.0.1:8766/          main site
+# open http://127.0.0.1:8766/auth.html sign in / create account
 ```
 
-**Demo password:** `SmartRealty2026`  
-**Accounts:** create on `/auth.html` (passwords hashed by the Auth API)  
-**Android-style app:** open **http://127.0.0.1:8766/m/** — Material search + bottom nav (not a pasted link)  
-**Native Android shell:** [android/](./android/) · sync with `./scripts/sync-android-assets.sh`  
-**Hosting question:** see [AUTH-AND-HOSTING.md](./AUTH-AND-HOSTING.md) — **you do not need classic web hosting** for sign-in
+**Focus right now:** website + GoDaddy hosting + accounts (not the Android shell).
+
+| Item | Value |
+|------|--------|
+| **Demo password** | `SmartRealty2026` |
+| **Accounts on GoDaddy** | PHP API in [`api/`](./api/) (same cPanel as the site) |
+| **GoDaddy checklist** | **[GODADDY-ORGANIZER.md](./GODADDY-ORGANIZER.md)** ← start here |
+| **Upload zip** | `./scripts/pack-for-upload.sh` → Desktop |
+
+### GoDaddy in one line
+
+Buy **Web Hosting (cPanel)** → disconnect Website Builder → point DNS at hosting IP → upload zip into `public_html` → set secret in `api/config.php`.
 
 ---
 

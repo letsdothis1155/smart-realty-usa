@@ -71,22 +71,26 @@
     const base = window.SRU_AUTH.apiBase();
     if (base) {
       try {
-        const h = await fetch(`${base}/health`, { method: "GET" });
+        const healthPath = window.SRU_AUTH.ep
+          ? window.SRU_AUTH.ep("health")
+          : "/api/health.php";
+        const h = await fetch(`${base}${healthPath}`, { method: "GET" });
         if (h.ok) {
-          apiHint.textContent = "Auth service online · passwords are hashed server-side";
+          apiHint.textContent = "Accounts service online · passwords hashed on the server";
           apiHint.classList.add("ok");
         } else {
-          apiHint.textContent = "Auth service responded with an error — demo access still works offline";
+          apiHint.textContent =
+            "Accounts API error — use Demo access, or check api/ on GoDaddy hosting";
           apiHint.classList.add("warn");
         }
       } catch {
         apiHint.textContent =
-          "Auth API offline — start it with: cd server && npm start · Demo password still works";
+          "Accounts API offline (normal on local static preview) · Demo password still works · On GoDaddy, upload api/ folder";
         apiHint.classList.add("warn");
       }
     } else {
       apiHint.textContent =
-        "No authApiUrl set — demo password only until you start the Auth API";
+        "No API base — open via http:// (not file://) or set auth.apiUrl · Demo password still works";
       apiHint.classList.add("warn");
     }
 

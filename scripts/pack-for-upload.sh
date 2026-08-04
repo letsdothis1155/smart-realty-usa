@@ -23,11 +23,26 @@ for f in index.html auth.html styles.css app.js domain-config.js robots.txt .hta
   fi
 done
 
-# Client JS
+# Client JS (website only — skip shipping Android shell)
 mkdir -p "$STAGING/js"
 if [[ -d "$ROOT/js" ]]; then
   cp -R "$ROOT/js/"* "$STAGING/js/" 2>/dev/null || true
   echo "  + js/ ($(find "$STAGING/js" -type f | wc -l | tr -d ' ') files)"
+fi
+
+# PHP accounts API (GoDaddy cPanel)
+if [[ -d "$ROOT/api" ]]; then
+  mkdir -p "$STAGING/api/auth" "$STAGING/api/data"
+  for f in config.php lib.php health.php .htaccess README.md; do
+    [[ -f "$ROOT/api/$f" ]] && cp "$ROOT/api/$f" "$STAGING/api/"
+  done
+  for f in register.php login.php demo.php me.php; do
+    [[ -f "$ROOT/api/auth/$f" ]] && cp "$ROOT/api/auth/$f" "$STAGING/api/auth/"
+  done
+  [[ -f "$ROOT/api/data/.htaccess" ]] && cp "$ROOT/api/data/.htaccess" "$STAGING/api/data/"
+  [[ -f "$ROOT/api/data/.gitkeep" ]] && cp "$ROOT/api/data/.gitkeep" "$STAGING/api/data/"
+  # never ship live user DB
+  echo "  + api/ (PHP accounts for GoDaddy)"
 fi
 
 # Images
@@ -36,8 +51,8 @@ if [[ -d "$ROOT/images" ]]; then
   echo "  + images/ ($(find "$STAGING/images" -type f | wc -l | tr -d ' ') files)"
 fi
 
-# Optional docs (handy on server for you; not required for visitors)
-for f in CUSTOM-DOMAIN-WALKTHROUGH.md GO-LIVE-CHECKLIST.md SHARE-EMAIL.txt DEPLOY-GODADDY.md README.md DUNS-AND-COMPANY-SETUP.md AUTH-AND-HOSTING.md SHIP-NOW.md; do
+# Docs that help you on the server
+for f in GODADDY-ORGANIZER.md GO-LIVE-CHECKLIST.md SHARE-EMAIL.txt DEPLOY-GODADDY.md README.md CUSTOM-DOMAIN-WALKTHROUGH.md; do
   [[ -f "$ROOT/$f" ]] && cp "$ROOT/$f" "$STAGING/" && echo "  + $f (doc)"
 done
 
@@ -50,6 +65,8 @@ rm -f "$OUT"
 
 echo ""
 echo "✓ Created: $OUT"
-echo "  Upload this zip in cPanel File Manager → Extract into public_html (or /demo)."
-echo "  Then edit .htaccess AuthUserFile to your real /home/USER/... path."
+echo "  Website + PHP accounts only (no Android app)."
+echo "  cPanel → File Manager → public_html → Upload zip → Extract."
+echo "  Then: set SRU_JWT_SECRET in api/config.php · AutoSSL · test /auth.html"
+echo "  Full guide: GODADDY-ORGANIZER.md"
 ls -lh "$OUT"
