@@ -2,467 +2,14 @@
    Smart Realty USA — Interactive Application
    ============================================ */
 
-const PROPERTIES = [
-  {
-    id: "sr-001",
-    title: "Palm Crest Glass Estate",
-    location: "Summerlin, Las Vegas, NV",
-    image: "images/mansion-1.jpg",
-    beds: 6,
-    baths: 7,
-    sqft: 9800,
-    listPrice: 8900000,
-    blueBook: 8450000,
-    offer: 8125000,
-    tags: ["vegas", "modern", "mansion"],
-    rentable: true,
-    nightly: 4200,
-    creditPercent: 100,
-    desc: "A showpiece Vegas-style glass mansion with infinity pool, home theater, and panoramic Strip glow views. Fully furnished for try-before-buy stays.",
-  },
-  {
-    id: "sr-002",
-    title: "Horizon Ridge Mega Mansion",
-    location: "Henderson Hills, NV",
-    image: "images/mansion-2.jpg",
-    beds: 8,
-    baths: 10,
-    sqft: 14200,
-    listPrice: 14500000,
-    blueBook: 13850000,
-    offer: 13250000,
-    tags: ["vegas", "mansion"],
-    rentable: true,
-    nightly: 6800,
-    creditPercent: 80,
-    desc: "Grand circular drive, cascading fountains, dual master wings, and a nightclub-ready lower level. Built for entertaining at scale.",
-  },
-  {
-    id: "sr-003",
-    title: "Mediterranean Hillside Villa",
-    location: "Beverly Hills Adjacent, CA",
-    image: "images/mansion-3.jpg",
-    beds: 7,
-    baths: 8,
-    sqft: 11200,
-    listPrice: 16800000,
-    blueBook: 15950000,
-    offer: 15400000,
-    tags: ["mansion"],
-    rentable: true,
-    nightly: 7500,
-    creditPercent: 75,
-    desc: "Terracotta elegance meets modern systems — terraced gardens, wine cellar, and sunset-facing loggias with total privacy.",
-  },
-  {
-    id: "sr-004",
-    title: "Obsidian Cube Residence",
-    location: "Paradise Valley, AZ",
-    image: "images/mansion-4.jpg",
-    beds: 5,
-    baths: 6,
-    sqft: 7600,
-    listPrice: 6200000,
-    blueBook: 5950000,
-    offer: 5680000,
-    tags: ["modern"],
-    rentable: false,
-    nightly: 0,
-    creditPercent: 0,
-    desc: "Ultra-minimal black glass architecture with rooftop terrace, reflecting pool, and mountain-framed blue-hour views.",
-  },
-  {
-    id: "sr-005",
-    title: "White Column Palace",
-    location: "Atherton, CA",
-    image: "images/mansion-5.jpg",
-    beds: 9,
-    baths: 11,
-    sqft: 16800,
-    listPrice: 28500000,
-    blueBook: 27200000,
-    offer: 26150000,
-    tags: ["mansion"],
-    rentable: true,
-    nightly: 12000,
-    creditPercent: 50,
-    desc: "Neoclassical American palace with formal gardens, ballroom, guest pavilion, and a full staff wing.",
-  },
-  {
-    id: "sr-006",
-    title: "Neon Skyline Villa",
-    location: "Las Vegas Strip View, NV",
-    image: "images/mansion-6.jpg",
-    beds: 5,
-    baths: 5.5,
-    sqft: 6400,
-    listPrice: 4750000,
-    blueBook: 4520000,
-    offer: 4295000,
-    tags: ["vegas", "modern"],
-    rentable: true,
-    nightly: 3100,
-    creditPercent: 100,
-    desc: "Contemporary villa glowing against the city skyline — ideal for executives who want Vegas energy with private resort amenities.",
-  },
-  {
-    id: "sr-007",
-    title: "Desert Modern Sanctuary",
-    location: "Scottsdale, AZ",
-    image: "images/mansion-7.jpg",
-    beds: 4,
-    baths: 5,
-    sqft: 5100,
-    listPrice: 3890000,
-    blueBook: 3725000,
-    offer: 3550000,
-    tags: ["modern"],
-    rentable: true,
-    nightly: 1800,
-    creditPercent: 100,
-    desc: "Warm desert modernism with indoor-outdoor living, spa courtyard, and low-profile luxury designed for calm living.",
-  },
-  {
-    id: "sr-008",
-    title: "Emerald Lake Manor",
-    location: "Lake Tahoe, CA",
-    image: "images/mansion-8.jpg",
-    beds: 6,
-    baths: 7,
-    sqft: 8900,
-    listPrice: 11200000,
-    blueBook: 10650000,
-    offer: 10180000,
-    tags: ["mansion"],
-    rentable: true,
-    nightly: 5500,
-    creditPercent: 90,
-    desc: "Alpine luxury manor with private dock access, timber-and-stone craftsmanship, and year-round resort lifestyle.",
-  },
-  // Everyday / mid-market inventory — universal Homes.com / Zillow feel
-  {
-    id: "sr-009",
-    title: "Sunnyvale Family Craftsman",
-    location: "Sunnyvale, CA 94087",
-    image: "images/mansion-7.jpg",
-    beds: 4,
-    baths: 3,
-    sqft: 2180,
-    listPrice: 1895000,
-    blueBook: 1820000,
-    offer: 1745000,
-    tags: ["family", "modern"],
-    rentable: true,
-    nightly: 420,
-    creditPercent: 100,
-    lat: 37.37,
-    lng: -122.04,
-    desc: "Tree-lined street craftsman with open kitchen, ADU potential, and top-rated schools nearby. Transparent Blue Book vs comps.",
-  },
-  {
-    id: "sr-010",
-    title: "Henderson Ranch Rambler",
-    location: "Henderson, NV 89052",
-    image: "images/mansion-4.jpg",
-    beds: 3,
-    baths: 2,
-    sqft: 1650,
-    listPrice: 525000,
-    blueBook: 505000,
-    offer: 489000,
-    tags: ["family", "vegas"],
-    rentable: false,
-    nightly: 0,
-    creditPercent: 0,
-    lat: 36.0,
-    lng: -115.0,
-    desc: "Move-in ready rambler with desert landscaping, 2-car garage, and zero HOA surprises disclosed upfront.",
-  },
-  {
-    id: "sr-011",
-    title: "Austin Hill Country Cottage",
-    location: "Austin, TX 78738",
-    image: "images/mansion-3.jpg",
-    beds: 3,
-    baths: 2.5,
-    sqft: 1920,
-    listPrice: 875000,
-    blueBook: 840000,
-    offer: 812000,
-    tags: ["family", "modern"],
-    rentable: true,
-    nightly: 280,
-    creditPercent: 90,
-    lat: 30.3,
-    lng: -97.9,
-    desc: "Hill country cottage with covered porch, office loft, and walkable café row. Ideal starter or second home.",
-  },
-  {
-    id: "sr-012",
-    title: "Miami Edge Condo Loft",
-    location: "Miami, FL 33131",
-    image: "images/mansion-6.jpg",
-    beds: 2,
-    baths: 2,
-    sqft: 1240,
-    listPrice: 1190000,
-    blueBook: 1145000,
-    offer: 1098000,
-    tags: ["modern", "family", "waterfront"],
-    rentable: true,
-    nightly: 390,
-    creditPercent: 75,
-    lat: 25.77,
-    lng: -80.19,
-    desc: "Bright waterfront-adjacent loft with floor-to-ceiling glass, gym access, and BTC-friendly closing options.",
-  },
-  {
-    id: "sr-013",
-    title: "Seattle Soundview Townhome",
-    location: "Seattle, WA 98109",
-    image: "images/mansion-1.jpg",
-    beds: 3,
-    baths: 2.5,
-    sqft: 1780,
-    listPrice: 1125000,
-    blueBook: 1080000,
-    offer: 1045000,
-    tags: ["family", "modern", "waterfront"],
-    rentable: true,
-    nightly: 310,
-    creditPercent: 85,
-    lat: 47.63,
-    lng: -122.35,
-    desc: "Three-level townhome with Sound peeks, EV charger, and walk-to-tech-campus lifestyle. Full fee transparency.",
-  },
-  {
-    id: "sr-014",
-    title: "Nashville Music Row Bungalow",
-    location: "Nashville, TN 37203",
-    image: "images/mansion-5.jpg",
-    beds: 3,
-    baths: 2,
-    sqft: 1540,
-    listPrice: 689000,
-    blueBook: 665000,
-    offer: 639000,
-    tags: ["family"],
-    rentable: true,
-    nightly: 195,
-    creditPercent: 100,
-    lat: 36.15,
-    lng: -86.8,
-    desc: "Renovated bungalow near Music Row — porch swings, smart kitchen, and Blue Book vs neighborhood comps side-by-side.",
-  },
-  {
-    id: "sr-015",
-    title: "Denver Highlands Duplex",
-    location: "Denver, CO 80211",
-    image: "images/mansion-2.jpg",
-    beds: 4,
-    baths: 3,
-    sqft: 2400,
-    listPrice: 975000,
-    blueBook: 940000,
-    offer: 905000,
-    tags: ["family", "modern"],
-    rentable: false,
-    nightly: 0,
-    creditPercent: 0,
-    lat: 39.76,
-    lng: -105.02,
-    desc: "Owner-occupy + rental income duplex in the Highlands. Separate meters, new roofs, lowest offer locked in.",
-  },
-  {
-    id: "sr-016",
-    title: "Charleston Harbor Carriage House",
-    location: "Charleston, SC 29401",
-    image: "images/mansion-8.jpg",
-    beds: 2,
-    baths: 2,
-    sqft: 1320,
-    listPrice: 1450000,
-    blueBook: 1390000,
-    offer: 1335000,
-    tags: ["family", "waterfront", "mansion"],
-    rentable: true,
-    nightly: 480,
-    creditPercent: 70,
-    lat: 32.78,
-    lng: -79.93,
-    desc: "Historic carriage house steps from the Battery — piazzas, exposed brick, and try-before-buy stays available.",
-  },
-  {
-    id: "sr-017",
-    title: "Boise Foothills Ranch",
-    location: "Boise, ID 83702",
-    image: "images/mansion-4.jpg",
-    beds: 4,
-    baths: 3,
-    sqft: 2850,
-    listPrice: 799000,
-    blueBook: 772000,
-    offer: 745000,
-    tags: ["family", "modern"],
-    rentable: true,
-    nightly: 240,
-    creditPercent: 90,
-    lat: 43.62,
-    lng: -116.2,
-    desc: "Foothills ranch with mountain light, three-car garage, and room for an ADU. Clean Blue Book stack.",
-  },
-  {
-    id: "sr-018",
-    title: "Chicago River North Penthouse",
-    location: "Chicago, IL 60654",
-    image: "images/mansion-6.jpg",
-    beds: 3,
-    baths: 3,
-    sqft: 2100,
-    listPrice: 2150000,
-    blueBook: 2060000,
-    offer: 1985000,
-    tags: ["modern", "waterfront"],
-    rentable: true,
-    nightly: 550,
-    creditPercent: 60,
-    lat: 41.89,
-    lng: -87.63,
-    desc: "River-facing penthouse with private elevator, skyline terrace, and Bitcoin escrow-ready close.",
-  },
-  {
-    id: "sr-019",
-    title: "Louisville Highlands Brownstone",
-    location: "Louisville, KY 40204",
-    image: "images/mansion-5.jpg",
-    beds: 4,
-    baths: 3,
-    sqft: 2680,
-    listPrice: 625000,
-    blueBook: 598000,
-    offer: 575000,
-    tags: ["family", "modern"],
-    rentable: true,
-    nightly: 185,
-    creditPercent: 100,
-    lat: 38.23,
-    lng: -85.72,
-    desc: "Brick brownstone in the Highlands — walkable restaurants, dual parlor, smart-home wiring, and transparent Blue Book vs comps.",
-  },
-  {
-    id: "sr-020",
-    title: "Portland Alberta Arts Bungalow",
-    location: "Portland, OR 97211",
-    image: "images/mansion-7.jpg",
-    beds: 3,
-    baths: 2,
-    sqft: 1720,
-    listPrice: 689000,
-    blueBook: 662000,
-    offer: 639000,
-    tags: ["family", "modern"],
-    rentable: true,
-    nightly: 210,
-    creditPercent: 90,
-    lat: 45.56,
-    lng: -122.65,
-    desc: "Craftsman bungalow near Alberta Arts — ADU-ready backyard, EV charger pre-wire, BTC-friendly close options.",
-  },
-  {
-    id: "sr-021",
-    title: "Charlotte NoDa Loft",
-    location: "Charlotte, NC 28205",
-    image: "images/mansion-1.jpg",
-    beds: 2,
-    baths: 2,
-    sqft: 1180,
-    listPrice: 449000,
-    blueBook: 432000,
-    offer: 415000,
-    tags: ["modern", "family"],
-    rentable: true,
-    nightly: 165,
-    creditPercent: 85,
-    lat: 35.25,
-    lng: -80.81,
-    desc: "Industrial loft with gallery windows, rooftop access, and walk-to-breweries energy. Lowest offer locked in.",
-  },
-  {
-    id: "sr-022",
-    title: "Phoenix Arcadia Pool Home",
-    location: "Phoenix, AZ 85018",
-    image: "images/mansion-4.jpg",
-    beds: 4,
-    baths: 3,
-    sqft: 2450,
-    listPrice: 925000,
-    blueBook: 889000,
-    offer: 855000,
-    tags: ["family", "vegas", "modern"],
-    rentable: true,
-    nightly: 275,
-    creditPercent: 95,
-    lat: 33.5,
-    lng: -111.98,
-    desc: "Arcadia ranch with sparkling pool, citrus grove, and mountain light. Try-before-buy available.",
-  },
-  {
-    id: "sr-023",
-    title: "Brooklyn Brownstone Duplex",
-    location: "Brooklyn, NY 11217",
-    image: "images/mansion-3.jpg",
-    beds: 5,
-    baths: 3.5,
-    sqft: 3200,
-    listPrice: 2895000,
-    blueBook: 2780000,
-    offer: 2685000,
-    tags: ["family", "mansion", "waterfront"],
-    rentable: false,
-    nightly: 0,
-    creditPercent: 0,
-    lat: 40.68,
-    lng: -73.98,
-    desc: "Owner duplex near Prospect Park — garden level + parlor, restored moldings, transparent fee stack.",
-  },
-  {
-    id: "sr-024",
-    title: "Lexington Horse-Country Estate",
-    location: "Lexington, KY 40502",
-    image: "images/mansion-8.jpg",
-    beds: 6,
-    baths: 5,
-    sqft: 5200,
-    listPrice: 1875000,
-    blueBook: 1795000,
-    offer: 1725000,
-    tags: ["mansion", "family"],
-    rentable: true,
-    nightly: 650,
-    creditPercent: 70,
-    lat: 38.04,
-    lng: -84.5,
-    desc: "Horse-country estate with barn, guest cottage, and long drive. Kentucky-proud Smart Realty flagship demo home.",
-  },
-];
+// Inventory lives in js/properties.js (single source of truth)
+const PROPERTIES = window.SRU_PROPERTIES || [];
+const DEFAULT_COORDS = window.SRU_DEFAULT_COORDS || {};
+if (!PROPERTIES.length) {
+  console.warn("[Smart Realty] js/properties.js missing or empty — load it before app.js");
+}
 
-// Approximate map positions for estate listings without explicit coords
-const DEFAULT_COORDS = {
-  "sr-001": { lat: 36.17, lng: -115.3 },
-  "sr-002": { lat: 36.03, lng: -114.98 },
-  "sr-003": { lat: 34.08, lng: -118.4 },
-  "sr-004": { lat: 33.54, lng: -111.95 },
-  "sr-005": { lat: 37.46, lng: -122.2 },
-  "sr-006": { lat: 36.12, lng: -115.17 },
-  "sr-007": { lat: 33.49, lng: -111.92 },
-  "sr-008": { lat: 39.1, lng: -120.03 },
-  "sr-019": { lat: 38.23, lng: -85.72 },
-  "sr-020": { lat: 45.56, lng: -122.65 },
-  "sr-021": { lat: 35.25, lng: -80.81 },
-  "sr-022": { lat: 33.5, lng: -111.98 },
-  "sr-023": { lat: 40.68, lng: -73.98 },
-  "sr-024": { lat: 38.04, lng: -84.5 },
-};
+
 
 const RECENT_KEY = "sru_recent_searches";
 const POPULAR_MARKETS = [
@@ -895,6 +442,7 @@ async function shareListing(p, channel) {
   const btc = btcRate ? ` · ${formatBTC(p.offer / btcRate)}` : "";
   const text = `${p.title} — ${formatUSD(p.offer)}${btc}\n${p.location}\nBlue Book ${formatUSD(p.blueBook)} · Save ${savingsPct(p)}%\n${url}`;
   const intent = channel || "auto";
+  track("share_listing", { id: p.id, channel: intent });
 
   if (intent === "x" || intent === "twitter") {
     const tw = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
@@ -1013,10 +561,12 @@ function initWaitlist() {
       msg.classList.add("ok");
       form.reset();
       toast("Waitlist joined.");
+      track("waitlist_join", { email_domain: (email.split("@")[1] || "").slice(0, 40) });
     } catch (err) {
       msg.textContent = err.message || "Could not join — try again.";
       msg.classList.remove("hidden");
       msg.classList.remove("ok");
+      track("waitlist_error");
     } finally {
       btn.disabled = false;
       btn.textContent = prev;
@@ -1891,6 +1441,7 @@ function openProperty(id) {
   const p = PROPERTIES.find((x) => x.id === id);
   if (!p) return;
   enrichProperty(p);
+  track("view_listing", { id: p.id, title: p.title, offer: p.offer });
   const fav = favorites.has(p.id);
   const body = $("#propertyModalBody");
   const amenityHtml = (p.amenities || [])
@@ -2110,6 +1661,7 @@ function initContactLeadForm() {
       msg.classList.add("ok");
       form.reset();
       toast("Concierge request sent.");
+      track("contact_submit", { interest });
     } catch (err) {
       msg.textContent = err.message || "Could not send.";
       msg.classList.remove("hidden");
@@ -2796,6 +2348,15 @@ function jumpToBtc(id) {
   toast("Bitcoin checkout loaded with live stream rates.");
 }
 
+// ---------- Analytics helper ----------
+function track(event, props) {
+  try {
+    window.SRU_ANALYTICS?.track?.(event, props);
+  } catch {
+    /* ignore */
+  }
+}
+
 // ---------- Auth gate (accounts + demo password) ----------
 function unlockSite() {
   const gate = $("#demoGate");
@@ -2804,6 +2365,7 @@ function unlockSite() {
     document.body.classList.add("gate-open");
   }
   updateHeaderUser();
+  track("site_unlocked");
 }
 
 function authMode() {
@@ -2834,7 +2396,11 @@ function initDemoGate() {
   const mode = authMode();
 
   if (mode === "open") {
-    unlockSite();
+    // Marketing mode: no password wall; still show soft banner if desired
+    gate.classList.add("unlocked");
+    document.body.classList.add("gate-open", "auth-open-mode");
+    updateHeaderUser();
+    track("gate_open_mode");
     return;
   }
 
@@ -3072,9 +2638,11 @@ function initUI() {
       if (favorites.has(id)) {
         favorites.delete(id);
         toast("Removed from saved.");
+        track("unsave_listing", { id });
       } else {
         favorites.add(id);
         toast("Saved to your shortlist.");
+        track("save_listing", { id });
       }
       localStorage.setItem("sru_favs", JSON.stringify([...favorites]));
       updateFavBadge();

@@ -16,3 +16,5 @@ api/data/users.json
 api/data/leads.json
 api/data/*.tmp
 api/config.local.php
+api/data/events.jsonl
+api/data/events.jsonl.*

@@ -41,6 +41,7 @@ if [[ -d "$ROOT/api" ]]; then
   done
   [[ -f "$ROOT/api/leads.php" ]] && cp "$ROOT/api/leads.php" "$STAGING/api/"
   [[ -f "$ROOT/api/leads-list.php" ]] && cp "$ROOT/api/leads-list.php" "$STAGING/api/"
+  [[ -f "$ROOT/api/events.php" ]] && cp "$ROOT/api/events.php" "$STAGING/api/"
   [[ -f "$ROOT/api/data/.htaccess" ]] && cp "$ROOT/api/data/.htaccess" "$STAGING/api/data/"
   [[ -f "$ROOT/api/data/.gitkeep" ]] && cp "$ROOT/api/data/.gitkeep" "$STAGING/api/data/"
   # never ship live user DB

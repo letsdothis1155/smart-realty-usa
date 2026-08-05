@@ -84,6 +84,14 @@ window.SRU_CONFIG = {
     allowDemoAccess: true,
   },
 
+  /**
+   * Product analytics (localStorage + optional POST /api/events.php)
+   * Set enabled: false to disable.
+   */
+  analytics: {
+    enabled: true,
+  },
+
   social: {
     // Optional future: x, linkedin, instagram
   },

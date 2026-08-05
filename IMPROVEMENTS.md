@@ -42,14 +42,14 @@
 
 ### P0 — Before any wide public share
 
-| Issue | Why it matters | Suggested fix |
-|-------|----------------|---------------|
-| **Default secrets** (`SmartRealty2026`, `SmartRealtyAdmin2026`, `CHANGE-ME` JWT) | Anyone can unlock admin/demo | Generate random secrets; rotate; never commit real ones |
-| **Demo password in client JS** | Trivial to read in DevTools | Keep demo mode private; or move unlock server-only |
-| **Forgot-password returns reset link in API JSON** | Token leak if logged | Demo-only; production must email-only |
-| **Public SEO + private demo badges** | Confusing mixed messaging | Either `seo.index: false` until launch **or** clear “demo product” legal copy |
-| **No Privacy / Terms** | Trust + basic compliance | Add `privacy.html`, `terms.html` |
-| **Live domain may still be Website Builder** | Custom site never seen | Finish GoDaddy cPanel + DNS (GODADDY-ORGANIZER) |
+| Issue | Status | Notes |
+|-------|--------|--------|
+| **Default secrets** | ✅ Banner + `config.local.php` + `SECRETS.md` | You must still set real secrets on server |
+| **Privacy / Terms** | ✅ `privacy.html`, `terms.html` + footer | |
+| **404 page** | ✅ `404.html` + ErrorDocument | |
+| **Demo password in client JS** | ⚠️ Still true for demo unlock | Acceptable for private demos; change password |
+| **Forgot-password returns reset link** | ⚠️ Demo behavior | Documented; email-only for hard prod later |
+| **Live domain may still be Website Builder** | 🔲 Your action | GODADDY-ORGANIZER.md |
 
 ### P1 — Next product sprint
 
