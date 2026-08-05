@@ -16,15 +16,18 @@ const cors = require("cors");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const db = require("./db");
+const { readConfig, assertRequiredConfig } = require("./config");
 
-const PORT = Number(process.env.AUTH_PORT || process.env.PORT || 8787);
-const JWT_SECRET = process.env.JWT_SECRET || "sru-dev-secret-change-me-in-production";
-const JWT_DAYS = Number(process.env.JWT_DAYS || 14);
-const DEMO_PASSWORD = process.env.DEMO_PASSWORD || "SmartRealty2026";
+const runtimeConfig = readConfig();
+assertRequiredConfig(runtimeConfig);
+const PORT = runtimeConfig.port;
+const JWT_SECRET = runtimeConfig.jwtSecret;
+const JWT_DAYS = runtimeConfig.jwtDays;
+const DEMO_PASSWORD = runtimeConfig.demoPassword;
 const BCRYPT_ROUNDS = 12;
 
 // Comma-separated origins, or * for local demos
-const CORS_ORIGIN = process.env.CORS_ORIGIN || true;
+const CORS_ORIGIN = runtimeConfig.corsOrigin;
 
 const app = express();
 app.set("trust proxy", 1);
@@ -173,6 +176,12 @@ app.post("/api/auth/login", async (req, res) => {
 /** Shared demo password → short-lived guest session (presenter / private demos) */
 app.post("/api/auth/demo", async (req, res) => {
   try {
+    if (!DEMO_PASSWORD || runtimeConfig.issues.includes("demo_password_weak")) {
+      return res.status(503).json({
+        ok: false,
+        error: "Demo access is not configured.",
+      });
+    }
     const ip = req.ip || "unknown";
     if (!rateLimit(`demo:${ip}`, 40, 15 * 60 * 1000)) {
       return res.status(429).json({ ok: false, error: "Too many attempts." });
@@ -230,7 +239,7 @@ app.listen(PORT, () => {
   console.log(`  POST /api/auth/login`);
   console.log(`  POST /api/auth/demo`);
   console.log(`  GET  /api/auth/me`);
-  if (JWT_SECRET === "sru-dev-secret-change-me-in-production") {
-    console.log("  ⚠  Set JWT_SECRET in production.");
+  if (!DEMO_PASSWORD) {
+    console.log("  Demo access disabled (set DEMO_PASSWORD to enable it). ");
   }
 });

@@ -74,7 +74,7 @@
         </label>
         <button type="submit" class="btn btn-primary btn-block">Unlock demo</button>
         <p class="gate-hint" id="gateHint" style="font-size:0.78rem;color:var(--text-dim);margin-top:0.5rem;text-align:center">
-          Default demo password is in your invite / SECRETS.md
+          Your site administrator provides the demo password separately.
         </p>
         <p class="gate-error hidden" id="gateError">Incorrect password. Try again.</p>
       </form>
@@ -956,10 +956,8 @@
         </div>
 
         <div class="domain-creds glass">
-          <h3>Default credentials (change before wide share)</h3>
-          <div class="cred-row"><span>In-app gate</span><code id="credApp">SmartRealty2026</code><button type="button" class="btn btn-ghost btn-sm" data-copy="#credApp">Copy</button></div>
-          <div class="cred-row"><span>Server user</span><code id="credUser">demo</code><button type="button" class="btn btn-ghost btn-sm" data-copy="#credUser">Copy</button></div>
-          <div class="cred-row"><span>Server password</span><code id="credPass">SmartRealty2026</code><button type="button" class="btn btn-ghost btn-sm" data-copy="#credPass">Copy</button></div>
+          <h3>Deployment security</h3>
+          <p>Create server-only JWT, demo, and admin secrets in <code>api/config.local.php</code>. Never put credentials in this page or <code>domain-config.js</code>.</p>
           <div class="cred-row"><span>Configured site URL</span><code id="credUrl">—</code><button type="button" class="btn btn-ghost btn-sm" data-copy="#credUrl">Copy</button></div>
         </div>
 

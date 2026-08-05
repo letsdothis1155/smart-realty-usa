@@ -8,9 +8,9 @@ sru_send_cors();
 
 $sec = sru_security_status();
 $labels = [
-    'jwt_secret_default' => 'JWT secret still default — create api/config.local.php',
-    'demo_password_default' => 'Demo password still default (SmartRealty2026)',
-    'admin_password_default' => 'Admin password still default',
+    'jwt_secret_default' => 'JWT secret is missing or weak — create api/config.local.php',
+    'demo_password_default' => 'Demo password is missing or weak',
+    'admin_password_default' => 'Admin password is missing or weak',
     'data_dir_not_writable' => 'api/data is not writable — accounts/leads cannot save',
 ];
 $messages = [];

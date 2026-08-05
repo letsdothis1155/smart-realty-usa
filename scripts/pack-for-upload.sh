@@ -14,7 +14,7 @@ echo "→ Staging from: $ROOT"
 mkdir -p "$STAGING/images"
 
 # Core site files
-for f in index.html auth.html account.html admin.html privacy.html terms.html 404.html styles.css app.js domain-config.js robots.txt sitemap.xml .htaccess .htpasswd CNAME SECRETS.md; do
+for f in index.html auth.html account.html admin.html privacy.html terms.html 404.html styles.css app.js domain-config.js robots.txt sitemap.xml .htaccess CNAME SECRETS.md; do
   if [[ -f "$ROOT/$f" ]]; then
     cp "$ROOT/$f" "$STAGING/"
     echo "  + $f"
@@ -71,6 +71,6 @@ echo ""
 echo "✓ Created: $OUT"
 echo "  Website + PHP accounts only (no Android app)."
 echo "  cPanel → File Manager → public_html → Upload zip → Extract."
-echo "  Then: set SRU_JWT_SECRET in api/config.php · AutoSSL · test /auth.html"
+echo "  Then: create api/config.local.php from the sample · AutoSSL · test /auth.html"
 echo "  Full guide: GODADDY-ORGANIZER.md"
 ls -lh "$OUT"

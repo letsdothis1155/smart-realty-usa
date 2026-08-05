@@ -36,6 +36,33 @@ function sru_json($data, $code = 200) {
     exit;
 }
 
+/**
+ * Stop sensitive endpoints when server-only secrets are missing or weak.
+ * The public health/security endpoints intentionally remain available.
+ */
+function sru_require_secure_config(array $required) {
+    $status = sru_security_status();
+    $issueFor = [
+        'jwt' => 'jwt_secret_default',
+        'demo' => 'demo_password_default',
+        'admin' => 'admin_password_default',
+    ];
+    $blocking = [];
+    foreach ($required as $key) {
+        $issue = $issueFor[$key] ?? null;
+        if ($issue !== null && in_array($issue, $status['issues'], true)) {
+            $blocking[] = $issue;
+        }
+    }
+    if ($blocking) {
+        sru_json([
+            'ok' => false,
+            'error' => 'Authentication service is not configured.',
+            'issues' => $blocking,
+        ], 503);
+    }
+}
+
 function sru_body() {
     $raw = file_get_contents('php://input');
     if ($raw === false || $raw === '') return [];
@@ -96,6 +123,7 @@ function sru_b64url_decode($data) {
 }
 
 function sru_jwt_sign(array $payload) {
+    sru_require_secure_config(['jwt']);
     $header = ['typ' => 'JWT', 'alg' => 'HS256'];
     $payload['iat'] = time();
     $payload['exp'] = time() + (SRU_JWT_DAYS * 86400);
@@ -106,6 +134,8 @@ function sru_jwt_sign(array $payload) {
 }
 
 function sru_jwt_verify($token) {
+    $status = sru_security_status();
+    if (in_array('jwt_secret_default', $status['issues'], true)) return null;
     $parts = explode('.', $token);
     if (count($parts) !== 3) return null;
     list($h, $p, $s) = $parts;

@@ -6,8 +6,8 @@
 |------|--------|
 | **Recommended domain** | `smartrealty.us` (or any domain you own) |
 | **Official email** | `ai@smartrealty.us` |
-| **In-app demo password** | `SmartRealty2026` |
-| **Server login (optional)** | user `demo` · password `SmartRealty2026` |
+| **In-app demo password** | Private value in `api/config.local.php` |
+| **Server login (optional)** | Create independently in cPanel Directory Privacy |
 | **Project folder** | `~/Projects/smart-realty-usa` |
 | **Time estimate** | 45–90 minutes first time (DNS can add wait) |
 
@@ -80,8 +80,8 @@ cd ~/Projects/smart-realty-usa
 
 | Layer | Where | Default |
 |-------|--------|---------|
-| In-app gate | `app.js` → `DEMO_PASSWORD` | `SmartRealty2026` |
-| Server Basic Auth | `.htpasswd` + Directory Privacy | user `demo` / `SmartRealty2026` |
+| In-app gate | PHP API → `SRU_DEMO_PASSWORD` | Private server-only value |
+| Server Basic Auth | `.htpasswd` + Directory Privacy | Separate private credentials |
 
 ---
 
@@ -298,7 +298,7 @@ AuthUserFile /home/YOUR_CPANEL_USER/public_html/demo/.htpasswd
 Default user line (bcrypt) is already generated for:
 
 - **User:** `demo`  
-- **Password:** `SmartRealty2026`
+- **Password:** generate a unique value in your password manager
 
 To regenerate later:
 
@@ -355,8 +355,8 @@ https://YOURDOMAIN
 
 You should see the browser padlock + either:
 
-- Server password prompt (`demo` / `SmartRealty2026`), then  
-- In-app **Unlock Demo** gate (`SmartRealty2026`)
+- Server password prompt (credentials created privately in cPanel), then
+- In-app **Unlock Demo** gate (private value from `api/config.local.php`)
 
 ---
 
@@ -493,7 +493,7 @@ Send credentials privately (email, Signal, iMessage).
 | **No images** | `images/` not uploaded | Re-upload folder; check paths are relative |
 | **BTC stuck on Loading** | API blocked / offline | Check network; CoinGecko/Coinbase must be reachable |
 | **Password never works (server)** | Wrong user/hash | Regenerate `.htpasswd` |
-| **Password never works (in-app)** | Typo / caps | Must match `DEMO_PASSWORD` in `app.js` exactly |
+| **Password never works (in-app)** | Typo / caps | Verify `SRU_DEMO_PASSWORD` in server-only `api/config.local.php` |
 | **www works, apex doesn’t** | Missing A for `@` | Add A record for `@` |
 | **Mixed content warnings** | Absolute `http://` links | Use relative paths (this project already does) |
 
@@ -540,4 +540,3 @@ htpasswd -nbB demo 'NewPasswordHere'
 
 © 2026 Smart Realty USA · Demo Version · All Rights Reserved  
 Contact: **ai@smartrealty.us**
-

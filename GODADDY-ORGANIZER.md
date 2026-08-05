@@ -127,7 +127,8 @@ auth: {
   mode: "accounts",
   // Empty string = same website origin (https://smartrealty.us) → uses PHP /api
   apiUrl: "",
-  demoPassword: "SmartRealty2026",  // change before wide share
+  demoPassword: "",                 // keep secrets on the server
+  allowOfflineDemo: false,
   allowDemoAccess: true,
 },
 ```
@@ -233,7 +234,7 @@ python3 -m http.server 8766
 3. [ ] DNS **A @ → hosting IP**, **www CNAME**  
 4. [ ] Upload **smart-realty-usa-upload.zip** → extract in `public_html`  
 5. [ ] AutoSSL active  
-6. [ ] Set `SRU_JWT_SECRET` in `api/config.php`  
+6. [ ] Create `api/config.local.php` and set all server-only secrets
 7. [ ] `domain-config.js` → `apiUrl: ""`, `siteUrl` correct  
 8. [ ] Test **auth.html** create account + login  
 9. [ ] Optional: email for `ai@smartrealty.us`  

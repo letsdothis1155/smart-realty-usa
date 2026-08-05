@@ -19,7 +19,7 @@ python3 -m http.server 8766
 
 | Item | Value |
 |------|--------|
-| **Demo password** | `SmartRealty2026` |
+| **Demo password** | Server-only; configure in `api/config.local.php` |
 | **Accounts on GoDaddy** | PHP API in [`api/`](./api/) (same cPanel as the site) |
 | **GoDaddy checklist** | **[GODADDY-ORGANIZER.md](./GODADDY-ORGANIZER.md)** ← start here |
 | **Upload zip** | `./scripts/pack-for-upload.sh` → Desktop |
@@ -91,7 +91,7 @@ app.js              Listings, search, BTC, chat
 domain-config.js    Custom domain / brand config
 images/             Hero + property photos
 .htaccess           Apache auth, headers, SSL hooks
-.htpasswd           Server user: demo
+.htpasswd           Create on the server only; never commit or package
 robots.txt          noindex for private demo
 scripts/            pack + verify helpers
 ```
@@ -100,8 +100,8 @@ scripts/            pack + verify helpers
 
 ## Security notes
 
-- Change `DEMO_PASSWORD` in `app.js` before wide sharing
-- Regenerate `.htpasswd` for a new server password
+- Set `SRU_DEMO_PASSWORD` only in `api/config.local.php`; keep browser files secret-free
+- Create or rotate `.htpasswd` on the server; never commit or package it
 - Set `presenterMode: false` in `domain-config.js` when done presenting
 - This is a **demo** — not a licensed brokerage transaction system
 

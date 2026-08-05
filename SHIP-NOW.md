@@ -19,7 +19,7 @@ You need **one** of:
 
 Both end at **https://smartrealty.us** with your demo.
 
-**In-app unlock:** `SmartRealty2026`  
+**In-app unlock:** private value configured in `api/config.local.php`
 **Contact:** ai@smartrealty.us
 
 ---
@@ -66,7 +66,7 @@ cd ~/Projects/smart-realty-usa && ./scripts/pack-for-upload.sh
 3. Open **`public_html`**  
 4. Delete/replace default builder/parking homepage files if present  
 5. **Upload** `smart-realty-usa-upload.zip` → **Extract** here  
-6. Confirm you see: `index.html`, `styles.css`, `app.js`, `domain-config.js`, `images/`, `.htaccess`, `.htpasswd`
+6. Confirm you see: `index.html`, `styles.css`, `app.js`, `domain-config.js`, `images/`, `.htaccess` (create `.htpasswd` directly on the server only if needed)
 
 ### A4. SSL
 
@@ -84,7 +84,7 @@ cd ~/Projects/smart-realty-usa
 ./scripts/verify-live.sh smartrealty.us
 ```
 
-Browser: open https://smartrealty.us → unlock with `SmartRealty2026`.
+Browser: open https://smartrealty.us → unlock with the private server-configured password.
 
 ---
 
@@ -92,7 +92,7 @@ Browser: open https://smartrealty.us → unlock with `SmartRealty2026`.
 
 **Repo:** https://github.com/letsdothis1155/smart-realty-usa  
 **Pages:** custom domain `smartrealty.us` · branch `main` · root `/`  
-**In-app password still required:** `SmartRealty2026`
+**In-app password still required:** use the private value from `api/config.local.php`
 
 ### B1. Done for you
 
@@ -127,7 +127,7 @@ cd ~/Projects/smart-realty-usa
 ./scripts/verify-live.sh smartrealty.us
 ```
 
-Then open: **https://smartrealty.us** → unlock with **`SmartRealty2026`**
+Then open: **https://smartrealty.us** → unlock with the private server-configured password
 
 ### B4. Enforce HTTPS in GitHub
 
@@ -146,7 +146,7 @@ Then open: **https://smartrealty.us** → unlock with **`SmartRealty2026`**
 # After either path
 
 - [ ] https://smartrealty.us shows **password gate** (not “Luxury Condos” builder page)
-- [ ] Unlock works with `SmartRealty2026`
+- [ ] Unlock works with the private server-configured password
 - [ ] Listings + BTC ticker load
 - [ ] Fill [SHARE-EMAIL.txt](./SHARE-EMAIL.txt) and send privately
 - [ ] Later: set `presenterMode: false` in `domain-config.js` and re-upload

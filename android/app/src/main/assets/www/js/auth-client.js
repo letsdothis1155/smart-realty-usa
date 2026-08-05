@@ -128,10 +128,8 @@
       if (data.token) saveSession(data.token, data.user, !!remember);
       return data;
     }
-    // Offline fallback: shared demo password only (presenter mode)
-    const expected =
-      authCfg().demoPassword ||
-      (cfg().isPrivateDemo ? "SmartRealty2026" : null);
+    // Explicit local-only fallback. Never enable this in a distributed build.
+    const expected = authCfg().allowOfflineDemo === true ? authCfg().demoPassword : "";
     if (expected && password === expected) {
       const user = {
         id: "demo",
@@ -142,8 +140,9 @@
       saveSession("offline-demo", user, !!remember);
       return { ok: true, user, message: "Demo unlocked (offline)." };
     }
-    const err = new Error("Incorrect demo password.");
-    err.status = 401;
+    const err = new Error("Demo access requires a configured authentication API.");
+    err.code = "NO_API";
+    err.status = 503;
     throw err;
   }
 

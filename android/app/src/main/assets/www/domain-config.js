@@ -56,15 +56,16 @@ window.SRU_CONFIG = {
    * - mode "open": no gate
    *
    * apiUrl: Auth API base (no trailing slash). Local: http://127.0.0.1:8787
-   * When empty, create-account is disabled; demo password still works offline.
+   * When empty, create-account and demo access require a configured API.
    * See AUTH-AND-HOSTING.md — you do NOT need classic web hosting for this.
    */
   auth: {
     mode: "accounts", // "accounts" | "demo" | "open"
     apiUrl: "http://127.0.0.1:8787",
-    /** Shared demo unlock (also DEMO_PASSWORD env on the API) */
-    demoPassword: "SmartRealty2026",
+    /** Keep secrets on the API; browser/app bundles are public to their users. */
+    demoPassword: "",
     allowDemoAccess: true,
+    allowOfflineDemo: false,
   },
 
   social: {

@@ -10,11 +10,11 @@ URL:      YOUR_LIVE_URL
                      https://demo.smartrealty.us
                      https://smartrealty.us/demo)
 
-Demo password:  SmartRealty2026
+Demo password:  Send separately through a private channel
 
 If the browser asks for a second login first:
   Username:  demo
-  Password:  SmartRealty2026
+  Password:  Send separately through a private channel
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Suggested walkthrough (5–7 minutes):

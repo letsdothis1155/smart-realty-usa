@@ -4,7 +4,7 @@
  *
  * Load order:
  *   1) config.local.php  (preferred on server — gitignored)
- *   2) defaults below    (INSECURE for public — banner will warn)
+ *   2) fail-closed defaults below (auth stays disabled until configured)
  *
  * BEFORE PUBLIC SHARE:
  *   cp config.sample.php config.local.php
@@ -19,10 +19,10 @@ if (is_file($local)) {
 
 // ---- Defaults only if not set in config.local.php ----
 if (!defined('SRU_JWT_SECRET')) {
-    define('SRU_JWT_SECRET', 'CHANGE-ME-to-a-long-random-secret-before-public-use');
+    define('SRU_JWT_SECRET', '');
 }
 if (!defined('SRU_DEMO_PASSWORD')) {
-    define('SRU_DEMO_PASSWORD', 'SmartRealty2026');
+    define('SRU_DEMO_PASSWORD', '');
 }
 if (!defined('SRU_JWT_DAYS')) {
     define('SRU_JWT_DAYS', 14);
@@ -46,7 +46,7 @@ if (!defined('SRU_SITE_URL')) {
     define('SRU_SITE_URL', 'https://smartrealty.us');
 }
 if (!defined('SRU_ADMIN_PASSWORD')) {
-    define('SRU_ADMIN_PASSWORD', 'SmartRealtyAdmin2026');
+    define('SRU_ADMIN_PASSWORD', '');
 }
 
 /**
@@ -55,16 +55,21 @@ if (!defined('SRU_ADMIN_PASSWORD')) {
  */
 function sru_security_status() {
     $issues = [];
-    if (SRU_JWT_SECRET === 'CHANGE-ME-to-a-long-random-secret-before-public-use'
-        || strlen(SRU_JWT_SECRET) < 24
+    $publishedDemoPassword = implode('', ['Smart', 'Realty2026']);
+    $publishedAdminPassword = implode('', ['Smart', 'RealtyAdmin2026']);
+    if (strlen(SRU_JWT_SECRET) < 32
         || stripos(SRU_JWT_SECRET, 'CHANGE-ME') !== false
         || stripos(SRU_JWT_SECRET, 'paste-openssl') !== false) {
         $issues[] = 'jwt_secret_default';
     }
-    if (SRU_DEMO_PASSWORD === 'SmartRealty2026' || strlen(SRU_DEMO_PASSWORD) < 8) {
+    if (strlen(SRU_DEMO_PASSWORD) < 12
+        || hash_equals($publishedDemoPassword, SRU_DEMO_PASSWORD)
+        || preg_match('/change[-_ ]?me|example|paste/i', SRU_DEMO_PASSWORD)) {
         $issues[] = 'demo_password_default';
     }
-    if (SRU_ADMIN_PASSWORD === 'SmartRealtyAdmin2026' || strlen(SRU_ADMIN_PASSWORD) < 10) {
+    if (strlen(SRU_ADMIN_PASSWORD) < 16
+        || hash_equals($publishedAdminPassword, SRU_ADMIN_PASSWORD)
+        || preg_match('/change[-_ ]?me|example|paste/i', SRU_ADMIN_PASSWORD)) {
         $issues[] = 'admin_password_default';
     }
     if (!is_dir(SRU_DATA_DIR) || !is_writable(SRU_DATA_DIR)) {

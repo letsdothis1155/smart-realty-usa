@@ -15,8 +15,8 @@ Users file: `api/data/users.json` (blocked from web by `.htaccess`).
 
 ## Before public launch
 
-1. Edit `config.php` → set `SRU_JWT_SECRET` to a long random string  
-2. Change `SRU_DEMO_PASSWORD` if needed  
+1. Copy `config.sample.php` to gitignored `config.local.php`
+2. Set strong `SRU_JWT_SECRET`, `SRU_DEMO_PASSWORD`, and `SRU_ADMIN_PASSWORD` values
 3. Ensure `api/data/` is writable (cPanel File Manager → permissions)  
 4. `domain-config.js` → `auth.apiUrl: ""` (same site)
 

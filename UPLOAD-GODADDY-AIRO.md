@@ -1,7 +1,7 @@
 # Upload Smart Realty USA demo — GoDaddy Airo / Hosting
 
 **Package:** `SmartRealty-USA-GoDaddy-Demo.zip` (in your Downloads folder)  
-**Demo password:** `SmartRealty2026`  
+**Demo password:** set privately in `api/config.local.php` after upload
 **Contact:** ai@smartrealty.us  
 
 ---
@@ -48,7 +48,7 @@ cPanel → **SSL/TLS Status** or AutoSSL → Run for `smartrealty.us`
 
 ### 5. Open the demo
 - https://smartrealty.us  
-- Password: **`SmartRealty2026`**  
+- Password: use the private value configured in `api/config.local.php`
 - Or: https://smartrealty.us/auth.html  
 
 ### 6. Secrets (before wide share)
@@ -57,7 +57,7 @@ See **SECRETS.md** in this zip:
 - Change JWT, demo password, admin password
 
 Admin leads: https://smartrealty.us/admin.html  
-Default admin password until changed: `SmartRealtyAdmin2026`
+Use the private admin password from `api/config.local.php`.
 
 ---
 
@@ -82,7 +82,7 @@ Add a section → **HTML** → paste:
   <p style="margin:1rem 0 0">
     <a href="https://smartrealty.us" style="display:inline-block;background:#5b8cff;color:#041018;padding:0.75rem 1.25rem;border-radius:999px;font-weight:700;text-decoration:none">Open demo</a>
   </p>
-  <p style="font-size:12px;color:#6b7385;margin-top:1rem">Demo password when prompted: SmartRealty2026</p>
+  <p style="font-size:12px;color:#6b7385;margin-top:1rem">Ask your host for private demo access.</p>
 </div>
 ```
 
@@ -107,7 +107,7 @@ SECRETS.md
 ```
 
 **This package is tuned for demos:** password gate (`auth.mode: "demo"`).  
-Full member accounts work after PHP `api/` is live on cPanel.
+Demo unlock and full member accounts work after PHP `api/` is live on cPanel.
 
 ---
 
@@ -116,7 +116,7 @@ Full member accounts work after PHP `api/` is live on cPanel.
 | Check | URL |
 |-------|-----|
 | Home | https://smartrealty.us/ |
-| Unlock | password `SmartRealty2026` |
+| Unlock | private password configured in `api/config.local.php` |
 | Listings | scroll or #listings |
 | Map | Listings → Map view |
 | BTC ticker | top of page |
