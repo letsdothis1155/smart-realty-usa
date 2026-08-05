@@ -56,25 +56,29 @@
           <small>USA</small>
         </span>
       </div>
-      <p class="gate-badge">MEMBER ACCESS</p>
-      <h2>Sign in to continue</h2>
+      <p class="gate-badge">PRIVATE DEMO</p>
+      <h2>Welcome to Smart Realty USA</h2>
       <p class="gate-sub">
-        Create a free account, sign in, or use demo access.
-        Contact <a href="mailto:ai@smartrealty.us">ai@smartrealty.us</a> if you need help.
+        Exclusive homes · Blue Book pricing · Bitcoin-ready checkout.<br />
+        Unlock with the demo password, or create a member account.
+        Contact <a href="mailto:ai@smartrealty.us">ai@smartrealty.us</a>
       </p>
       <div class="gate-actions" style="display:grid;gap:0.65rem">
-        <a class="btn btn-primary btn-block" href="auth.html?next=index.html">Sign in / Create account</a>
-        <a class="btn btn-ghost btn-block" href="auth.html?tab=demo&next=index.html">Demo password access</a>
+        <a class="btn btn-primary btn-block" href="auth.html?tab=demo&next=index.html">Enter with demo password</a>
+        <a class="btn btn-ghost btn-block" href="auth.html?next=index.html">Sign in / Create account</a>
       </div>
       <form id="gateForm" class="gate-form" style="margin-top:1rem">
         <label>
-          Quick demo password
-          <input type="password" id="gatePassword" placeholder="Shared demo password" autocomplete="current-password" />
+          Quick unlock
+          <input type="password" id="gatePassword" placeholder="Demo password" autocomplete="current-password" />
         </label>
-        <button type="submit" class="btn btn-primary btn-block">Unlock with demo password</button>
+        <button type="submit" class="btn btn-primary btn-block">Unlock demo</button>
+        <p class="gate-hint" id="gateHint" style="font-size:0.78rem;color:var(--text-dim);margin-top:0.5rem;text-align:center">
+          Default demo password is in your invite / SECRETS.md
+        </p>
         <p class="gate-error hidden" id="gateError">Incorrect password. Try again.</p>
       </form>
-      <p class="gate-rights">Demo Version · All Rights Reserved © 2026 Smart Realty USA</p>
+      <p class="gate-rights">Demo Version · Not a live brokerage · © 2026 Smart Realty USA</p>
     </div>
   </div>
 
@@ -175,17 +179,18 @@
       </div>
       <div class="container">
         <div class="hero-content">
-          <p class="eyebrow fade-up">Exclusive · Transparent · Secure</p>
+          <p class="eyebrow fade-up">Exclusive · Transparent · Bitcoin ready</p>
           <h1 class="fade-up delay-1">
-            Luxury homes with<br />
+            Exclusive homes with<br />
             <span class="gradient-text">transparent lowest offers</span>
           </h1>
           <p class="hero-sub fade-up delay-2">
-            Free House Blue Book valuations, live Bitcoin checkout, and
-            Airbnb-style try-before-you-buy stays — with 24/7 human support.
+            Free House Blue Book valuations, live Bitcoin checkout quotes, and
+            try-before-you-buy stays — with 24/7 human-style support. Demo experience for
+            <strong>smartrealty.us</strong>.
           </p>
           <div class="hero-cta fade-up delay-3">
-            <a href="#listings" class="btn btn-primary btn-lg">Browse Exclusive Homes</a>
+            <a href="#listings" class="btn btn-primary btn-lg">Browse exclusive homes</a>
             <a href="#bitcoin" class="btn btn-outline btn-lg">
               <span class="btc-icon">₿</span> Buy with Bitcoin
             </a>
@@ -193,7 +198,7 @@
           </div>
           <div class="hero-stats fade-up delay-4">
             <div class="stat">
-              <strong id="statListings">18+</strong>
+              <strong id="statListings">24+</strong>
               <span>Curated Listings</span>
             </div>
             <div class="stat">
