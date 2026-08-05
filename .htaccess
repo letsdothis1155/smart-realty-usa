@@ -76,3 +76,6 @@
 </Files>
 
 DirectoryIndex index.html
+
+# Friendly 404 (cPanel / Apache)
+ErrorDocument 404 /404.html

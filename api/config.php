@@ -1,37 +1,78 @@
 <?php
 /**
- * Smart Realty USA — Auth config (GoDaddy / cPanel)
+ * Smart Realty USA — Auth / leads config (GoDaddy / cPanel)
  *
- * BEFORE GO-LIVE: change SRU_JWT_SECRET to a long random string.
- * Demo password should match domain-config.js auth.demoPassword.
+ * Load order:
+ *   1) config.local.php  (preferred on server — gitignored)
+ *   2) defaults below    (INSECURE for public — banner will warn)
+ *
+ * BEFORE PUBLIC SHARE:
+ *   cp config.sample.php config.local.php
+ *   edit secrets with: openssl rand -hex 32
  */
 
-// Required: random secret for login tokens (change this!)
-define('SRU_JWT_SECRET', 'CHANGE-ME-to-a-long-random-secret-before-public-use');
+// Optional override file (recommended on production)
+$local = __DIR__ . '/config.local.php';
+if (is_file($local)) {
+    require_once $local;
+}
 
-// Shared demo unlock password
-define('SRU_DEMO_PASSWORD', 'SmartRealty2026');
+// ---- Defaults only if not set in config.local.php ----
+if (!defined('SRU_JWT_SECRET')) {
+    define('SRU_JWT_SECRET', 'CHANGE-ME-to-a-long-random-secret-before-public-use');
+}
+if (!defined('SRU_DEMO_PASSWORD')) {
+    define('SRU_DEMO_PASSWORD', 'SmartRealty2026');
+}
+if (!defined('SRU_JWT_DAYS')) {
+    define('SRU_JWT_DAYS', 14);
+}
+if (!defined('SRU_CORS_ORIGIN')) {
+    define('SRU_CORS_ORIGIN', '');
+}
+if (!defined('SRU_DATA_DIR')) {
+    define('SRU_DATA_DIR', __DIR__ . '/data');
+}
+if (!defined('SRU_NOTIFY_EMAIL')) {
+    define('SRU_NOTIFY_EMAIL', 'ai@smartrealty.us');
+}
+if (!defined('SRU_MAIL_FROM')) {
+    define('SRU_MAIL_FROM', 'noreply@smartrealty.us');
+}
+if (!defined('SRU_LEAD_AUTOREPLY')) {
+    define('SRU_LEAD_AUTOREPLY', true);
+}
+if (!defined('SRU_SITE_URL')) {
+    define('SRU_SITE_URL', 'https://smartrealty.us');
+}
+if (!defined('SRU_ADMIN_PASSWORD')) {
+    define('SRU_ADMIN_PASSWORD', 'SmartRealtyAdmin2026');
+}
 
-// Token lifetime (days)
-define('SRU_JWT_DAYS', 14);
-
-// CORS: leave empty for same-origin only (recommended on GoDaddy)
-// Or set e.g. 'https://smartrealty.us' if you split frontends later
-define('SRU_CORS_ORIGIN', '');
-
-// Data directory (users.json) — must be writable by PHP
-define('SRU_DATA_DIR', __DIR__ . '/data');
-
-// ---- Waitlist email notifications (GoDaddy / cPanel mail) ----
-// Owner inbox for new lead alerts (empty = no notify mail)
-define('SRU_NOTIFY_EMAIL', 'ai@smartrealty.us');
-// From address (use a domain mailbox or noreply@yourdomain)
-define('SRU_MAIL_FROM', 'noreply@smartrealty.us');
-// Auto-reply to the person who joined the waitlist
-define('SRU_LEAD_AUTOREPLY', true);
-// Site URL used in emails
-define('SRU_SITE_URL', 'https://smartrealty.us');
-
-// Admin password for leads dashboard (change this!)
-// Used by admin.html + GET /api/leads-list.php
-define('SRU_ADMIN_PASSWORD', 'SmartRealtyAdmin2026');
+/**
+ * Known insecure defaults (do not echo secret values to clients).
+ * @return array{insecure:bool,issues:string[]}
+ */
+function sru_security_status() {
+    $issues = [];
+    if (SRU_JWT_SECRET === 'CHANGE-ME-to-a-long-random-secret-before-public-use'
+        || strlen(SRU_JWT_SECRET) < 24
+        || stripos(SRU_JWT_SECRET, 'CHANGE-ME') !== false
+        || stripos(SRU_JWT_SECRET, 'paste-openssl') !== false) {
+        $issues[] = 'jwt_secret_default';
+    }
+    if (SRU_DEMO_PASSWORD === 'SmartRealty2026' || strlen(SRU_DEMO_PASSWORD) < 8) {
+        $issues[] = 'demo_password_default';
+    }
+    if (SRU_ADMIN_PASSWORD === 'SmartRealtyAdmin2026' || strlen(SRU_ADMIN_PASSWORD) < 10) {
+        $issues[] = 'admin_password_default';
+    }
+    if (!is_dir(SRU_DATA_DIR) || !is_writable(SRU_DATA_DIR)) {
+        $issues[] = 'data_dir_not_writable';
+    }
+    return [
+        'insecure' => count($issues) > 0,
+        'issues' => $issues,
+        'hasLocalConfig' => is_file(__DIR__ . '/config.local.php'),
+    ];
+}

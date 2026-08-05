@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Privacy Policy — Smart Realty USA</title>
+  <meta name="description" content="Privacy Policy for Smart Realty USA demo platform." />
+  <meta name="robots" content="index, follow" />
+  <meta name="theme-color" content="#0a0c10" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <script src="domain-config.js"></script>
+</head>
+<body class="legal-page">
+  <header class="legal-header">
+    <div class="container legal-header-inner">
+      <a href="index.html" class="logo">
+        <span class="logo-mark">SR</span>
+        <span class="logo-text"><strong>Smart Realty</strong><small>USA</small></span>
+      </a>
+      <nav class="legal-nav">
+        <a href="index.html">Home</a>
+        <a href="terms.html">Terms</a>
+        <a href="privacy.html" aria-current="page">Privacy</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container legal-main">
+    <p class="eyebrow">Legal</p>
+    <h1>Privacy Policy</h1>
+    <p class="legal-updated">Last updated: August 5, 2026 · Applies to smartrealty.us and this demo platform</p>
+
+    <div class="legal-prose glass">
+      <h2>1. Who we are</h2>
+      <p>
+        Smart Realty USA (“we”, “us”) operates a <strong>demonstration real-estate technology website</strong>
+        at <span data-host>smartrealty.us</span>. Contact:
+        <a href="mailto:ai@smartrealty.us" data-contact-email>ai@smartrealty.us</a>.
+      </p>
+
+      <h2>2. Demo nature</h2>
+      <p>
+        This platform is a <strong>product demo</strong>. It is not a licensed real-estate brokerage transaction
+        system. Listings, prices, Bitcoin checkout, and rentals are illustrative unless we tell you otherwise in writing.
+      </p>
+
+      <h2>3. Information we collect</h2>
+      <ul>
+        <li><strong>Account data</strong> — name, email, password hash (we do not store plain-text passwords).</li>
+        <li><strong>Waitlist / contact leads</strong> — name, email, interest, optional message, timestamp.</li>
+        <li><strong>Technical data</strong> — browser type, approximate IP (server logs), cookies/local storage for session and preferences.</li>
+        <li><strong>Usage on your device</strong> — saved homes, recent views, and demo unlock flags stored in your browser.</li>
+      </ul>
+
+      <h2>4. How we use information</h2>
+      <ul>
+        <li>Operate sign-in, password reset, and member features</li>
+        <li>Respond to waitlist and concierge requests</li>
+        <li>Improve the demo and fix bugs</li>
+        <li>Send transactional or waitlist-related email when you submit a form</li>
+      </ul>
+
+      <h2>5. Sharing</h2>
+      <p>
+        We do not sell your personal information. We may use hosting providers (e.g. GoDaddy), email delivery on that host,
+        and analytics only if configured. Service providers process data only to run the site.
+      </p>
+
+      <h2>6. Cookies &amp; local storage</h2>
+      <p>
+        We use browser storage for login sessions, saved homes, compare lists, and demo preferences.
+        You can clear site data in your browser settings.
+      </p>
+
+      <h2>7. Security</h2>
+      <p>
+        Passwords are hashed (bcrypt). Transport should use HTTPS. No method is 100% secure; avoid reusing passwords
+        from other sites on this demo.
+      </p>
+
+      <h2>8. Retention</h2>
+      <p>
+        Account and lead records remain until you request deletion or we remove demo data. Contact us to delete your account or lead entry.
+      </p>
+
+      <h2>9. Children</h2>
+      <p>This site is not directed to children under 13. We do not knowingly collect their data.</p>
+
+      <h2>10. Your choices</h2>
+      <ul>
+        <li>Request access or deletion: <a href="mailto:ai@smartrealty.us" data-contact-email>ai@smartrealty.us</a></li>
+        <li>Unsubscribe from waitlist emails by replying “unsubscribe” or emailing us</li>
+        <li>Stop using the demo and clear browser storage</li>
+      </ul>
+
+      <h2>11. Changes</h2>
+      <p>We may update this policy. The “Last updated” date will change when we do.</p>
+
+      <h2>12. Contact</h2>
+      <p>
+        Smart Realty USA · <a href="mailto:ai@smartrealty.us" data-contact-email>ai@smartrealty.us</a>
+        · <span data-phone>1-800-SMART-USA</span>
+      </p>
+    </div>
+  </main>
+
+  <footer class="legal-footer container">
+    <a href="index.html">← Home</a>
+    <a href="terms.html">Terms of Use</a>
+    <span>© 2026 Smart Realty USA</span>
+  </footer>
+  <script>
+    (function () {
+      var c = window.SRU_CONFIG || {};
+      document.querySelectorAll("[data-contact-email]").forEach(function (a) {
+        if (c.contactEmail) { a.href = "mailto:" + c.contactEmail; a.textContent = c.contactEmail; }
+      });
+      document.querySelectorAll("[data-host]").forEach(function (el) {
+        if (c.canonicalHost) el.textContent = c.canonicalHost;
+      });
+    })();
+  </script>
+</body>
+</html>

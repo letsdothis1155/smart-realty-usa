@@ -14,7 +14,7 @@ echo "→ Staging from: $ROOT"
 mkdir -p "$STAGING/images"
 
 # Core site files
-for f in index.html auth.html account.html admin.html styles.css app.js domain-config.js robots.txt sitemap.xml .htaccess .htpasswd CNAME; do
+for f in index.html auth.html account.html admin.html privacy.html terms.html 404.html styles.css app.js domain-config.js robots.txt sitemap.xml .htaccess .htpasswd CNAME SECRETS.md; do
   if [[ -f "$ROOT/$f" ]]; then
     cp "$ROOT/$f" "$STAGING/"
     echo "  + $f"
@@ -33,7 +33,7 @@ fi
 # PHP accounts API (GoDaddy cPanel)
 if [[ -d "$ROOT/api" ]]; then
   mkdir -p "$STAGING/api/auth" "$STAGING/api/data"
-  for f in config.php lib.php health.php .htaccess README.md; do
+  for f in config.php config.sample.php lib.php health.php security-status.php .htaccess README.md; do
     [[ -f "$ROOT/api/$f" ]] && cp "$ROOT/api/$f" "$STAGING/api/"
   done
   for f in register.php login.php demo.php me.php change-password.php forgot-password.php reset-password.php; do
@@ -44,6 +44,7 @@ if [[ -d "$ROOT/api" ]]; then
   [[ -f "$ROOT/api/data/.htaccess" ]] && cp "$ROOT/api/data/.htaccess" "$STAGING/api/data/"
   [[ -f "$ROOT/api/data/.gitkeep" ]] && cp "$ROOT/api/data/.gitkeep" "$STAGING/api/data/"
   # never ship live user DB
+  rm -f "$STAGING/api/config.local.php" 2>/dev/null || true
   echo "  + api/ (PHP accounts + leads for GoDaddy)"
 fi
 

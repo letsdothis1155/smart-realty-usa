@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Terms of Use — Smart Realty USA</title>
+  <meta name="description" content="Terms of Use for the Smart Realty USA demo platform." />
+  <meta name="robots" content="index, follow" />
+  <meta name="theme-color" content="#0a0c10" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <script src="domain-config.js"></script>
+</head>
+<body class="legal-page">
+  <header class="legal-header">
+    <div class="container legal-header-inner">
+      <a href="index.html" class="logo">
+        <span class="logo-mark">SR</span>
+        <span class="logo-text"><strong>Smart Realty</strong><small>USA</small></span>
+      </a>
+      <nav class="legal-nav">
+        <a href="index.html">Home</a>
+        <a href="terms.html" aria-current="page">Terms</a>
+        <a href="privacy.html">Privacy</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container legal-main">
+    <p class="eyebrow">Legal</p>
+    <h1>Terms of Use</h1>
+    <p class="legal-updated">Last updated: August 5, 2026</p>
+
+    <div class="legal-prose glass">
+      <h2>1. Acceptance</h2>
+      <p>
+        By using Smart Realty USA websites and demos (“Service”), you agree to these Terms.
+        If you do not agree, do not use the Service.
+      </p>
+
+      <h2>2. Demo / not a brokerage</h2>
+      <p>
+        <strong>This is a technology demonstration.</strong> Unless we enter a separate written agreement:
+      </p>
+      <ul>
+        <li>Listings, prices, Blue Book values, maps, and photos may be sample or illustrative</li>
+        <li>“Buy with Bitcoin,” rentals, and escrow flows are <strong>simulated or non-binding</strong></li>
+        <li>We are <strong>not</strong> acting as your real-estate broker, agent, or attorney by default</li>
+        <li>State real-estate licenses may be required for actual brokerage — not provided solely by using this demo</li>
+      </ul>
+
+      <h2>3. Accounts</h2>
+      <p>
+        You must provide accurate information and keep credentials confidential.
+        You are responsible for activity under your account. We may suspend accounts that abuse the Service.
+      </p>
+
+      <h2>4. Acceptable use</h2>
+      <p>You agree not to:</p>
+      <ul>
+        <li>Break or probe the Service without permission</li>
+        <li>Scrape or overload our systems unreasonably</li>
+        <li>Use the Service for fraud, spam, or illegal activity</li>
+        <li>Misrepresent that demo content is a live MLS listing or binding offer</li>
+      </ul>
+
+      <h2>5. Intellectual property</h2>
+      <p>
+        Site design, branding, and software are owned by Smart Realty USA or its licensors.
+        You may not copy the product for a competing service without permission.
+      </p>
+
+      <h2>6. Third-party services</h2>
+      <p>
+        Bitcoin price feeds, maps (e.g. OpenStreetMap), fonts, and hosting are provided by third parties.
+        Their availability and terms apply.
+      </p>
+
+      <h2>7. Disclaimers</h2>
+      <p>
+        THE SERVICE IS PROVIDED “AS IS” WITHOUT WARRANTIES OF ANY KIND, EXPRESS OR IMPLIED,
+        INCLUDING MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.
+        We do not warrant uninterrupted or error-free operation.
+      </p>
+
+      <h2>8. Limitation of liability</h2>
+      <p>
+        To the fullest extent allowed by law, Smart Realty USA and its operators are not liable for
+        indirect, incidental, special, consequential, or punitive damages, or loss of data, profits, or business,
+        arising from use of the Service. Our total liability for any claim is limited to the greater of
+        (a) amounts you paid us for the Service in the prior 12 months, or (b) USD $50.
+      </p>
+
+      <h2>9. Indemnity</h2>
+      <p>
+        You will defend and indemnify us against claims arising from your misuse of the Service or violation of these Terms.
+      </p>
+
+      <h2>10. Governing law</h2>
+      <p>
+        These Terms are governed by the laws of the Commonwealth of Kentucky, USA, without regard to conflict-of-law rules,
+        unless mandatory consumer law in your residence requires otherwise.
+      </p>
+
+      <h2>11. Changes</h2>
+      <p>We may update these Terms. Continued use after changes means you accept the revised Terms.</p>
+
+      <h2>12. Contact</h2>
+      <p>
+        Questions: <a href="mailto:ai@smartrealty.us" data-contact-email>ai@smartrealty.us</a>
+      </p>
+    </div>
+  </main>
+
+  <footer class="legal-footer container">
+    <a href="index.html">← Home</a>
+    <a href="privacy.html">Privacy Policy</a>
+    <span>© 2026 Smart Realty USA</span>
+  </footer>
+  <script>
+    (function () {
+      var c = window.SRU_CONFIG || {};
+      document.querySelectorAll("[data-contact-email]").forEach(function (a) {
+        if (c.contactEmail) { a.href = "mailto:" + c.contactEmail; a.textContent = c.contactEmail; }
+      });
+    })();
+  </script>
+</body>
+</html>

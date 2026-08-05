@@ -13,4 +13,6 @@ android/app/build/
 android/local.properties
 android/.idea/
 api/data/users.json
+api/data/leads.json
 api/data/*.tmp
+api/config.local.php
