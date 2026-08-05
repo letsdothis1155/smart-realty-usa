@@ -37,8 +37,19 @@ window.SRU_CONFIG = {
   ein: "", // add after free IRS EIN
   businessAddress: "", // KY street address from Articles
 
-  /** Private demo flag — shows DEMO badges */
+  /** Private demo flag — shows DEMO badges on UI */
   isPrivateDemo: true,
+
+  /**
+   * Public SEO flip
+   * index: true  → robots allow indexing, public meta, JSON-LD
+   * index: false → noindex (private demo crawl block)
+   */
+  seo: {
+    index: true,
+    ogImage: "https://smartrealty.us/images/hero-bg.jpg",
+    twitterHandle: "@JrIredale43143",
+  },
 
   /**
    * When true, shows the "Domain Deploy" presenter panel in the footer.

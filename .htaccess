@@ -38,8 +38,9 @@
   Header set X-Frame-Options "SAMEORIGIN"
   Header set Referrer-Policy "strict-origin-when-cross-origin"
   Header set Permissions-Policy "geolocation=(), microphone=(), camera=()"
-  # Discourage indexing of private demo
-  Header set X-Robots-Tag "noindex, nofollow, noarchive"
+  # Public SEO: do not force noindex site-wide.
+  # Keep account pages private via robots.txt Disallow + page meta.
+  # Header set X-Robots-Tag "noindex, nofollow, noarchive"
 </IfModule>
 
 # --- Cache static assets ---

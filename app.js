@@ -1032,18 +1032,42 @@ function openDeepLinkedHome() {
   }
 }
 
+/** Live OpenStreetMap map (Leaflet) — falls back to pin plot if Leaflet missing */
+let sruLeafletMap = null;
+let sruLeafletLayer = null;
+
+function destroyLeafletMap() {
+  if (sruLeafletMap) {
+    try {
+      sruLeafletMap.remove();
+    } catch {
+      /* ignore */
+    }
+    sruLeafletMap = null;
+    sruLeafletLayer = null;
+  }
+}
+
 function renderMap(filtered) {
   const canvas = $("#mapCanvas");
   const sub = $("#mapSub");
   if (!canvas) return;
 
   if (!filtered.length) {
+    destroyLeafletMap();
     canvas.innerHTML = `<div class="map-empty">No homes match — adjust filters.</div>`;
     if (sub) sub.textContent = "0 pins";
     return;
   }
 
-  // Normalize lat/lng into % positions within a US-ish bounding box
+  // Prefer live tiles when Leaflet is loaded
+  if (typeof L !== "undefined") {
+    renderLeafletMap(filtered, canvas, sub);
+    return;
+  }
+
+  // Fallback: abstract pin plot (no CDN)
+  destroyLeafletMap();
   const lats = filtered.map((p) => getCoords(p).lat);
   const lngs = filtered.map((p) => getCoords(p).lng);
   const minLat = Math.min(...lats) - 0.5;
@@ -1067,7 +1091,93 @@ function renderMap(filtered) {
     })
     .join("");
 
-  if (sub) sub.textContent = `${filtered.length} pin${filtered.length === 1 ? "" : "s"} · demo coordinates`;
+  if (sub) sub.textContent = `${filtered.length} pin${filtered.length === 1 ? "" : "s"} · offline plot`;
+}
+
+function renderLeafletMap(filtered, canvas, sub) {
+  // Ensure map host div
+  let host = canvas.querySelector("#leafletHost");
+  if (!host) {
+    canvas.innerHTML = `<div id="leafletHost" class="leaflet-host"></div>`;
+    host = canvas.querySelector("#leafletHost");
+    destroyLeafletMap();
+  }
+
+  if (!sruLeafletMap) {
+    sruLeafletMap = L.map(host, {
+      scrollWheelZoom: false,
+      attributionControl: true,
+    });
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 18,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>',
+    }).addTo(sruLeafletMap);
+    // Enable wheel zoom after click (desktop UX)
+    host.addEventListener("click", () => {
+      if (sruLeafletMap && !sruLeafletMap.scrollWheelZoom.enabled()) {
+        sruLeafletMap.scrollWheelZoom.enable();
+      }
+    });
+  }
+
+  if (sruLeafletLayer) {
+    sruLeafletLayer.clearLayers();
+  } else {
+    sruLeafletLayer = L.layerGroup().addTo(sruLeafletMap);
+  }
+
+  const bounds = [];
+  const priceIcon = (label) =>
+    L.divIcon({
+      className: "sru-map-marker",
+      html: `<span class="sru-map-bubble">${label}</span>`,
+      iconSize: [88, 28],
+      iconAnchor: [44, 28],
+    });
+
+  filtered.forEach((p) => {
+    const { lat, lng } = getCoords(p);
+    bounds.push([lat, lng]);
+    const btcAmt = btcForOffer(p.offer);
+    const label = btcAmt ? `₿${btcAmt.toFixed(2)}` : formatUSD(p.offer);
+    const marker = L.marker([lat, lng], { icon: priceIcon(label) });
+    marker.bindPopup(
+      `<div class="sru-popup">
+        <strong>${escapeHtml(p.title)}</strong><br/>
+        <span>${escapeHtml(p.location)}</span><br/>
+        <span class="sru-popup-price">${formatUSD(p.offer)}</span>
+        <button type="button" class="sru-popup-btn" data-view="${p.id}">View home</button>
+      </div>`,
+      { maxWidth: 240 }
+    );
+    marker.on("popupopen", () => {
+      document.querySelector(`.sru-popup-btn[data-view="${p.id}"]`)?.addEventListener(
+        "click",
+        () => openProperty(p.id),
+        { once: true }
+      );
+    });
+    sruLeafletLayer.addLayer(marker);
+  });
+
+  if (bounds.length === 1) {
+    sruLeafletMap.setView(bounds[0], 11);
+  } else if (bounds.length > 1) {
+    sruLeafletMap.fitBounds(bounds, { padding: [36, 36], maxZoom: 12 });
+  }
+
+  // Leaflet needs a kick after layout changes (split view)
+  setTimeout(() => {
+    try {
+      sruLeafletMap?.invalidateSize();
+    } catch {
+      /* ignore */
+    }
+  }, 120);
+
+  if (sub) {
+    sub.textContent = `${filtered.length} pin${filtered.length === 1 ? "" : "s"} · live OSM tiles`;
+  }
 }
 
 function renderListings() {
@@ -1134,6 +1244,14 @@ function setViewMode(mode) {
   const layout = $("#marketLayout");
   if (layout) layout.dataset.mode = mode;
   $$(".view-btn").forEach((b) => b.classList.toggle("active", b.dataset.viewMode === mode));
+  // Leaflet needs a resize when map panel becomes visible
+  setTimeout(() => {
+    try {
+      sruLeafletMap?.invalidateSize();
+    } catch {
+      /* ignore */
+    }
+  }, 200);
 }
 
 function getRecentSearches() {
@@ -2949,6 +3067,9 @@ function applyDomainConfig() {
   const cfg = getConfig();
   const email = cfg.contactEmail || "ai@smartrealty.us";
   const siteUrl = (cfg.siteUrl || "").replace(/\/$/, "");
+  const seo = cfg.seo || {};
+  // Public index when seo.index === true (explicit flip)
+  const publicIndex = seo.index === true;
 
   // Mailto + visible email surfaces
   $$('a[href^="mailto:"]').forEach((a) => {
@@ -2967,25 +3088,78 @@ function applyDomainConfig() {
   if (liveLine && liveLink && siteUrl) {
     liveLink.href = siteUrl;
     liveLink.textContent = cfg.canonicalHost || siteUrl.replace(/^https?:\/\//, "");
-    // Show when config host looks intentional
     liveLine.classList.remove("hidden");
   }
 
-  // Document title polish
-  if (cfg.siteName && !document.title.includes(cfg.siteName)) {
-    /* keep existing rich title */
+  // ---- Public SEO flip ----
+  const robots = $("#metaRobots") || document.querySelector('meta[name="robots"]');
+  if (robots) {
+    robots.setAttribute("content", publicIndex ? "index, follow" : "noindex, nofollow");
+  }
+  const canon = $("#canonicalLink") || document.querySelector('link[rel="canonical"]');
+  if (siteUrl && canon) canon.setAttribute("href", siteUrl + "/");
+  const ogUrl = $("#ogUrl");
+  if (ogUrl && siteUrl) ogUrl.setAttribute("content", siteUrl + "/");
+  const ogImage = seo.ogImage || (siteUrl ? siteUrl + "/images/hero-bg.jpg" : "");
+  if (ogImage) {
+    $("#ogImage")?.setAttribute("content", ogImage);
+    $("#twImage")?.setAttribute("content", ogImage);
+  }
+  if (seo.twitterHandle) {
+    let tw = document.querySelector('meta[name="twitter:site"]');
+    if (!tw) {
+      tw = document.createElement("meta");
+      tw.name = "twitter:site";
+      document.head.appendChild(tw);
+    }
+    tw.content = seo.twitterHandle.startsWith("@")
+      ? seo.twitterHandle
+      : `@${seo.twitterHandle}`;
   }
 
-  // Canonical hint for SEO when public later
-  let link = document.querySelector('link[rel="canonical"]');
-  if (siteUrl) {
-    if (!link) {
-      link = document.createElement("link");
-      link.rel = "canonical";
-      document.head.appendChild(link);
-    }
-    link.href = siteUrl + "/";
+  // JSON-LD RealEstateAgent + ItemList of homes (public SEO)
+  const ld = $("#jsonLdOrg");
+  if (ld && publicIndex) {
+    const org = {
+      "@context": "https://schema.org",
+      "@type": "RealEstateAgent",
+      name: cfg.siteName || "Smart Realty USA",
+      url: siteUrl || "https://smartrealty.us",
+      email,
+      telephone: cfg.phoneTel || "+1-800-762-7879",
+      description: cfg.tagline || "Transparent homes. Bitcoin ready.",
+      areaServed: "US",
+      numberOfEmployees: 1,
+      address: cfg.businessAddress
+        ? { "@type": "PostalAddress", streetAddress: cfg.businessAddress, addressRegion: cfg.formationState || "KY", addressCountry: "US" }
+        : undefined,
+    };
+    if (cfg.dunsNumber) org.identifier = cfg.dunsNumber;
+    const list = {
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      name: "Smart Realty USA curated listings",
+      numberOfItems: typeof PROPERTIES !== "undefined" ? PROPERTIES.length : 0,
+      itemListElement: (typeof PROPERTIES !== "undefined" ? PROPERTIES : []).slice(0, 24).map((p, i) => ({
+        "@type": "ListItem",
+        position: i + 1,
+        item: {
+          "@type": "Residence",
+          name: p.title,
+          description: p.desc,
+          address: p.location,
+          url: `${siteUrl || ""}/?home=${p.id}#listings`,
+        },
+      })),
+    };
+    ld.textContent = JSON.stringify([org, list]);
+  } else if (ld && !publicIndex) {
+    ld.remove();
   }
+
+  // Soft-hide heavy DEMO chrome when presenting publicly (badges still if isPrivateDemo)
+  document.body.classList.toggle("seo-public", publicIndex);
+  document.body.classList.toggle("demo-private", !!cfg.isPrivateDemo);
 }
 
 function buildShareEmailText() {

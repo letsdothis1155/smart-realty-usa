@@ -21,3 +21,13 @@ define('SRU_CORS_ORIGIN', '');
 
 // Data directory (users.json) — must be writable by PHP
 define('SRU_DATA_DIR', __DIR__ . '/data');
+
+// ---- Waitlist email notifications (GoDaddy / cPanel mail) ----
+// Owner inbox for new lead alerts (empty = no notify mail)
+define('SRU_NOTIFY_EMAIL', 'ai@smartrealty.us');
+// From address (use a domain mailbox or noreply@yourdomain)
+define('SRU_MAIL_FROM', 'noreply@smartrealty.us');
+// Auto-reply to the person who joined the waitlist
+define('SRU_LEAD_AUTOREPLY', true);
+// Site URL used in emails
+define('SRU_SITE_URL', 'https://smartrealty.us');

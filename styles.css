@@ -1729,6 +1729,76 @@ h4 {
     radial-gradient(ellipse at 70% 60%, rgba(61, 214, 198, 0.08), transparent 45%),
     linear-gradient(160deg, #0e1420 0%, #121a28 40%, #0c1018 100%);
   background-size: 40px 40px, 40px 40px, auto, auto, auto;
+  overflow: hidden;
+  border-radius: 0 0 var(--radius) var(--radius);
+}
+
+/* Leaflet live tiles host */
+.leaflet-host {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: #0e1420;
+}
+.leaflet-container {
+  font: inherit;
+  background: #0e1420;
+  width: 100%;
+  height: 100%;
+}
+.sru-map-marker {
+  background: transparent !important;
+  border: none !important;
+}
+.sru-map-bubble {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 0.28rem 0.55rem;
+  border-radius: 999px;
+  background: rgba(10, 12, 16, 0.92);
+  border: 1px solid rgba(247, 147, 26, 0.55);
+  color: var(--btc);
+  white-space: nowrap;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+  font-variant-numeric: tabular-nums;
+}
+.sru-popup {
+  font-family: var(--font);
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: #1a1a1a;
+  min-width: 160px;
+}
+.sru-popup-price {
+  display: block;
+  font-weight: 800;
+  color: #0b7a4b;
+  margin: 0.25rem 0 0.5rem;
+}
+.sru-popup-btn {
+  display: block;
+  width: 100%;
+  border: 0;
+  border-radius: 8px;
+  padding: 0.45rem 0.6rem;
+  background: #5b8cff;
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+.leaflet-popup-content-wrapper {
+  border-radius: 12px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+}
+.leaflet-control-attribution {
+  font-size: 9px !important;
+  background: rgba(10, 12, 16, 0.75) !important;
+  color: #9aa3b5 !important;
+}
+.leaflet-control-attribution a {
+  color: #8ab4ff !important;
 }
 
 .map-pin {

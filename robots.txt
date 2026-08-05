@@ -1,8 +1,11 @@
-# Private demo: keep noindex until public launch
+# Smart Realty USA — public SEO (domain-config.js seo.index = true)
 User-agent: *
-Disallow: /
+Allow: /
+Disallow: /api/
+Disallow: /account.html
+Disallow: /CUSTOM-DOMAIN-WALKTHROUGH.md
+Disallow: /GODADDY-ORGANIZER.md
+Disallow: /GO-LIVE-CHECKLIST.md
+Disallow: /SHARE-EMAIL.txt
 
-# When going public, switch to:
-# User-agent: *
-# Allow: /
-# Sitemap: https://smartrealty.us/sitemap.xml
+Sitemap: https://smartrealty.us/sitemap.xml

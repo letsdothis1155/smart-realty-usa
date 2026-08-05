@@ -6,21 +6,41 @@
   <title>Smart Realty USA — Exclusive Homes. Transparent Prices. Bitcoin Ready.</title>
   <meta name="description" content="Smart Realty USA — exclusive real estate with transparent Blue Book pricing, Bitcoin checkout, and try-before-you-buy rentals. 24/7 human support." />
   <meta name="theme-color" content="#0a0c10" />
+  <meta name="robots" content="index, follow" id="metaRobots" />
+  <link rel="canonical" href="https://smartrealty.us/" id="canonicalLink" />
   <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://smartrealty.us/" id="ogUrl" />
   <meta property="og:title" content="Smart Realty USA — Transparent luxury real estate" />
-  <meta property="og:description" content="Free House Blue Book valuations, live Bitcoin checkout, and try-before-you-buy stays. Private demo." />
+  <meta property="og:description" content="Free House Blue Book valuations, live Bitcoin checkout, and try-before-you-buy stays." />
   <meta property="og:site_name" content="Smart Realty USA" />
+  <meta property="og:image" content="https://smartrealty.us/images/hero-bg.jpg" id="ogImage" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Smart Realty USA" />
   <meta name="twitter:description" content="Transparent prices. Bitcoin ready. 24/7 human support." />
+  <meta name="twitter:image" content="https://smartrealty.us/images/hero-bg.jpg" id="twImage" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet" />
+  <!-- Live map tiles (OpenStreetMap via Leaflet) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
   <link rel="stylesheet" href="styles.css" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏡</text></svg>" />
   <!-- Edit domain-config.js when going live on a custom domain -->
   <script src="domain-config.js"></script>
   <script src="js/auth-client.js"></script>
+  <script type="application/ld+json" id="jsonLdOrg">
+  {
+    "@context": "https://schema.org",
+    "@type": "RealEstateAgent",
+    "name": "Smart Realty USA",
+    "url": "https://smartrealty.us",
+    "email": "ai@smartrealty.us",
+    "telephone": "+1-800-762-7879",
+    "description": "Transparent residential real estate with House Blue Book pricing and Bitcoin-ready checkout.",
+    "areaServed": "US",
+    "sameAs": []
+  }
+  </script>
 </head>
 <body>
   <!-- Access gate — redirects to auth.html for full sign-in / create account -->
@@ -414,12 +434,12 @@
           <aside class="market-map glass" id="marketMap" aria-label="Listing map">
             <div class="map-head">
               <strong>Explore map</strong>
-              <span class="map-sub" id="mapSub">Live pins · demo coordinates</span>
+              <span class="map-sub" id="mapSub">Live OSM tiles · listing pins</span>
             </div>
             <div class="map-canvas" id="mapCanvas">
-              <!-- Pins injected by JS -->
+              <!-- Leaflet map + pins -->
             </div>
-            <p class="map-footnote">Demo map — production connects MLS + real geocoding.</p>
+            <p class="map-footnote">© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> · pins are demo coordinates</p>
           </aside>
         </div>
       </div>
@@ -1019,6 +1039,7 @@
   <!-- Toast -->
   <div class="toast hidden" id="toast" role="status"></div>
 
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <script src="app.js"></script>
 </body>
 </html>
