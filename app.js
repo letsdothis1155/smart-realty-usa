@@ -957,7 +957,7 @@ function initGrowthMarkets() {
       if (q) {
         q.value = btn.dataset.search;
         searchState.query = btn.dataset.search;
-        pushRecent(btn.dataset.search);
+        saveRecentSearch(btn.dataset.search);
         renderListings();
         document.getElementById("listings")?.scrollIntoView({ behavior: "smooth" });
       }
