@@ -175,7 +175,34 @@
     }
   });
 
+  $("#forgotForm")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    clearMsgs();
+    const btn = $("#forgotBtn");
+    const result = $("#forgotResult");
+    setBusy(btn, true);
+    try {
+      if (!window.SRU_AUTH.apiBase()) {
+        throw new Error("Forgot-password needs the accounts API (GoDaddy api/ folder).");
+      }
+      const data = await window.SRU_AUTH.forgotPassword($("#forgotEmail").value);
+      showStatus(data.message || "Check your email.");
+      if (data.resetPath) {
+        const link = data.resetPath.startsWith("http")
+          ? data.resetPath
+          : new URL(data.resetPath, location.origin).href;
+        result.innerHTML = `Demo reset link:<br><a href="${link}">${link}</a>`;
+        result.classList.remove("hidden");
+      }
+    } catch (err) {
+      showError(err.message);
+      result?.classList.add("hidden");
+    } finally {
+      setBusy(btn, false);
+    }
+  });
+
   // Deep-link ?tab=signup
   const tab = params.get("tab");
-  if (tab === "signup" || tab === "demo" || tab === "signin") switchTab(tab);
+  if (tab === "signup" || tab === "demo" || tab === "signin" || tab === "forgot") switchTab(tab);
 })();

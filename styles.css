@@ -4340,3 +4340,177 @@ body:has(.compare-bar:not(.hidden)) {
   font-size: 0.75rem;
   padding: 0.35rem 0.65rem;
 }
+
+/* ===== Growth x3: markets, waitlist, account ===== */
+.growth-markets {
+  padding: 2.5rem 0 1rem;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(180deg, rgba(91, 140, 255, 0.06), transparent);
+}
+.growth-markets-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  align-items: end;
+}
+.growth-markets-head h2 {
+  font-family: var(--serif);
+  font-size: clamp(1.4rem, 3vw, 1.85rem);
+}
+.growth-markets-sub {
+  max-width: 360px;
+  color: var(--text-muted);
+  font-size: 0.92rem;
+}
+.growth-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+.growth-chip {
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  color: var(--text-muted);
+  padding: 0.45rem 0.9rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.growth-chip:hover {
+  border-color: rgba(91, 140, 255, 0.45);
+  color: var(--text);
+  background: var(--primary-soft);
+}
+.growth-kpi {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 0.75rem;
+}
+.growth-kpi-item {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.85rem 1rem;
+}
+.growth-kpi-item strong {
+  display: block;
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--accent);
+}
+.growth-kpi-item span {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+}
+
+.waitlist-band {
+  padding: 0 0 2rem;
+}
+.waitlist-card {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 1.25rem;
+  padding: 1.5rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  align-items: center;
+}
+@media (max-width: 800px) {
+  .waitlist-card { grid-template-columns: 1fr; }
+}
+.waitlist-card h3 {
+  font-size: 1.25rem;
+  margin-bottom: 0.35rem;
+}
+.waitlist-sub {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+.waitlist-form {
+  display: grid;
+  gap: 0.55rem;
+}
+.waitlist-form input {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.7rem 0.85rem;
+  color: var(--text);
+  outline: none;
+}
+.waitlist-form input:focus {
+  border-color: rgba(91, 140, 255, 0.55);
+  box-shadow: 0 0 0 3px var(--primary-soft);
+}
+.waitlist-msg {
+  grid-column: 1 / -1;
+  font-size: 0.88rem;
+  color: var(--gold);
+}
+.waitlist-msg.ok { color: var(--success); }
+
+.auth-tabs-4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+.auth-tabs-4 .auth-tab {
+  font-size: 0.72rem;
+  padding: 0.5rem 0.25rem;
+}
+
+.account-shell { max-width: 920px; }
+.account-profile { margin-bottom: 1rem; }
+.account-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.55rem;
+  margin-bottom: 1.25rem;
+}
+.account-stat {
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem;
+  text-align: center;
+}
+.account-stat strong {
+  display: block;
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+.account-stat span {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+}
+.account-section {
+  margin-bottom: 1.25rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border);
+}
+.account-section h3 {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}
+.account-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1rem;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+}
+.account-links a, .account-links .linkish {
+  color: var(--primary);
+}
+.p-meta {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-top: 0.15rem;
+}

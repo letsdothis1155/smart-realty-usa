@@ -43,10 +43,11 @@
     </aside>
 
     <main class="auth-panel glass">
-      <div class="auth-tabs" role="tablist">
+      <div class="auth-tabs auth-tabs-4" role="tablist">
         <button type="button" class="auth-tab is-active" data-tab="signin" role="tab" aria-selected="true">Sign in</button>
-        <button type="button" class="auth-tab" data-tab="signup" role="tab" aria-selected="false">Create account</button>
-        <button type="button" class="auth-tab" data-tab="demo" role="tab" aria-selected="false">Demo access</button>
+        <button type="button" class="auth-tab" data-tab="signup" role="tab" aria-selected="false">Create</button>
+        <button type="button" class="auth-tab" data-tab="forgot" role="tab" aria-selected="false">Forgot</button>
+        <button type="button" class="auth-tab" data-tab="demo" role="tab" aria-selected="false">Demo</button>
       </div>
 
       <p class="auth-status hidden" id="authStatus" role="status"></p>
@@ -69,7 +70,10 @@
           <span>Keep me signed in on this device</span>
         </label>
         <button type="submit" class="btn btn-primary btn-block" id="signinBtn">Sign in</button>
-        <p class="auth-switch">New here? <button type="button" class="linkish" data-goto="signup">Create an account</button></p>
+        <p class="auth-switch">
+          New here? <button type="button" class="linkish" data-goto="signup">Create an account</button>
+          · <button type="button" class="linkish" data-goto="forgot">Forgot password?</button>
+        </p>
       </form>
 
       <!-- Sign up -->
@@ -117,6 +121,22 @@
         </label>
         <button type="submit" class="btn btn-primary btn-block" id="demoBtn">Unlock demo</button>
         <p class="auth-switch">Want your own login? <button type="button" class="linkish" data-goto="signup">Create an account</button></p>
+      </form>
+
+      <!-- Forgot password -->
+      <form id="forgotForm" class="auth-form hidden" data-panel="forgot" autocomplete="on">
+        <h2>Forgot password</h2>
+        <p class="auth-lead">
+          Enter your account email. On GoDaddy the API issues a one-time reset link
+          (demo returns the link on-screen; production should email it).
+        </p>
+        <label>
+          Email
+          <input type="email" id="forgotEmail" required autocomplete="email" placeholder="you@email.com" />
+        </label>
+        <button type="submit" class="btn btn-primary btn-block" id="forgotBtn">Send reset link</button>
+        <p class="auth-switch"><button type="button" class="linkish" data-goto="signin">Back to sign in</button></p>
+        <p class="auth-status hidden" id="forgotResult"></p>
       </form>
 
       <p class="auth-api-hint" id="apiHint">Checking auth service…</p>

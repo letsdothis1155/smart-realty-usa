@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Your account — Smart Realty USA</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="theme-color" content="#0a0c10" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <script src="domain-config.js"></script>
+  <script src="js/auth-client.js"></script>
+</head>
+<body class="auth-page account-page">
+  <div class="ambient ambient-1" aria-hidden="true"></div>
+  <div class="auth-shell account-shell">
+    <aside class="auth-brand glass">
+      <a href="index.html" class="logo">
+        <span class="logo-mark">SR</span>
+        <span class="logo-text"><strong>Smart Realty</strong><small>USA</small></span>
+      </a>
+      <p class="auth-brand-badge">MEMBER HUB</p>
+      <h1>Your account</h1>
+      <p class="auth-brand-copy">Manage password, see saved activity on this device, and jump back into listings.</p>
+      <a class="btn btn-outline" href="index.html#listings">← Back to homes</a>
+    </aside>
+
+    <main class="auth-panel glass">
+      <div id="accountGuest" class="hidden">
+        <h2>Sign in required</h2>
+        <p class="auth-lead">Create an account or sign in to manage your profile.</p>
+        <a class="btn btn-primary btn-block" href="auth.html?next=account.html">Sign in / Create account</a>
+      </div>
+
+      <div id="accountMember" class="hidden">
+        <div class="profile-card account-profile">
+          <div class="avatar" id="accAvatar">SR</div>
+          <div>
+            <div class="p-name" id="accName">—</div>
+            <div class="p-email" id="accEmail">—</div>
+            <div class="p-meta" id="accRole">member</div>
+          </div>
+        </div>
+
+        <div class="account-stats" id="accStats"></div>
+
+        <section class="account-section hidden" id="resetSection">
+          <h3>Reset password</h3>
+          <p class="auth-lead">Use the one-time link from forgot-password.</p>
+          <form id="resetForm" class="auth-form">
+            <label>New password
+              <input type="password" id="resetPw" minlength="8" required autocomplete="new-password" />
+            </label>
+            <label>Confirm
+              <input type="password" id="resetPw2" minlength="8" required autocomplete="new-password" />
+            </label>
+            <button type="submit" class="btn btn-primary btn-block">Set new password</button>
+          </form>
+        </section>
+
+        <section class="account-section" id="changeSection">
+          <h3>Change password</h3>
+          <form id="changeForm" class="auth-form">
+            <label>Current password
+              <input type="password" id="curPw" required autocomplete="current-password" />
+            </label>
+            <label>New password
+              <input type="password" id="newPw" minlength="8" required autocomplete="new-password" />
+            </label>
+            <label>Confirm new password
+              <input type="password" id="newPw2" minlength="8" required autocomplete="new-password" />
+            </label>
+            <button type="submit" class="btn btn-primary btn-block">Update password</button>
+          </form>
+        </section>
+
+        <p class="auth-error hidden" id="accError"></p>
+        <p class="auth-status hidden" id="accStatus"></p>
+
+        <div class="account-links">
+          <a href="index.html#listings">Browse homes</a>
+          <a href="auth.html?tab=demo">Demo access</a>
+          <button type="button" class="linkish" id="accSignOut">Sign out</button>
+        </div>
+      </div>
+    </main>
+  </div>
+  <script src="js/account-page.js"></script>
+</body>
+</html>

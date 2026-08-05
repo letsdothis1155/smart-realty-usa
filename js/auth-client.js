@@ -44,6 +44,10 @@
       login: php ? "/api/auth/login.php" : "/api/auth/login",
       demo: php ? "/api/auth/demo.php" : "/api/auth/demo",
       me: php ? "/api/auth/me.php" : "/api/auth/me",
+      changePassword: php ? "/api/auth/change-password.php" : "/api/auth/change-password",
+      forgotPassword: php ? "/api/auth/forgot-password.php" : "/api/auth/forgot-password",
+      resetPassword: php ? "/api/auth/reset-password.php" : "/api/auth/reset-password",
+      leads: php ? "/api/leads.php" : "/api/leads",
       health: php ? "/api/health.php" : "/health",
     };
     return map[name] || name;
@@ -194,6 +198,36 @@
     }
   }
 
+  async function changePassword({ currentPassword, newPassword }) {
+    return api(ep("changePassword"), {
+      method: "POST",
+      body: { currentPassword, newPassword },
+    });
+  }
+
+  async function forgotPassword(email) {
+    return api(ep("forgotPassword"), {
+      method: "POST",
+      body: { email },
+    });
+  }
+
+  async function resetPassword({ email, token, password, remember }) {
+    const data = await api(ep("resetPassword"), {
+      method: "POST",
+      body: { email, token, password },
+    });
+    if (data.token) saveSession(data.token, data.user, !!remember);
+    return data;
+  }
+
+  async function submitLead({ email, name, source, interest }) {
+    return api(ep("leads"), {
+      method: "POST",
+      body: { email, name, source, interest },
+    });
+  }
+
   function isSignedIn() {
     return !!getToken();
   }
@@ -221,6 +255,10 @@
     login,
     demoLogin,
     me,
+    changePassword,
+    forgotPassword,
+    resetPassword,
+    submitLead,
     isSignedIn,
     logout,
     authPageUrl,

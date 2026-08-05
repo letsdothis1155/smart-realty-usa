@@ -330,6 +330,120 @@ const PROPERTIES = [
     lng: -87.63,
     desc: "River-facing penthouse with private elevator, skyline terrace, and Bitcoin escrow-ready close.",
   },
+  {
+    id: "sr-019",
+    title: "Louisville Highlands Brownstone",
+    location: "Louisville, KY 40204",
+    image: "images/mansion-5.jpg",
+    beds: 4,
+    baths: 3,
+    sqft: 2680,
+    listPrice: 625000,
+    blueBook: 598000,
+    offer: 575000,
+    tags: ["family", "modern"],
+    rentable: true,
+    nightly: 185,
+    creditPercent: 100,
+    lat: 38.23,
+    lng: -85.72,
+    desc: "Brick brownstone in the Highlands — walkable restaurants, dual parlor, smart-home wiring, and transparent Blue Book vs comps.",
+  },
+  {
+    id: "sr-020",
+    title: "Portland Alberta Arts Bungalow",
+    location: "Portland, OR 97211",
+    image: "images/mansion-7.jpg",
+    beds: 3,
+    baths: 2,
+    sqft: 1720,
+    listPrice: 689000,
+    blueBook: 662000,
+    offer: 639000,
+    tags: ["family", "modern"],
+    rentable: true,
+    nightly: 210,
+    creditPercent: 90,
+    lat: 45.56,
+    lng: -122.65,
+    desc: "Craftsman bungalow near Alberta Arts — ADU-ready backyard, EV charger pre-wire, BTC-friendly close options.",
+  },
+  {
+    id: "sr-021",
+    title: "Charlotte NoDa Loft",
+    location: "Charlotte, NC 28205",
+    image: "images/mansion-1.jpg",
+    beds: 2,
+    baths: 2,
+    sqft: 1180,
+    listPrice: 449000,
+    blueBook: 432000,
+    offer: 415000,
+    tags: ["modern", "family"],
+    rentable: true,
+    nightly: 165,
+    creditPercent: 85,
+    lat: 35.25,
+    lng: -80.81,
+    desc: "Industrial loft with gallery windows, rooftop access, and walk-to-breweries energy. Lowest offer locked in.",
+  },
+  {
+    id: "sr-022",
+    title: "Phoenix Arcadia Pool Home",
+    location: "Phoenix, AZ 85018",
+    image: "images/mansion-4.jpg",
+    beds: 4,
+    baths: 3,
+    sqft: 2450,
+    listPrice: 925000,
+    blueBook: 889000,
+    offer: 855000,
+    tags: ["family", "vegas", "modern"],
+    rentable: true,
+    nightly: 275,
+    creditPercent: 95,
+    lat: 33.5,
+    lng: -111.98,
+    desc: "Arcadia ranch with sparkling pool, citrus grove, and mountain light. Try-before-buy available.",
+  },
+  {
+    id: "sr-023",
+    title: "Brooklyn Brownstone Duplex",
+    location: "Brooklyn, NY 11217",
+    image: "images/mansion-3.jpg",
+    beds: 5,
+    baths: 3.5,
+    sqft: 3200,
+    listPrice: 2895000,
+    blueBook: 2780000,
+    offer: 2685000,
+    tags: ["family", "mansion", "waterfront"],
+    rentable: false,
+    nightly: 0,
+    creditPercent: 0,
+    lat: 40.68,
+    lng: -73.98,
+    desc: "Owner duplex near Prospect Park — garden level + parlor, restored moldings, transparent fee stack.",
+  },
+  {
+    id: "sr-024",
+    title: "Lexington Horse-Country Estate",
+    location: "Lexington, KY 40502",
+    image: "images/mansion-8.jpg",
+    beds: 6,
+    baths: 5,
+    sqft: 5200,
+    listPrice: 1875000,
+    blueBook: 1795000,
+    offer: 1725000,
+    tags: ["mansion", "family"],
+    rentable: true,
+    nightly: 650,
+    creditPercent: 70,
+    lat: 38.04,
+    lng: -84.5,
+    desc: "Horse-country estate with barn, guest cottage, and long drive. Kentucky-proud Smart Realty flagship demo home.",
+  },
 ];
 
 // Approximate map positions for estate listings without explicit coords
@@ -342,6 +456,12 @@ const DEFAULT_COORDS = {
   "sr-006": { lat: 36.12, lng: -115.17 },
   "sr-007": { lat: 33.49, lng: -111.92 },
   "sr-008": { lat: 39.1, lng: -120.03 },
+  "sr-019": { lat: 38.23, lng: -85.72 },
+  "sr-020": { lat: 45.56, lng: -122.65 },
+  "sr-021": { lat: 35.25, lng: -80.81 },
+  "sr-022": { lat: 33.5, lng: -111.98 },
+  "sr-023": { lat: 40.68, lng: -73.98 },
+  "sr-024": { lat: 38.04, lng: -84.5 },
 };
 
 const RECENT_KEY = "sru_recent_searches";
@@ -768,12 +888,32 @@ function openCompareModal() {
   document.body.style.overflow = "hidden";
 }
 
-async function shareListing(p) {
+async function shareListing(p, channel) {
   const cfg = getConfig();
   const base = (cfg.siteUrl || window.location.href.split("#")[0]).replace(/\/$/, "");
-  const url = `${base}/#listings`;
+  const url = `${base}/?home=${encodeURIComponent(p.id)}#listings`;
   const btc = btcRate ? ` · ${formatBTC(p.offer / btcRate)}` : "";
   const text = `${p.title} — ${formatUSD(p.offer)}${btc}\n${p.location}\nBlue Book ${formatUSD(p.blueBook)} · Save ${savingsPct(p)}%\n${url}`;
+  const intent = channel || "auto";
+
+  if (intent === "x" || intent === "twitter") {
+    const tw = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
+      `${p.title} · ${formatUSD(p.offer)} · Smart Realty Blue Book`
+    )}&url=${encodeURIComponent(url)}`;
+    window.open(tw, "_blank", "noopener,width=560,height=480");
+    toast("Share on X opened.");
+    return;
+  }
+  if (intent === "copy" || intent === "link") {
+    try {
+      await navigator.clipboard.writeText(url);
+      toast("Listing link copied.");
+    } catch {
+      toast("Copy failed.");
+    }
+    return;
+  }
+
   try {
     if (navigator.share) {
       await navigator.share({ title: p.title, text, url });
@@ -781,13 +921,114 @@ async function shareListing(p) {
       return;
     }
   } catch {
-    /* fall through to clipboard */
+    /* fall through */
   }
   try {
     await navigator.clipboard.writeText(text);
     toast("Listing summary copied — paste anywhere.");
   } catch {
     toast("Could not share — copy failed.");
+  }
+}
+
+function initGrowthMarkets() {
+  const chips = $("#growthMarketChips");
+  const kpis = $("#growthKpis");
+  if (!chips || !kpis) return;
+
+  const cities = [
+    ...new Set(
+      PROPERTIES.map((p) => {
+        const parts = (p.location || "").split(",");
+        return (parts[parts.length - 2] || parts[0] || "").trim().replace(/\d+/g, "").trim();
+      }).filter(Boolean)
+    ),
+  ].slice(0, 14);
+
+  chips.innerHTML = cities
+    .map(
+      (c) =>
+        `<button type="button" class="growth-chip" data-search="${escapeAttr(c)}">${escapeHtml(c)}</button>`
+    )
+    .join("");
+  chips.querySelectorAll("[data-search]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const q = $("#searchQuery");
+      if (q) {
+        q.value = btn.dataset.search;
+        searchState.query = btn.dataset.search;
+        pushRecent(btn.dataset.search);
+        renderListings();
+        document.getElementById("listings")?.scrollIntoView({ behavior: "smooth" });
+      }
+    });
+  });
+
+  const offers = PROPERTIES.map((p) => p.offer);
+  const avg = offers.reduce((a, b) => a + b, 0) / offers.length;
+  const rentable = PROPERTIES.filter((p) => p.rentable).length;
+  const saved = Math.round(
+    PROPERTIES.reduce((a, p) => a + (p.listPrice - p.offer), 0) / PROPERTIES.length
+  );
+  kpis.innerHTML = `
+    <div class="growth-kpi-item"><strong>${PROPERTIES.length}</strong><span>Listings</span></div>
+    <div class="growth-kpi-item"><strong>${cities.length}+</strong><span>Markets</span></div>
+    <div class="growth-kpi-item"><strong>${formatUSD(avg)}</strong><span>Avg offer</span></div>
+    <div class="growth-kpi-item"><strong>${rentable}</strong><span>Try-before-buy</span></div>
+    <div class="growth-kpi-item"><strong>${formatUSD(saved)}</strong><span>Avg list→offer save</span></div>
+  `;
+}
+
+function initWaitlist() {
+  const form = $("#waitlistForm");
+  if (!form) return;
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const msg = $("#waitlistMsg");
+    const btn = $("#waitlistBtn");
+    const email = $("#waitlistEmail")?.value?.trim();
+    const name = $("#waitlistName")?.value?.trim() || "";
+    if (!email) return;
+    btn.disabled = true;
+    const prev = btn.textContent;
+    btn.textContent = "Joining…";
+    try {
+      if (window.SRU_AUTH?.submitLead && window.SRU_AUTH.apiBase()) {
+        const data = await window.SRU_AUTH.submitLead({
+          email,
+          name,
+          source: "homepage_waitlist",
+          interest: "launch_updates",
+        });
+        msg.textContent = data.message || "You're on the list.";
+      } else {
+        // Offline / static preview — store locally
+        const key = "sru_waitlist_local";
+        const list = JSON.parse(localStorage.getItem(key) || "[]");
+        if (!list.includes(email)) list.push(email);
+        localStorage.setItem(key, JSON.stringify(list));
+        msg.textContent = "Saved on this device (API offline). On GoDaddy, leads hit api/leads.php.";
+      }
+      msg.classList.remove("hidden");
+      msg.classList.add("ok");
+      form.reset();
+      toast("Waitlist joined.");
+    } catch (err) {
+      msg.textContent = err.message || "Could not join — try again.";
+      msg.classList.remove("hidden");
+      msg.classList.remove("ok");
+    } finally {
+      btn.disabled = false;
+      btn.textContent = prev;
+    }
+  });
+}
+
+function openDeepLinkedHome() {
+  const params = new URLSearchParams(location.search);
+  const home = params.get("home");
+  if (home && PROPERTIES.some((p) => p.id === home)) {
+    setTimeout(() => openProperty(home), 400);
   }
 }
 
@@ -1584,6 +1825,8 @@ function openProperty(id) {
             : ""
         }
         <button class="btn btn-ghost" type="button" id="shareProperty">Share</button>
+        <button class="btn btn-ghost" type="button" id="sharePropertyX" title="Share on X">Share 𝕏</button>
+        <button class="btn btn-ghost" type="button" id="sharePropertyLink" title="Copy link">Copy link</button>
         <button class="btn btn-ghost" type="button" id="favFromModal" data-fav="${p.id}">${fav ? "♥ Saved" : "♡ Save"}</button>
         <button class="btn btn-ghost" type="button" id="compareFromModal" data-compare-btn="${p.id}">${compareSet.has(p.id) ? "✓ In compare" : "＋ Compare"}</button>
         <button class="btn btn-ghost" type="button" id="askAboutProperty">Ask Live Human</button>
@@ -1597,6 +1840,8 @@ function openProperty(id) {
     openChat(`I'm interested in ${p.title}. Can you walk me through Blue Book pricing and Bitcoin checkout?`);
   });
   $("#shareProperty")?.addEventListener("click", () => shareListing(p));
+  $("#sharePropertyX")?.addEventListener("click", () => shareListing(p, "x"));
+  $("#sharePropertyLink")?.addEventListener("click", () => shareListing(p, "copy"));
   $("#compareFromModal")?.addEventListener("click", () => {
     toggleCompare(p.id);
     openProperty(p.id); // refresh labels
@@ -2880,6 +3125,10 @@ document.addEventListener("DOMContentLoaded", () => {
   // Hero count reflects live inventory
   const stat = $("#statListings");
   if (stat) stat.textContent = `${PROPERTIES.length}+`;
+
+  initGrowthMarkets();
+  initWaitlist();
+  openDeepLinkedHome();
 
   // Show DUNS in footer if configured
   const cfg = getConfig();
