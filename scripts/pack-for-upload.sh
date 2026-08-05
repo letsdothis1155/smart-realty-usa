@@ -14,7 +14,7 @@ echo "→ Staging from: $ROOT"
 mkdir -p "$STAGING/images"
 
 # Core site files
-for f in index.html auth.html account.html styles.css app.js domain-config.js robots.txt sitemap.xml .htaccess .htpasswd CNAME; do
+for f in index.html auth.html account.html admin.html styles.css app.js domain-config.js robots.txt sitemap.xml .htaccess .htpasswd CNAME; do
   if [[ -f "$ROOT/$f" ]]; then
     cp "$ROOT/$f" "$STAGING/"
     echo "  + $f"
@@ -40,6 +40,7 @@ if [[ -d "$ROOT/api" ]]; then
     [[ -f "$ROOT/api/auth/$f" ]] && cp "$ROOT/api/auth/$f" "$STAGING/api/auth/"
   done
   [[ -f "$ROOT/api/leads.php" ]] && cp "$ROOT/api/leads.php" "$STAGING/api/"
+  [[ -f "$ROOT/api/leads-list.php" ]] && cp "$ROOT/api/leads-list.php" "$STAGING/api/"
   [[ -f "$ROOT/api/data/.htaccess" ]] && cp "$ROOT/api/data/.htaccess" "$STAGING/api/data/"
   [[ -f "$ROOT/api/data/.gitkeep" ]] && cp "$ROOT/api/data/.gitkeep" "$STAGING/api/data/"
   # never ship live user DB

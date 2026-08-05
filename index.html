@@ -427,6 +427,14 @@
 
         <div class="market-stats" id="marketStats" aria-live="polite"></div>
 
+        <div class="recent-views glass hidden" id="recentViews">
+          <div class="recent-views-head">
+            <strong>Recently viewed</strong>
+            <button type="button" class="btn btn-ghost btn-sm" id="clearRecentViews">Clear</button>
+          </div>
+          <div class="recent-views-rail" id="recentViewsRail"></div>
+        </div>
+
         <div class="market-layout" id="marketLayout" data-mode="grid">
           <div class="listings-grid" id="listingsGrid">
             <!-- Filled by JS -->
@@ -784,6 +792,33 @@
               </div>
             </a>
           </div>
+
+          <form id="contactLeadForm" class="contact-lead-form glass">
+            <h3>Request a callback / info</h3>
+            <p class="contact-lead-sub">We’ll add you to the concierge list — same pipeline as the waitlist.</p>
+            <div class="form-row">
+              <label>Name
+                <input type="text" id="contactName" autocomplete="name" placeholder="Your name" />
+              </label>
+              <label>Email
+                <input type="email" id="contactEmail" required autocomplete="email" placeholder="you@email.com" />
+              </label>
+            </div>
+            <label>What do you need?
+              <select id="contactInterest">
+                <option value="callback">Phone callback</option>
+                <option value="bluebook">Blue Book help</option>
+                <option value="bitcoin">Bitcoin checkout</option>
+                <option value="rental">Try-before-buy stay</option>
+                <option value="general">General question</option>
+              </select>
+            </label>
+            <label>Message (optional)
+              <textarea id="contactMsg" rows="3" placeholder="Tell us which home or city…"></textarea>
+            </label>
+            <button type="submit" class="btn btn-primary" id="contactLeadBtn">Send to concierge</button>
+            <p class="waitlist-msg hidden" id="contactLeadMsg" role="status"></p>
+          </form>
         </div>
         <div class="support-visual glass">
           <div class="agent-card">

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin · Leads — Smart Realty USA</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="theme-color" content="#0a0c10" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <script src="domain-config.js"></script>
+  <script src="js/auth-client.js"></script>
+</head>
+<body class="auth-page admin-page">
+  <div class="ambient ambient-1" aria-hidden="true"></div>
+  <div class="admin-shell">
+    <header class="admin-top">
+      <a href="index.html" class="logo">
+        <span class="logo-mark">SR</span>
+        <span class="logo-text"><strong>Smart Realty</strong><small>Admin</small></span>
+      </a>
+      <div class="admin-top-actions">
+        <span class="admin-pill" id="adminStatus">Locked</span>
+        <a class="btn btn-ghost btn-sm" href="index.html">Site</a>
+      </div>
+    </header>
+
+    <section class="admin-card glass" id="loginCard">
+      <h1>Leads dashboard</h1>
+      <p class="auth-lead">Enter the admin password from <code>api/config.php</code> (<code>SRU_ADMIN_PASSWORD</code>).</p>
+      <form id="adminLogin" class="auth-form">
+        <label>Admin password
+          <input type="password" id="adminPass" required autocomplete="current-password" />
+        </label>
+        <button type="submit" class="btn btn-primary btn-block">Unlock leads</button>
+      </form>
+      <p class="auth-error hidden" id="adminErr"></p>
+    </section>
+
+    <section class="admin-card glass hidden" id="leadsCard">
+      <div class="admin-leads-head">
+        <div>
+          <h2>Waitlist leads</h2>
+          <p class="auth-lead" id="leadsCount">0 leads</p>
+        </div>
+        <div class="admin-leads-actions">
+          <button type="button" class="btn btn-ghost btn-sm" id="refreshLeads">↻ Refresh</button>
+          <button type="button" class="btn btn-outline btn-sm" id="exportCsv">Export CSV</button>
+          <button type="button" class="btn btn-ghost btn-sm" id="lockAdmin">Lock</button>
+        </div>
+      </div>
+      <div class="admin-table-wrap">
+        <table class="admin-table" id="leadsTable">
+          <thead>
+            <tr>
+              <th>When (UTC)</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Source</th>
+              <th>Interest</th>
+            </tr>
+          </thead>
+          <tbody id="leadsBody"></tbody>
+        </table>
+      </div>
+      <p class="admin-foot">Stored in <code>api/data/leads.json</code> on the server. Change admin password before public share.</p>
+    </section>
+  </div>
+  <script src="js/admin-page.js"></script>
+</body>
+</html>

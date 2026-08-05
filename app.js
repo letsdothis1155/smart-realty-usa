@@ -1935,6 +1935,32 @@ function openProperty(id) {
         }</strong>
         ${btcRate ? `at ${formatUsdPrecise(btcRate)} / BTC (best live rate)` : "· fetching market rates…"}
       </p>
+      <div class="pay-estimator glass" id="payEstimator" data-price="${p.offer}">
+        <h4>Payment estimator <span class="pay-est-tag">demo</span></h4>
+        <div class="pay-est-row">
+          <label>Down payment %
+            <input type="range" id="payDown" min="5" max="50" value="20" />
+            <span id="payDownLabel">20%</span>
+          </label>
+          <label>Rate %
+            <input type="range" id="payRate" min="3" max="10" step="0.1" value="6.5" />
+            <span id="payRateLabel">6.5%</span>
+          </label>
+          <label>Term
+            <select id="payTerm">
+              <option value="15">15 years</option>
+              <option value="30" selected>30 years</option>
+            </select>
+          </label>
+        </div>
+        <div class="pay-est-results">
+          <div><span>Down</span><strong id="payDownAmt">—</strong></div>
+          <div><span>Loan</span><strong id="payLoanAmt">—</strong></div>
+          <div class="offer"><span>Est. monthly*</span><strong id="payMonthly">—</strong></div>
+          <div><span>≈ BTC / mo</span><strong id="payMonthlyBtc" style="color:var(--btc)">—</strong></div>
+        </div>
+        <p class="pay-est-note">*Illustrative P&amp;I only — not a loan offer. Taxes/insurance extra.</p>
+      </div>
       <div class="modal-actions">
         <button class="btn btn-btc" type="button" data-btc="${p.id}">₿ Purchase with Bitcoin</button>
         ${
@@ -1953,6 +1979,9 @@ function openProperty(id) {
   $("#propertyModal").classList.remove("hidden");
   document.body.style.overflow = "hidden";
 
+  pushRecentView(p.id);
+  wirePayEstimator(p.offer);
+
   $("#askAboutProperty")?.addEventListener("click", () => {
     closeModals();
     openChat(`I'm interested in ${p.title}. Can you walk me through Blue Book pricing and Bitcoin checkout?`);
@@ -1963,6 +1992,131 @@ function openProperty(id) {
   $("#compareFromModal")?.addEventListener("click", () => {
     toggleCompare(p.id);
     openProperty(p.id); // refresh labels
+  });
+}
+
+function wirePayEstimator(price) {
+  const down = $("#payDown");
+  const rate = $("#payRate");
+  const term = $("#payTerm");
+  if (!down || !rate || !term) return;
+
+  const update = () => {
+    const dPct = Number(down.value) || 20;
+    const rPct = Number(rate.value) || 6.5;
+    const years = Number(term.value) || 30;
+    $("#payDownLabel").textContent = `${dPct}%`;
+    $("#payRateLabel").textContent = `${rPct}%`;
+    const downAmt = price * (dPct / 100);
+    const loan = Math.max(0, price - downAmt);
+    const monthly = mortgagePI(loan, rPct, years);
+    $("#payDownAmt").textContent = formatUSD(downAmt);
+    $("#payLoanAmt").textContent = formatUSD(loan);
+    $("#payMonthly").textContent = formatUSD(monthly);
+    if (btcRate && monthly > 0) {
+      $("#payMonthlyBtc").textContent = formatBTC(monthly / btcRate);
+    } else {
+      $("#payMonthlyBtc").textContent = "—";
+    }
+  };
+  down.addEventListener("input", update);
+  rate.addEventListener("input", update);
+  term.addEventListener("change", update);
+  update();
+}
+
+/** Standard P&I mortgage payment */
+function mortgagePI(principal, annualRatePct, years) {
+  if (principal <= 0) return 0;
+  const r = annualRatePct / 100 / 12;
+  const n = years * 12;
+  if (r === 0) return principal / n;
+  return (principal * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
+}
+
+const RECENT_VIEWS_KEY = "sru_recent_views";
+
+function getRecentViews() {
+  try {
+    return JSON.parse(localStorage.getItem(RECENT_VIEWS_KEY) || "[]").filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+function pushRecentView(id) {
+  const next = [id, ...getRecentViews().filter((x) => x !== id)].slice(0, 8);
+  localStorage.setItem(RECENT_VIEWS_KEY, JSON.stringify(next));
+  renderRecentViews();
+}
+
+function renderRecentViews() {
+  const wrap = $("#recentViews");
+  const rail = $("#recentViewsRail");
+  if (!wrap || !rail) return;
+  const ids = getRecentViews();
+  const items = ids.map((id) => PROPERTIES.find((p) => p.id === id)).filter(Boolean);
+  if (!items.length) {
+    wrap.classList.add("hidden");
+    rail.innerHTML = "";
+    return;
+  }
+  wrap.classList.remove("hidden");
+  rail.innerHTML = items
+    .map(
+      (p) => `
+    <button type="button" class="recent-view-card" data-view="${p.id}">
+      <img src="${p.image}" alt="" loading="lazy" />
+      <div>
+        <strong>${escapeHtml(p.title)}</strong>
+        <span>${formatUSD(p.offer)}</span>
+      </div>
+    </button>`
+    )
+    .join("");
+}
+
+function initContactLeadForm() {
+  const form = $("#contactLeadForm");
+  if (!form) return;
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const msg = $("#contactLeadMsg");
+    const btn = $("#contactLeadBtn");
+    const email = $("#contactEmail")?.value?.trim();
+    const name = $("#contactName")?.value?.trim() || "";
+    const interest = $("#contactInterest")?.value || "general";
+    const note = $("#contactMsg")?.value?.trim() || "";
+    if (!email) return;
+    btn.disabled = true;
+    try {
+      const interestLabel = note ? `${interest}: ${note.slice(0, 100)}` : interest;
+      if (window.SRU_AUTH?.submitLead && window.SRU_AUTH.apiBase()) {
+        const data = await window.SRU_AUTH.submitLead({
+          email,
+          name,
+          source: "support_contact",
+          interest: interestLabel,
+        });
+        msg.textContent = data.message || "Sent — we’ll be in touch.";
+      } else {
+        const key = "sru_contact_local";
+        const list = JSON.parse(localStorage.getItem(key) || "[]");
+        list.push({ email, name, interest: interestLabel, at: new Date().toISOString() });
+        localStorage.setItem(key, JSON.stringify(list));
+        msg.textContent = "Saved on this device (API offline). On GoDaddy this emails + stores the lead.";
+      }
+      msg.classList.remove("hidden");
+      msg.classList.add("ok");
+      form.reset();
+      toast("Concierge request sent.");
+    } catch (err) {
+      msg.textContent = err.message || "Could not send.";
+      msg.classList.remove("hidden");
+      msg.classList.remove("ok");
+    } finally {
+      btn.disabled = false;
+    }
   });
 }
 
@@ -3302,6 +3456,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
   initGrowthMarkets();
   initWaitlist();
+  initContactLeadForm();
+  renderRecentViews();
+  $("#clearRecentViews")?.addEventListener("click", () => {
+    localStorage.removeItem(RECENT_VIEWS_KEY);
+    renderRecentViews();
+    toast("Recent views cleared.");
+  });
   openDeepLinkedHome();
 
   // Show DUNS in footer if configured

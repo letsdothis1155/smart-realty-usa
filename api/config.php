@@ -31,3 +31,7 @@ define('SRU_MAIL_FROM', 'noreply@smartrealty.us');
 define('SRU_LEAD_AUTOREPLY', true);
 // Site URL used in emails
 define('SRU_SITE_URL', 'https://smartrealty.us');
+
+// Admin password for leads dashboard (change this!)
+// Used by admin.html + GET /api/leads-list.php
+define('SRU_ADMIN_PASSWORD', 'SmartRealtyAdmin2026');

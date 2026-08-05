@@ -17,6 +17,7 @@
   RewriteRule ^auth/forgot-password$ auth/forgot-password.php [L,QSA]
   RewriteRule ^auth/reset-password$ auth/reset-password.php [L,QSA]
   RewriteRule ^leads$ leads.php [L,QSA]
+  RewriteRule ^leads-list$ leads-list.php [L,QSA]
 </IfModule>
 
 # Pass Authorization header through on some Apache/CGI setups

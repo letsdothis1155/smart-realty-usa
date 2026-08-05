@@ -3,6 +3,7 @@ User-agent: *
 Allow: /
 Disallow: /api/
 Disallow: /account.html
+Disallow: /admin.html
 Disallow: /CUSTOM-DOMAIN-WALKTHROUGH.md
 Disallow: /GODADDY-ORGANIZER.md
 Disallow: /GO-LIVE-CHECKLIST.md
