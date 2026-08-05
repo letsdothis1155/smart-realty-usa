@@ -26,6 +26,8 @@ jobs:
         run: npm test
       - name: Lint PHP
         run: find api -name '*.php' -print0 | xargs -0 -n1 php -l
+      - name: Run PHP security tests
+        run: php api/test/security-config.php
       - name: Block known published credentials
         run: |
           known_demo="Smart""Realty2026"

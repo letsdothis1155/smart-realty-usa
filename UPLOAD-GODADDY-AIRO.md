@@ -107,7 +107,7 @@ SECRETS.md
 ```
 
 **This package is tuned for demos:** password gate (`auth.mode: "demo"`).  
-Full member accounts work after PHP `api/` is live on cPanel.
+Demo unlock and full member accounts work after PHP `api/` is live on cPanel.
 
 ---
 

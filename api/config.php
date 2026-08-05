@@ -55,15 +55,21 @@ if (!defined('SRU_ADMIN_PASSWORD')) {
  */
 function sru_security_status() {
     $issues = [];
+    $publishedDemoPassword = implode('', ['Smart', 'Realty2026']);
+    $publishedAdminPassword = implode('', ['Smart', 'RealtyAdmin2026']);
     if (strlen(SRU_JWT_SECRET) < 32
         || stripos(SRU_JWT_SECRET, 'CHANGE-ME') !== false
         || stripos(SRU_JWT_SECRET, 'paste-openssl') !== false) {
         $issues[] = 'jwt_secret_default';
     }
-    if (strlen(SRU_DEMO_PASSWORD) < 12) {
+    if (strlen(SRU_DEMO_PASSWORD) < 12
+        || hash_equals($publishedDemoPassword, SRU_DEMO_PASSWORD)
+        || preg_match('/change[-_ ]?me|example|paste/i', SRU_DEMO_PASSWORD)) {
         $issues[] = 'demo_password_default';
     }
-    if (strlen(SRU_ADMIN_PASSWORD) < 16) {
+    if (strlen(SRU_ADMIN_PASSWORD) < 16
+        || hash_equals($publishedAdminPassword, SRU_ADMIN_PASSWORD)
+        || preg_match('/change[-_ ]?me|example|paste/i', SRU_ADMIN_PASSWORD)) {
         $issues[] = 'admin_password_default';
     }
     if (!is_dir(SRU_DATA_DIR) || !is_writable(SRU_DATA_DIR)) {

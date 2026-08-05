@@ -28,3 +28,11 @@ test("weak optional demo password is rejected", () => {
   });
   assert.ok(config.issues.includes("demo_password_weak"));
 });
+
+test("previously published demo password is rejected", () => {
+  const config = readConfig({
+    JWT_SECRET: "9f8e7d6c5b4a32109f8e7d6c5b4a3210",
+    DEMO_PASSWORD: ["Smart", "Realty2026"].join(""),
+  });
+  assert.ok(config.issues.includes("demo_password_weak"));
+});

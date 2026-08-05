@@ -49,7 +49,7 @@ window.SRU_CONFIG = {
   presenterMode: true,
   demoPasswordHint: false,
   auth: {
-    /* "demo" = password gate only (works without PHP).
+    /* "demo" = password gate backed by the PHP API.
        "accounts" = full sign-up when api/ PHP is live on cPanel.
        "open" = no gate (public marketing). */
     mode: "demo",
