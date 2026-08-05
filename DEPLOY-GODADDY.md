@@ -20,7 +20,7 @@ Also:
 4. Edit `.htaccess` → real `AuthUserFile` path to `.htpasswd`
 5. cPanel → **AutoSSL** → wait for padlock
 6. Set `siteUrl` in `domain-config.js` to `https://yourdomain`
-7. Unlock: in-app password `SmartRealty2026` · server user `demo` / same password
+7. Unlock with the private in-app password; use separate cPanel Basic Auth credentials if enabled
 8. `./scripts/verify-live.sh yourdomain.com`
 9. Email kit: fill `SHARE-EMAIL.txt` and send
 

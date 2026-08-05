@@ -5,6 +5,7 @@ sru_send_cors();
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     sru_json(['ok' => false, 'error' => 'Method not allowed'], 405);
 }
+sru_require_secure_config(['jwt']);
 
 $body = sru_body();
 $name = trim((string)($body['name'] ?? ''));

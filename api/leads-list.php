@@ -9,6 +9,7 @@ sru_send_cors();
 if (!in_array($_SERVER['REQUEST_METHOD'], ['GET', 'POST'], true)) {
     sru_json(['ok' => false, 'error' => 'Method not allowed'], 405);
 }
+sru_require_secure_config(['admin']);
 
 $pass = '';
 if (!empty($_SERVER['HTTP_X_ADMIN_PASSWORD'])) {

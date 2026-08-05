@@ -18,7 +18,7 @@ mkdir -p "$STAGING/images" "$STAGING/js" "$STAGING/api/auth" "$STAGING/api/data"
 
 # Core pages
 for f in index.html auth.html account.html admin.html privacy.html terms.html 404.html \
-         styles.css app.js robots.txt sitemap.xml .htaccess .htpasswd CNAME; do
+         styles.css app.js robots.txt sitemap.xml .htaccess CNAME; do
   [[ -f "$ROOT/$f" ]] && cp "$ROOT/$f" "$STAGING/" && echo "  + $f"
 done
 
@@ -55,8 +55,9 @@ window.SRU_CONFIG = {
     mode: "demo",
     apiUrl: "",
     usePhp: true,
-    demoPassword: "SmartRealty2026",
+    demoPassword: "",
     allowDemoAccess: true,
+    allowOfflineDemo: false,
   },
   analytics: { enabled: true },
   social: {},
@@ -110,4 +111,4 @@ echo "  $OUT_STABLE"
 ls -lh "$OUT" "$OUT_STABLE"
 echo ""
 echo "Open UPLOAD-GODADDY-AIRO.md inside the zip first."
-echo "Demo password: SmartRealty2026"
+echo "Configure server-only secrets in api/config.local.php before sharing."

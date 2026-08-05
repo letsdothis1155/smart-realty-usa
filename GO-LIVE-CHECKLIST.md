@@ -12,7 +12,7 @@ Print or keep open while deploying. Check every box before sending client links.
 ## Pre-flight (local)
 
 - [ ] Demo opens locally (`open index.html` or `python3 -m http.server`)
-- [ ] Password unlock works (`SmartRealty2026` or your custom)
+- [ ] Password unlock works with the private server-configured value
 - [ ] Listings render (18 homes)
 - [ ] BTC ticker gets a live rate
 - [ ] Search + map work
@@ -32,7 +32,7 @@ Print or keep open while deploying. Check every box before sending client links.
 - [ ] Correct folder (`public_html` / `demo` / subdomain dir)
 - [ ] `index.html`, `styles.css`, `app.js`, `domain-config.js` uploaded
 - [ ] `images/` folder complete
-- [ ] `.htaccess` + `.htpasswd` uploaded
+- [ ] `.htaccess` uploaded; `.htpasswd` created directly on the server if Basic Auth is used
 - [ ] `robots.txt` uploaded
 - [ ] `.htaccess` `AuthUserFile` path matches real server path
 

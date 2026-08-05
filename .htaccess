@@ -1,7 +1,7 @@
 # Smart Realty USA — GoDaddy / Apache
 # ==================================
 # FIRST DEPLOY: Basic Auth is OFF so a wrong AuthUserFile path cannot 500 the site.
-# In-app password gate still protects the demo (SmartRealty2026).
+# The in-app gate requires server-only secrets in api/config.local.php.
 #
 # AFTER site loads:
 #   1. Uncomment the Basic Auth block below

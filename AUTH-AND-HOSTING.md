@@ -29,7 +29,7 @@ Buy hosting only if you already want cPanel for other reasons (email, PHP apps, 
 
 - Minimum **8 characters**
 - Stored as **bcrypt hash** only
-- Demo shared password still available for private demos (`SmartRealty2026`)
+- Demo shared password is available only after server-side configuration
 
 ---
 
@@ -54,7 +54,7 @@ python3 -m http.server 8766
 
 1. Open **Create account** → register  
 2. Sign out → **Sign in** with same email/password  
-3. Or use **Demo access** with `SmartRealty2026`
+3. Or use **Demo access** with the private server-configured password
 
 ---
 
@@ -82,7 +82,8 @@ Browser (smartrealty.us)
 auth: {
   mode: "accounts",
   apiUrl: "https://YOUR-AUTH-API.up.railway.app", // example
-  demoPassword: "SmartRealty2026", // change for production
+  demoPassword: "", // keep secrets on the server
+  allowOfflineDemo: false,
   allowDemoAccess: true,
 },
 ```

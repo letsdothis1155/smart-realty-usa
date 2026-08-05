@@ -82,11 +82,6 @@ const GECKO_REFRESH_MS = 60 * 1000;
 const WS_COINBASE = "wss://ws-feed.exchange.coinbase.com";
 const WS_BINANCE = "wss://stream.binance.com:9443/ws/btcusdt@trade";
 
-// Private demo password — prefer domain-config.js auth.demoPassword
-// Real accounts use the Auth API (server/) with bcrypt-hashed passwords
-const DEMO_PASSWORD =
-  (window.SRU_CONFIG && window.SRU_CONFIG.auth && window.SRU_CONFIG.auth.demoPassword) ||
-  "SmartRealty2026";
 const DEMO_GATE_KEY = "sru_demo_unlocked";
 
 // ---------- Utilities ----------
@@ -2437,13 +2432,10 @@ function initDemoGate() {
       const entered = $("#gatePassword").value;
       const err = $("#gateError");
       try {
-        if (window.SRU_AUTH && window.SRU_AUTH.demoLogin) {
-          await window.SRU_AUTH.demoLogin(entered, false);
-        } else if (entered === DEMO_PASSWORD) {
-          sessionStorage.setItem(DEMO_GATE_KEY, "1");
-        } else {
-          throw new Error("Incorrect password");
+        if (!window.SRU_AUTH || !window.SRU_AUTH.demoLogin) {
+          throw new Error("Authentication service unavailable");
         }
+        await window.SRU_AUTH.demoLogin(entered, false);
         if (err) err.classList.add("hidden");
         unlockSite();
         toast("Demo unlocked. Welcome to Smart Realty USA.");
@@ -2896,11 +2888,10 @@ Here's private access to the Smart Realty USA demo.
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 URL:      ${url}
 
-Demo password:  SmartRealty2026
+Demo password:  Provided separately by the site administrator
 
 If the browser asks for a second login first:
-  Username:  demo
-  Password:  SmartRealty2026
+  Use the server credentials provided separately by the site administrator
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Suggested walkthrough (5–7 minutes):

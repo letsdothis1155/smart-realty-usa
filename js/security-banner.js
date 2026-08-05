@@ -9,8 +9,11 @@
   function clientDefaultIssues() {
     const issues = [];
     const auth = cfg().auth || {};
-    if (!auth.demoPassword || auth.demoPassword === "SmartRealty2026") {
-      issues.push("Demo password still default (domain-config.js)");
+    if (auth.demoPassword) {
+      issues.push("Client-side demo password is visible; move it to the auth API");
+    }
+    if (auth.mode === "demo" && auth.allowOfflineDemo === true) {
+      issues.push("Offline demo access is enabled and is not a security boundary");
     }
     return issues;
   }
@@ -86,7 +89,7 @@
         if (m && !messages.includes(m)) messages.push(m);
       });
     } else if (!server) {
-      // Static preview: still warn about client demo password
+      // Static preview: client-side configuration checks still apply.
     }
     render(messages);
   });

@@ -57,7 +57,7 @@ window.SRU_CONFIG = {
    */
   presenterMode: true,
 
-  /** Never put the real password in this file for public deploys */
+  /** Never put a real password in this browser-delivered file. */
   demoPasswordHint: false,
 
   /**
@@ -80,8 +80,9 @@ window.SRU_CONFIG = {
     mode: "accounts", // "accounts" | "demo" | "open"
     apiUrl: "", // "" = same website origin (GoDaddy). Local Node: "http://127.0.0.1:8787"
     usePhp: true, // true for GoDaddy PHP api/; false for Node server/
-    demoPassword: "SmartRealty2026",
+    demoPassword: "", // server-only: set SRU_DEMO_PASSWORD in api/config.local.php
     allowDemoAccess: true,
+    allowOfflineDemo: false,
   },
 
   /**

@@ -27,13 +27,19 @@ define('SRU_DEMO_PASSWORD', '…unique…');
 define('SRU_ADMIN_PASSWORD', '…unique…');
 ```
 
-## 3. Match the website demo password
+## 3. Keep secrets out of browser files
 
-In `domain-config.js`:
+Do not put the demo or admin password in `domain-config.js`, HTML, JavaScript,
+email templates, or a committed `.htpasswd`. The browser sends the entered
+demo password to the PHP API, which compares it with `SRU_DEMO_PASSWORD`.
 
-```js
+Keep this safe browser configuration:
+
+```javascript
 auth: {
-  demoPassword: "same-as-SRU_DEMO_PASSWORD",
+  apiUrl: "",
+  demoPassword: "",
+  allowOfflineDemo: false,
 }
 ```
 
@@ -49,10 +55,7 @@ Or check the **yellow banner** on the site is gone.
 - `api/config.local.php` is gitignored  
 - Do not paste production secrets into chat or git  
 
-## Defaults (insecure — banner warns)
+## Missing configuration
 
-| Item | Default |
-|------|---------|
-| JWT | `CHANGE-ME-to-a-long-random-secret-before-public-use` |
-| Demo | `SmartRealty2026` |
-| Admin | `SmartRealtyAdmin2026` |
+The API now fails closed: account tokens, demo access, and the admin dashboard
+stay unavailable until their server-only secrets meet the minimum lengths.
