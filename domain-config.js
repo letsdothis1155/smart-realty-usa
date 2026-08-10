@@ -77,12 +77,24 @@ window.SRU_CONFIG = {
    * Guide: GODADDY-ORGANIZER.md
    */
   auth: {
-    mode: "accounts", // "accounts" | "demo" | "open"
+    /**
+     * Public go-live (GitHub Pages / Cloudflare static):
+     *   mode: "open"  — browse free, no password wall
+     * Private invite demo:
+     *   mode: "demo" or "accounts" + server secrets in api/config.local.php
+     */
+    mode: "open", // "accounts" | "demo" | "open"
     apiUrl: "", // "" = same website origin (GoDaddy). Local Node: "http://127.0.0.1:8787"
     usePhp: true, // true for GoDaddy PHP api/; false for Node server/
     demoPassword: "", // server-only: set SRU_DEMO_PASSWORD in api/config.local.php
     allowDemoAccess: true,
     allowOfflineDemo: false,
+    softGate: {
+      enabled: true,
+      actions: ["btc", "rent"],
+      allowGuest: true,
+      saveHint: true,
+    },
   },
 
   /**

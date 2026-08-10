@@ -32,6 +32,19 @@ const AMENITY_POOL = {
   waterfront: ["Water views", "Dock access", "Balcony", "Elevator", "Concierge", "Gym"],
 };
 
+function propertyGallery(p) {
+  const list = Array.isArray(p.images) && p.images.length ? p.images.slice() : [];
+  if (p.image && !list.includes(p.image)) list.unshift(p.image);
+  if (!list.length && p.image) list.push(p.image);
+  // de-dupe while preserving order
+  const seen = new Set();
+  return list.filter((src) => {
+    if (!src || seen.has(src)) return false;
+    seen.add(src);
+    return true;
+  });
+}
+
 function enrichProperty(p) {
   if (p._enriched) return p;
   const tags = p.tags || [];
@@ -56,6 +69,9 @@ function enrichProperty(p) {
           : "Luxury residence");
   p.amenities = p.amenities || [...amenities].slice(0, 8);
   p.pricePerSqft = Math.round(p.offer / p.sqft);
+  // Normalize multi-photo gallery (primary image first)
+  p.images = propertyGallery(p);
+  if (p.images[0]) p.image = p.images[0];
   p._enriched = true;
   return p;
 }
@@ -214,6 +230,7 @@ function listingCardHtml(p) {
     ? `<div class="price-row btc-live"><span>Pay in Bitcoin (live)</span><strong>₿ ${btcAmt.toFixed(6)}</strong></div>`
     : `<div class="price-row btc-live"><span>Pay in Bitcoin (live)</span><strong class="btc-loading">loading…</strong></div>`;
 
+  const photoCount = propertyGallery(p).length;
   return `
       <article class="listing-card reveal" data-id="${p.id}">
         <div class="listing-media">
@@ -224,6 +241,11 @@ function listingCardHtml(p) {
             ${p.rentable ? `<span class="badge rent">Try Before Buy</span>` : ""}
             <span class="badge save">Save ${pct}%</span>
           </div>
+          ${
+            photoCount > 1
+              ? `<span class="photo-count-badge" aria-label="${photoCount} photos">${photoCount} photos</span>`
+              : ""
+          }
           <button class="listing-fav ${fav ? "active" : ""}" type="button" data-fav="${p.id}" aria-label="${fav ? "Remove from saved" : "Save home"}" aria-pressed="${fav}">
             ${fav ? "♥" : "♡"}
           </button>
@@ -1431,7 +1453,142 @@ function renderRentals() {
   observeReveals();
 }
 
-// ---------- Property modal ----------
+// ---------- Property modal + multi-photo gallery ----------
+function galleryHeroHtml(p) {
+  const gallery = propertyGallery(p);
+  const n = gallery.length;
+  const slides = gallery
+    .map(
+      (src, i) => `
+      <figure class="gallery-slide${i === 0 ? " is-active" : ""}" data-gallery-index="${i}">
+        <img src="${src}" alt="${escapeHtml(p.title)} — photo ${i + 1} of ${n}" ${
+        i === 0 ? "" : 'loading="lazy"'
+      } decoding="async" />
+      </figure>`
+    )
+    .join("");
+  const thumbs =
+    n > 1
+      ? `<div class="gallery-thumbs" role="tablist" aria-label="Photo thumbnails">
+      ${gallery
+        .map(
+          (src, i) => `
+        <button type="button" class="gallery-thumb${i === 0 ? " is-active" : ""}" role="tab"
+          data-gallery-goto="${i}" aria-label="Show photo ${i + 1}" aria-selected="${i === 0}">
+          <img src="${src}" alt="" loading="lazy" decoding="async" />
+        </button>`
+        )
+        .join("")}
+    </div>`
+      : "";
+  const controls =
+    n > 1
+      ? `
+    <button type="button" class="gallery-nav gallery-prev" data-gallery-nav="-1" aria-label="Previous photo">‹</button>
+    <button type="button" class="gallery-nav gallery-next" data-gallery-nav="1" aria-label="Next photo">›</button>
+    <div class="gallery-counter" aria-live="polite"><span data-gallery-current>1</span> / ${n}</div>
+    <div class="gallery-dots" role="tablist" aria-label="Photos">
+      ${gallery
+        .map(
+          (_, i) =>
+            `<button type="button" class="gallery-dot${i === 0 ? " is-active" : ""}" data-gallery-goto="${i}" aria-label="Photo ${i + 1}"></button>`
+        )
+        .join("")}
+    </div>`
+      : "";
+
+  return `
+    <div class="modal-hero gallery-hero" data-gallery-root data-gallery-count="${n}">
+      <div class="gallery-stage">
+        ${slides}
+      </div>
+      <div class="modal-hero-overlay">
+        <span class="badge gold">Save ${savingsPct(p)}%</span>
+        <span class="badge btc">₿ ready</span>
+        ${n > 1 ? `<span class="badge gallery-badge">${n} photos</span>` : ""}
+      </div>
+      ${controls}
+      ${thumbs}
+    </div>`;
+}
+
+function wirePropertyGallery(root) {
+  if (!root) return;
+  const total = Number(root.dataset.galleryCount) || 1;
+  if (total <= 1) return;
+  let index = 0;
+
+  const setIndex = (next) => {
+    index = ((next % total) + total) % total;
+    root.querySelectorAll(".gallery-slide").forEach((el, i) => {
+      el.classList.toggle("is-active", i === index);
+    });
+    root.querySelectorAll(".gallery-thumb").forEach((el, i) => {
+      el.classList.toggle("is-active", i === index);
+      el.setAttribute("aria-selected", i === index ? "true" : "false");
+    });
+    root.querySelectorAll(".gallery-dot").forEach((el, i) => {
+      el.classList.toggle("is-active", i === index);
+    });
+    const cur = root.querySelector("[data-gallery-current]");
+    if (cur) cur.textContent = String(index + 1);
+  };
+
+  root.addEventListener("click", (e) => {
+    const nav = e.target.closest("[data-gallery-nav]");
+    if (nav) {
+      e.preventDefault();
+      setIndex(index + Number(nav.dataset.galleryNav));
+      return;
+    }
+    const goto = e.target.closest("[data-gallery-goto]");
+    if (goto) {
+      e.preventDefault();
+      setIndex(Number(goto.dataset.galleryGoto));
+    }
+  });
+
+  // Swipe on stage
+  const stage = root.querySelector(".gallery-stage");
+  if (stage) {
+    let startX = 0;
+    stage.addEventListener(
+      "touchstart",
+      (e) => {
+        startX = e.changedTouches[0]?.clientX || 0;
+      },
+      { passive: true }
+    );
+    stage.addEventListener(
+      "touchend",
+      (e) => {
+        const dx = (e.changedTouches[0]?.clientX || 0) - startX;
+        if (Math.abs(dx) < 40) return;
+        setIndex(index + (dx < 0 ? 1 : -1));
+      },
+      { passive: true }
+    );
+  }
+
+  // Keyboard when modal open
+  const onKey = (e) => {
+    if ($("#propertyModal")?.classList.contains("hidden")) return;
+    if (e.key === "ArrowRight") {
+      e.preventDefault();
+      setIndex(index + 1);
+    } else if (e.key === "ArrowLeft") {
+      e.preventDefault();
+      setIndex(index - 1);
+    }
+  };
+  document.addEventListener("keydown", onKey);
+  // Clean previous handler if re-opening
+  if (wirePropertyGallery._onKey) {
+    document.removeEventListener("keydown", wirePropertyGallery._onKey);
+  }
+  wirePropertyGallery._onKey = onKey;
+}
+
 function openProperty(id) {
   const p = PROPERTIES.find((x) => x.id === id);
   if (!p) return;
@@ -1443,13 +1600,7 @@ function openProperty(id) {
     .map((a) => `<li>${escapeHtml(a)}</li>`)
     .join("");
   body.innerHTML = `
-    <div class="modal-hero">
-      <img src="${p.image}" alt="${p.title}" />
-      <div class="modal-hero-overlay">
-        <span class="badge gold">Save ${savingsPct(p)}%</span>
-        <span class="badge btc">₿ ready</span>
-      </div>
-    </div>
+    ${galleryHeroHtml(p)}
     <div class="modal-content">
       <div class="listing-badges" style="position:static;margin-bottom:0.75rem">
         <span class="badge gold">Transparent Pricing</span>
@@ -1527,6 +1678,7 @@ function openProperty(id) {
 
   pushRecentView(p.id);
   wirePayEstimator(p.offer);
+  wirePropertyGallery(body.querySelector("[data-gallery-root]"));
 
   $("#askAboutProperty")?.addEventListener("click", () => {
     closeModals();
@@ -2311,21 +2463,27 @@ function initBitcoin() {
   });
 
   $("#simulateBtcPay")?.addEventListener("click", () => {
-    const id = $("#btcProperty")?.value;
-    const p = PROPERTIES.find((x) => x.id === id);
-    if (!btcRate) {
-      toast("Waiting for live BTC rate…");
-      return;
-    }
-    const amount = p.offer / btcRate;
-    const btc = formatBTC(amount);
-    // confetti-like pulse
-    $("#btcCheckout")?.classList.add("pay-flash");
-    setTimeout(() => $("#btcCheckout")?.classList.remove("pay-flash"), 800);
-    toast(`Demo payment initiated: ${btc} for ${p.title} @ ${formatUsdPrecise(btcRate)}/BTC.`);
-    openChat(
-      `I just simulated a Bitcoin payment of ${btc} (live rate ${formatUsdPrecise(btcRate)}/BTC, stream=${btcStreamMode}) for ${p.title}. Can a settlement specialist confirm next steps?`
-    );
+    requireSoftAuth("btc", () => {
+      const id = $("#btcProperty")?.value;
+      const p = PROPERTIES.find((x) => x.id === id);
+      if (!p) {
+        toast("Pick a home for Bitcoin checkout first.");
+        return;
+      }
+      if (!btcRate) {
+        toast("Waiting for live BTC rate…");
+        return;
+      }
+      const amount = p.offer / btcRate;
+      const btc = formatBTC(amount);
+      $("#btcCheckout")?.classList.add("pay-flash");
+      setTimeout(() => $("#btcCheckout")?.classList.remove("pay-flash"), 800);
+      toast(`Demo payment initiated: ${btc} for ${p.title} @ ${formatUsdPrecise(btcRate)}/BTC.`);
+      track("btc_pay_simulate", { id: p.id });
+      openChat(
+        `I just simulated a Bitcoin payment of ${btc} (live rate ${formatUsdPrecise(btcRate)}/BTC, stream=${btcStreamMode}) for ${p.title}. Can a settlement specialist confirm next steps?`
+      );
+    });
   });
 
   // Clicking top ticker scrolls to checkout
@@ -2352,7 +2510,12 @@ function track(event, props) {
   }
 }
 
-// ---------- Auth gate (accounts + demo password) ----------
+// ---------- Auth gate (accounts + demo password + open public landing) ----------
+const SOFT_GUEST_KEY = "sru_soft_guest_ok";
+const OPEN_BANNER_KEY = "sru_open_banner_dismissed";
+const SAVE_HINT_KEY = "sru_save_hint_shown";
+let softAuthPending = null;
+
 function unlockSite() {
   const gate = $("#demoGate");
   if (gate) {
@@ -2367,9 +2530,156 @@ function authMode() {
   return (window.SRU_CONFIG && window.SRU_CONFIG.auth && window.SRU_CONFIG.auth.mode) || "accounts";
 }
 
+function softGateConfig() {
+  const auth = (window.SRU_CONFIG && window.SRU_CONFIG.auth) || {};
+  const sg = auth.softGate || {};
+  return {
+    enabled: sg.enabled !== false,
+    actions: Array.isArray(sg.actions) ? sg.actions : ["btc", "rent"],
+    allowGuest: sg.allowGuest !== false,
+    saveHint: sg.saveHint !== false,
+  };
+}
+
+function isSignedInUser() {
+  return !!(window.SRU_AUTH && window.SRU_AUTH.isSignedIn && window.SRU_AUTH.isSignedIn());
+}
+
+function isSoftGuestOk() {
+  return sessionStorage.getItem(SOFT_GUEST_KEY) === "1";
+}
+
+function markSoftGuestOk() {
+  sessionStorage.setItem(SOFT_GUEST_KEY, "1");
+  sessionStorage.setItem(DEMO_GATE_KEY, "1");
+}
+
+function requireSoftAuth(action, onAllow) {
+  if (authMode() !== "open") {
+    onAllow();
+    return true;
+  }
+  const sg = softGateConfig();
+  if (!sg.enabled || !sg.actions.includes(action)) {
+    onAllow();
+    return true;
+  }
+  if (isSignedInUser() || isSoftGuestOk()) {
+    onAllow();
+    return true;
+  }
+  openSoftAuthSheet(action, onAllow);
+  return false;
+}
+
+function softAuthCopy(action) {
+  if (action === "btc") {
+    return {
+      eyebrow: "Bitcoin checkout",
+      title: "Almost ready to buy with ₿",
+      body: "Sign in or create a free account to lock a live Bitcoin quote. Guests can still try the demo checkout on this device.",
+    };
+  }
+  if (action === "rent") {
+    return {
+      eyebrow: "Try-Before-Buy",
+      title: "Book a preview stay",
+      body: "Accounts keep your reservation details handy. Continue as guest to simulate a stay booking in this demo.",
+    };
+  }
+  return {
+    eyebrow: "Member action",
+    title: "Sign in to continue",
+    body: "Create a free account or continue as a guest for this demo session.",
+  };
+}
+
+function openSoftAuthSheet(action, onAllow) {
+  softAuthPending = { action, onAllow };
+  const copy = softAuthCopy(action);
+  const eyebrow = $("#softAuthEyebrow");
+  const title = $("#softAuthTitle");
+  const body = $("#softAuthBody");
+  const guest = $("#softAuthGuest");
+  if (eyebrow) eyebrow.textContent = copy.eyebrow;
+  if (title) title.textContent = copy.title;
+  if (body) body.textContent = copy.body;
+  if (guest) guest.classList.toggle("hidden", !softGateConfig().allowGuest);
+  const next = encodeURIComponent("index.html");
+  if ($("#softAuthSignup")) $("#softAuthSignup").href = `signup.html?next=${next}`;
+  if ($("#softAuthSignin")) $("#softAuthSignin").href = `auth.html?tab=signin&next=${next}`;
+  const overlay = $("#softAuthOverlay");
+  if (overlay) {
+    overlay.classList.remove("hidden");
+    overlay.setAttribute("aria-hidden", "false");
+  }
+  track("soft_auth_prompt", { action });
+}
+
+function closeSoftAuthSheet(runAllow) {
+  const overlay = $("#softAuthOverlay");
+  if (overlay) {
+    overlay.classList.add("hidden");
+    overlay.setAttribute("aria-hidden", "true");
+  }
+  const pending = softAuthPending;
+  softAuthPending = null;
+  if (runAllow && pending && typeof pending.onAllow === "function") {
+    pending.onAllow();
+  }
+}
+
+function initSoftAuthSheet() {
+  $("#softAuthClose")?.addEventListener("click", () => closeSoftAuthSheet(false));
+  $("#softAuthOverlay")?.addEventListener("click", (e) => {
+    if (e.target === e.currentTarget) closeSoftAuthSheet(false);
+  });
+  $("#softAuthGuest")?.addEventListener("click", () => {
+    markSoftGuestOk();
+    track("soft_auth_guest", { action: softAuthPending?.action });
+    toast("Continuing as guest for this session.");
+    closeSoftAuthSheet(true);
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !$("#softAuthOverlay")?.classList.contains("hidden")) {
+      closeSoftAuthSheet(false);
+    }
+  });
+}
+
+function maybeSaveHint() {
+  if (authMode() !== "open") return;
+  if (!softGateConfig().saveHint) return;
+  if (isSignedInUser()) return;
+  if (sessionStorage.getItem(SAVE_HINT_KEY) === "1") return;
+  sessionStorage.setItem(SAVE_HINT_KEY, "1");
+  toast("Saved on this device. Sign in to sync across devices.");
+}
+
+function initOpenLandingBanner() {
+  const banner = $("#openLandingBanner");
+  if (!banner) return;
+  if (authMode() !== "open") {
+    banner.classList.add("hidden");
+    return;
+  }
+  if (sessionStorage.getItem(OPEN_BANNER_KEY) === "1" || isSignedInUser()) {
+    banner.classList.add("hidden");
+    return;
+  }
+  banner.classList.remove("hidden");
+  document.body.classList.add("has-open-banner");
+  $("#dismissOpenBanner")?.addEventListener("click", () => {
+    sessionStorage.setItem(OPEN_BANNER_KEY, "1");
+    banner.classList.add("hidden");
+    document.body.classList.remove("has-open-banner");
+  });
+}
+
 function updateHeaderUser() {
   const box = $("#headerUser");
   const nav = $("#signInNav");
+  const signUp = $("#signUpNav");
   const nameEl = $("#headerUserName");
   const user =
     (window.SRU_AUTH && window.SRU_AUTH.getUser && window.SRU_AUTH.getUser()) || null;
@@ -2378,26 +2688,37 @@ function updateHeaderUser() {
     nameEl.textContent = first;
     box.classList.remove("hidden");
     if (nav) nav.classList.add("hidden");
+    if (signUp) signUp.classList.add("hidden");
   } else {
     if (box) box.classList.add("hidden");
-    if (nav && authMode() !== "open") nav.classList.remove("hidden");
+    if (nav) nav.classList.remove("hidden");
+    if (signUp) signUp.classList.remove("hidden");
   }
 }
 
 function initDemoGate() {
   const gate = $("#demoGate");
-  if (!gate) return;
-
   const mode = authMode();
 
   if (mode === "open") {
-    // Marketing mode: no password wall; still show soft banner if desired
-    gate.classList.add("unlocked");
+    // Public landing: no password wall; soft-gate member actions instead
+    if (gate) gate.classList.add("unlocked");
     document.body.classList.add("gate-open", "auth-open-mode");
+    document.documentElement.classList.add("auth-open-boot");
+    initOpenLandingBanner();
+    initSoftAuthSheet();
     updateHeaderUser();
     track("gate_open_mode");
+    $("#signOutBtn")?.addEventListener("click", () => {
+      if (window.SRU_AUTH) window.SRU_AUTH.logout();
+      sessionStorage.removeItem(DEMO_GATE_KEY);
+      sessionStorage.removeItem(SOFT_GUEST_KEY);
+      location.href = "index.html";
+    });
     return;
   }
+
+  if (!gate) return;
 
   // Valid account / demo session?
   const hasToken = window.SRU_AUTH && window.SRU_AUTH.isSignedIn && window.SRU_AUTH.isSignedIn();
@@ -2635,8 +2956,12 @@ function initUI() {
         favorites.add(id);
         toast("Saved to your shortlist.");
         track("save_listing", { id });
+        maybeSaveHint();
       }
       localStorage.setItem("sru_favs", JSON.stringify([...favorites]));
+      if (window.SRU_AUTH && window.SRU_AUTH.isMemberAccount && window.SRU_AUTH.isMemberAccount()) {
+        window.SRU_AUTH.saveFavorites([...favorites]).catch(() => {});
+      }
       updateFavBadge();
       renderListings();
       if ($("#favDrawer")?.classList.contains("open")) renderFavoritesDrawer();
@@ -2703,15 +3028,21 @@ function initUI() {
     }
     const btc = e.target.closest("[data-btc]");
     if (btc) {
-      closeModals();
-      closeFavDrawer();
-      jumpToBtc(btc.dataset.btc);
+      const id = btc.dataset.btc;
+      requireSoftAuth("btc", () => {
+        closeModals();
+        closeFavDrawer();
+        jumpToBtc(id);
+      });
       return;
     }
     const rent = e.target.closest("[data-rent]");
     if (rent) {
-      closeModals();
-      openRental(rent.dataset.rent);
+      const id = rent.dataset.rent;
+      requireSoftAuth("rent", () => {
+        closeModals();
+        openRental(id);
+      });
       return;
     }
     if (e.target.classList.contains("modal-overlay")) {
