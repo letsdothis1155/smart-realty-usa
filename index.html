@@ -27,6 +27,19 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏡</text></svg>" />
   <!-- Edit domain-config.js when going live on a custom domain -->
   <script src="domain-config.js"></script>
+  <script>
+    /* Early open-mode unlock — avoid password-gate flash before app.js boots */
+    (function () {
+      try {
+        var m =
+          (window.SRU_CONFIG &&
+            window.SRU_CONFIG.auth &&
+            window.SRU_CONFIG.auth.mode) ||
+          "accounts";
+        if (m === "open") document.documentElement.classList.add("auth-open-boot");
+      } catch (e) {}
+    })();
+  </script>
   <script src="js/properties.js"></script>
   <script src="js/auth-client.js"></script>
   <script src="js/security-banner.js"></script>
@@ -85,6 +98,22 @@
   <!-- Ambient glow -->
   <div class="ambient ambient-1" aria-hidden="true"></div>
   <div class="ambient ambient-2" aria-hidden="true"></div>
+
+  <!-- Open public landing strip (shown when auth.mode === "open") -->
+  <div class="open-landing-banner hidden" id="openLandingBanner" role="region" aria-label="Public demo notice">
+    <div class="container open-landing-inner">
+      <p>
+        <strong>Public demo</strong> — browse homes free.
+        Sign in to sync saved homes · accounts unlock full member tools.
+        <span class="open-landing-note">Not a live brokerage.</span>
+      </p>
+      <div class="open-landing-actions">
+        <a class="btn btn-primary btn-sm" href="signup.html?next=index.html">Create free account</a>
+        <a class="btn btn-ghost btn-sm" href="auth.html?tab=signin&next=index.html">Sign in</a>
+        <button type="button" class="btn btn-ghost btn-sm" id="dismissOpenBanner" aria-label="Dismiss notice">Dismiss</button>
+      </div>
+    </div>
+  </div>
 
   <!-- Top bar -->
   <div class="top-bar">
@@ -146,6 +175,9 @@
         <a href="#listings" class="nav-link">Listings</a>
         <a href="#bluebook" class="nav-link">Blue Book</a>
         <a href="#bitcoin" class="nav-link">Pay with BTC</a>
+        <a href="https://mempool.smartrealty.us" class="nav-link" target="_blank" rel="noopener">Node Explorer</a>
+        <a href="https://mempool.smartrealty.us/earn/" class="nav-link" target="_blank" rel="noopener">Earn sats</a>
+        <a href="https://mempool.smartrealty.us/fund/" class="nav-link" target="_blank" rel="noopener">Fund</a>
         <a href="#rentals" class="nav-link">Try Before Buy</a>
         <a href="#security" class="nav-link">Security</a>
         <a href="#support" class="nav-link">Support</a>
@@ -185,8 +217,8 @@
             <span class="gradient-text">transparent lowest offers</span>
           </h1>
           <p class="hero-sub fade-up delay-2">
-            Free House Blue Book valuations, live Bitcoin checkout quotes, and
-            try-before-you-buy stays — with 24/7 human-style support. Demo experience for
+            Browse free — House Blue Book valuations, live Bitcoin checkout quotes, and
+            try-before-you-buy stays with 24/7 human-style support. Public demo for
             <strong>smartrealty.us</strong>.
           </p>
           <div class="hero-cta fade-up delay-3">
@@ -676,6 +708,29 @@
             <p class="btc-disclaimer">Demo only — no real funds move. Live prices via Coinbase WebSocket + CoinGecko REST. Production uses licensed escrow partners.</p>
           </div>
         </div>
+
+        <!-- SmartRealtyNode public explorer promo -->
+        <div class="node-explorer-band glass" id="nodeExplorer" style="margin-top:2.5rem;padding:1.5rem 1.75rem;display:grid;gap:1rem;grid-template-columns:1.4fr 1fr;align-items:center">
+          <div>
+            <p class="eyebrow" style="margin:0 0 0.35rem">Our rails · SmartRealtyNode</p>
+            <h3 style="margin:0 0 0.5rem;font-size:1.35rem">We run our own Bitcoin explorer</h3>
+            <p style="margin:0;color:var(--text-muted);line-height:1.55;max-width:40rem">
+              Live fees, mempool stream, and recent blocks from our independently operated Bitcoin Core node —
+              not a wrapper on a third-party explorer. Read-only · local-first · Louisville, KY.
+            </p>
+            <p style="margin:0.75rem 0 0;font-size:0.82rem;color:var(--text-dim)">
+              Independent project. Not affiliated with mempool.space.
+            </p>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:0.65rem;align-items:flex-start">
+            <a class="btn btn-primary" href="https://mempool.smartrealty.us" target="_blank" rel="noopener">Open mempool.smartrealty.us ↗</a>
+            <a class="btn btn-primary" href="https://mempool.smartrealty.us/earn/" target="_blank" rel="noopener" style="background:linear-gradient(135deg,#1a8f3c,#2f9e44)">Earn sats · node services</a>
+            <a class="btn btn-ghost btn-sm" href="https://mempool.smartrealty.us/fund/" target="_blank" rel="noopener">My Node Fund · live timeline</a>
+            <a class="btn btn-ghost btn-sm" href="https://mempool.smartrealty.us/status" target="_blank" rel="noopener">Live status board</a>
+            <a class="btn btn-ghost btn-sm" href="https://mempool.smartrealty.us/about" target="_blank" rel="noopener">About the node</a>
+            <img src="https://mempool.smartrealty.us/badge.svg" alt="SmartRealtyNode live status" width="280" height="48" style="max-width:100%;height:auto;border-radius:8px" loading="lazy" />
+          </div>
+        </div>
       </div>
     </section>
 
@@ -878,6 +933,9 @@
         <a href="#listings">Listings</a>
         <a href="#bluebook">Blue Book</a>
         <a href="#bitcoin">Bitcoin Pay</a>
+        <a href="https://mempool.smartrealty.us" target="_blank" rel="noopener">Node Explorer</a>
+        <a href="https://mempool.smartrealty.us/fund/" target="_blank" rel="noopener">My Node Fund</a>
+        <a href="https://mempool.smartrealty.us/earn/" target="_blank" rel="noopener">Earn sats</a>
         <a href="#rentals">Try Before Buy</a>
         <a href="#business">Company / D‑U‑N‑S</a>
       </div>
@@ -886,6 +944,8 @@
         <a href="#security">Security</a>
         <a href="#support">24/7 Support</a>
         <a href="tel:+18007627879">Call Us</a>
+        <a href="https://mempool.smartrealty.us/about" target="_blank" rel="noopener">About our node</a>
+        <a href="https://mempool.smartrealty.us/fund/" target="_blank" rel="noopener">Fund the node</a>
       </div>
       <div>
         <h5>Contact</h5>
@@ -893,6 +953,8 @@
         <p><a href="mailto:ai@smartrealty.us">ai@smartrealty.us</a></p>
         <p>Available 24 hours · 7 days</p>
         <p><a href="account.html">Member account</a></p>
+        <p><a href="https://mempool.smartrealty.us" target="_blank" rel="noopener">mempool.smartrealty.us</a></p>
+        <p><a href="https://mempool.smartrealty.us/earn/" target="_blank" rel="noopener">Earn sats services</a></p>
       </div>
     </div>
 
@@ -922,6 +984,7 @@
     <div class="container footer-bottom">
       <p>© 2026 Smart Realty USA · <strong>Demo Version</strong> · All Rights Reserved.</p>
       <p>House Blue Book™ · Official contact: <a href="mailto:ai@smartrealty.us" data-contact-email>ai@smartrealty.us</a></p>
+      <p>Public node: <a href="https://mempool.smartrealty.us" target="_blank" rel="noopener">explorer</a> · <a href="https://mempool.smartrealty.us/fund/" target="_blank" rel="noopener">fund</a> · <a href="https://mempool.smartrealty.us/earn/" target="_blank" rel="noopener">earn sats</a> · <a href="https://mempool.smartrealty.us/status" target="_blank" rel="noopener">status</a> · independent SmartRealtyNode</p>
       <p class="live-on hidden" id="liveOnLine">Live on <a href="#" id="liveOnLink" rel="noopener">—</a></p>
     </div>
     <div class="container demo-banner">
@@ -1080,6 +1143,24 @@
       <div class="chat-phone-bar">
         Prefer phone? <a href="tel:+18007627879">1-800-SMART-USA</a>
       </div>
+    </div>
+  </div>
+
+  <!-- Soft auth sheet (open mode — buy / book without full-site password wall) -->
+  <div class="soft-auth-overlay hidden" id="softAuthOverlay" aria-hidden="true">
+    <div class="soft-auth-sheet glass" role="dialog" aria-modal="true" aria-labelledby="softAuthTitle">
+      <button type="button" class="soft-auth-close" id="softAuthClose" aria-label="Close">×</button>
+      <p class="soft-auth-eyebrow" id="softAuthEyebrow">Member action</p>
+      <h3 id="softAuthTitle">Sign in to continue</h3>
+      <p class="soft-auth-body" id="softAuthBody">
+        Create a free account or sign in to save progress. You can also continue as a guest for this demo.
+      </p>
+      <div class="soft-auth-actions">
+        <a class="btn btn-primary btn-block" id="softAuthSignup" href="signup.html?next=index.html">Create free account</a>
+        <a class="btn btn-ghost btn-block" id="softAuthSignin" href="auth.html?tab=signin&next=index.html">Sign in</a>
+        <button type="button" class="btn btn-outline btn-block" id="softAuthGuest">Continue as guest</button>
+      </div>
+      <p class="soft-auth-foot">Demo only · Not a live brokerage transaction</p>
     </div>
   </div>
 
