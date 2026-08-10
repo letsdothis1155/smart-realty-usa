@@ -1,0 +1,26 @@
+Smart Realty USA — ship status Mon Aug 10 2026 (go-live session)
+================================================================
+
+CODE READY
+  ✓ Open public landing (auth.mode = open)
+  ✓ Soft gate for BTC buy + Try-Before-Buy
+  ✓ 24 unique listing photos + 4-photo galleries
+  ✓ Upload zip: ~/Desktop/smart-realty-usa-upload.zip
+
+DEPLOY — GitHub
+  Repo: https://github.com/letsdothis1155/smart-realty-usa
+  Pages: branch main · custom domain smartrealty.us
+  Interim: https://letsdothis1155.github.io/smart-realty-usa/
+
+DEPLOY — custom domain (YOU in Cloudflare)
+  Live https://smartrealty.us still WordPress until DNS cutover.
+  Cloudflare DNS → GitHub Pages (see GO-LIVE-CLOUDFLARE.md):
+    A @ → 185.199.108.153 / .109.153 / .110.153 / .111.153  (DNS only first)
+    CNAME www → letsdothis1155.github.io
+
+  Or Path A: upload zip to GoDaddy cPanel public_html.
+
+VERIFY
+  dig +short smartrealty.us A
+  ./scripts/verify-live.sh smartrealty.us
+  Browser: no wp-json / WordPress chrome; open landing + listings.

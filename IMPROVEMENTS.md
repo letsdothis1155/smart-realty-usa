@@ -123,7 +123,7 @@ Weakness: file DB doesn’t scale; no migrations; secrets in repo defaults
 | 7 | Split `app.js` modules | L | Velocity long-term |
 | 8 | Server-side favorites | M | Retention |
 | 9 | SMTP lead mail (not only PHP mail) | M | Reliability |
-| 10 | Real multi-image galleries | M | Product depth |
+| 10 | Real multi-image galleries | ✅ Done | 4 photos/listing + modal carousel |
 
 ---
 

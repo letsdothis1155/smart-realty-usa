@@ -1982,6 +1982,23 @@ h4 {
   color: var(--success);
 }
 
+.photo-count-badge {
+  position: absolute;
+  bottom: 0.75rem;
+  left: 0.85rem;
+  z-index: 2;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #fff;
+  background: rgba(8, 12, 20, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  padding: 0.28rem 0.55rem;
+  backdrop-filter: blur(8px);
+  pointer-events: none;
+}
+
 .listing-fav {
   position: absolute;
   top: 0.85rem;
@@ -3527,6 +3544,131 @@ body:has(.compare-bar:not(.hidden)) {
   pointer-events: none;
 }
 
+/* Open public landing — no password-wall flash */
+html.auth-open-boot .gate,
+html.auth-open-boot #demoGate {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+.open-landing-banner {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  background: linear-gradient(90deg, rgba(14, 22, 40, 0.98), rgba(18, 28, 48, 0.96));
+  border-bottom: 1px solid rgba(91, 140, 255, 0.28);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
+}
+
+.open-landing-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1.25rem;
+  padding: 0.65rem 0;
+}
+
+.open-landing-inner p {
+  margin: 0;
+  font-size: 0.86rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+  flex: 1 1 16rem;
+}
+
+.open-landing-inner strong {
+  color: var(--text);
+  font-weight: 700;
+}
+
+.open-landing-note {
+  color: var(--text-dim);
+  font-size: 0.8rem;
+}
+
+.open-landing-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.soft-auth-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10050;
+  display: grid;
+  place-items: center;
+  padding: 1.25rem;
+  background: rgba(4, 6, 12, 0.72);
+  backdrop-filter: blur(8px);
+}
+
+.soft-auth-sheet {
+  position: relative;
+  width: min(100%, 420px);
+  padding: 1.75rem 1.5rem 1.35rem;
+  text-align: center;
+  border-radius: var(--radius, 16px);
+  border: 1px solid rgba(91, 140, 255, 0.25);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+}
+
+.soft-auth-close {
+  position: absolute;
+  top: 0.55rem;
+  right: 0.65rem;
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-muted);
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.soft-auth-close:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.soft-auth-eyebrow {
+  margin: 0 0 0.4rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold, #e8c87a);
+}
+
+.soft-auth-sheet h3 {
+  margin: 0 0 0.55rem;
+  font-size: 1.35rem;
+  font-family: "Playfair Display", Georgia, serif;
+}
+
+.soft-auth-body {
+  margin: 0 0 1.15rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.soft-auth-actions {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.soft-auth-foot {
+  margin: 1rem 0 0;
+  font-size: 0.72rem;
+  color: var(--text-dim);
+}
+
 .gate-card {
   width: min(100%, 420px);
   padding: 2rem 1.75rem;
@@ -3666,6 +3808,164 @@ body:has(.compare-bar:not(.hidden)) {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+/* Multi-photo gallery in property modal */
+.gallery-hero {
+  background: #0a0c10;
+}
+
+.gallery-stage {
+  position: absolute;
+  inset: 0;
+}
+
+.gallery-slide {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  transition: opacity 0.28s ease;
+  pointer-events: none;
+}
+
+.gallery-slide.is-active {
+  opacity: 1;
+  pointer-events: auto;
+  z-index: 1;
+}
+
+.gallery-slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.gallery-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 4;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(8, 12, 20, 0.55);
+  color: #fff;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  display: grid;
+  place-items: center;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.gallery-nav:hover {
+  background: rgba(20, 30, 50, 0.85);
+  border-color: rgba(91, 140, 255, 0.55);
+}
+
+.gallery-prev { left: 0.65rem; }
+.gallery-next { right: 0.65rem; }
+
+.gallery-counter {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  z-index: 4;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  padding: 0.28rem 0.65rem;
+  backdrop-filter: blur(6px);
+}
+
+.gallery-dots {
+  position: absolute;
+  left: 50%;
+  bottom: 0.65rem;
+  transform: translateX(-50%);
+  z-index: 4;
+  display: flex;
+  gap: 0.35rem;
+}
+
+.gallery-dot {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 999px;
+  border: none;
+  padding: 0;
+  background: rgba(255, 255, 255, 0.35);
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.gallery-dot.is-active {
+  background: var(--gold, #e8c87a);
+  transform: scale(1.25);
+}
+
+.gallery-thumbs {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 3;
+  display: flex;
+  gap: 0.35rem;
+  padding: 2.4rem 0.65rem 0.55rem;
+  overflow-x: auto;
+  background: linear-gradient(to top, rgba(6, 8, 12, 0.92), transparent);
+  scrollbar-width: thin;
+}
+
+/* When thumbs present, lift dots above them */
+.gallery-hero:has(.gallery-thumbs) .gallery-dots {
+  bottom: 4.6rem;
+}
+
+.gallery-hero:has(.gallery-thumbs) .modal-hero-overlay {
+  bottom: 4.6rem;
+}
+
+.gallery-thumb {
+  flex: 0 0 auto;
+  width: 3.4rem;
+  height: 2.35rem;
+  padding: 0;
+  border-radius: 6px;
+  border: 2px solid transparent;
+  overflow: hidden;
+  cursor: pointer;
+  background: rgba(0, 0, 0, 0.3);
+  opacity: 0.72;
+  transition: opacity 0.2s, border-color 0.2s;
+}
+
+.gallery-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.gallery-thumb.is-active,
+.gallery-thumb:hover {
+  opacity: 1;
+  border-color: var(--gold, #e8c87a);
+}
+
+.gallery-badge {
+  background: rgba(0, 0, 0, 0.45) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  color: #fff !important;
 }
 
 .modal-content {
