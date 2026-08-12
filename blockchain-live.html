@@ -1,0 +1,1479 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; style-src 'unsafe-inline' blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; img-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; font-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; media-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; worker-src blob:; connect-src blob: data:; frame-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>Smart Realty USA — 3D Blockchain Simulation</title>
+<style>:root{color-scheme:dark;background:#090b10;color:#f7f7f8;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}html,body{margin:0}body{box-sizing:border-box;padding:0;background:radial-gradient(circle at 20% 0%,#172037 0,transparent 42%),#090b10}.site-bar{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.85rem clamp(1rem,4vw,3rem);border-bottom:1px solid rgba(255,255,255,.1);background:rgba(9,11,16,.82)}.brand{color:#fff;text-decoration:none;font-weight:700;letter-spacing:.02em}.back{color:#9ec5ff;text-decoration:none;font-size:.9rem}iframe{display:block;width:100%;height:calc(100vh - 55px);margin:0 auto;border:0}@media(max-width:520px){.site-bar{align-items:flex-start;flex-direction:column}.back{font-size:.82rem}iframe{height:calc(100vh - 84px)}}</style>
+</head>
+<body>
+<header class="site-bar"><a class="brand" href="index.html">Smart Realty USA</a><a class="back" href="index.html#bitcoin">← Back to Bitcoin-ready real estate</a></header>
+<iframe sandbox="allow-scripts" referrerpolicy="no-referrer" title="Smart Realty USA — 3D Blockchain Simulation" srcdoc="&lt;!doctype html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;utf-8&quot;&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;
+&lt;meta name=&quot;referrer&quot; content=&quot;no-referrer&quot;&gt;
+&lt;meta http-equiv=&quot;Content-Security-Policy&quot; content=&quot;default-src &#x27;none&#x27;; script-src &#x27;unsafe-inline&#x27; &#x27;unsafe-eval&#x27; &#x27;wasm-unsafe-eval&#x27; blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; style-src &#x27;unsafe-inline&#x27; blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; img-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; font-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; media-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; worker-src blob:; connect-src blob: data:; frame-src &#x27;none&#x27;; object-src &#x27;none&#x27;; base-uri &#x27;none&#x27;; form-action &#x27;none&#x27;&quot;&gt;
+&lt;title&gt;Smart Realty USA — 3D Blockchain Simulation&lt;/title&gt;
+&lt;style&gt;:root {
+  color-scheme: light dark;
+  background-color: var(
+    --background,
+    var(--color-background-primary, light-dark(rgb(255 255 255), rgb(24 24 24)))
+  ) !important;
+
+  /* Agent-facing contract; keep in sync with SKILL.md. */
+  --background: var(
+    --color-background-primary,
+    light-dark(rgb(255 255 255), rgb(24 24 24))
+  );
+  --foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --card: color-mix(in oklab, var(--foreground) 5%, var(--background));
+  --card-foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --popover: var(
+    --color-background-secondary,
+    light-dark(rgb(255 255 255), rgb(45 45 45))
+  );
+  --popover-foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --primary: var(
+    --color-text-info,
+    light-dark(rgb(51 156 255), rgb(131 195 255))
+  );
+  --primary-foreground: var(
+    --color-text-inverse,
+    light-dark(rgb(255 255 255), rgb(13 13 13))
+  );
+  --secondary: var(
+    --color-background-secondary,
+    light-dark(rgb(255 255 255 / 96%), rgb(54 54 54 / 96%))
+  );
+  --secondary-foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --muted: color-mix(in srgb, var(--foreground) 10%, transparent);
+  --muted-foreground: var(
+    --color-text-secondary,
+    light-dark(rgb(26 28 31 / 49.4%), rgb(255 255 255 / 49.8%))
+  );
+  --accent: var(
+    --color-background-info,
+    light-dark(rgb(229 242 255), rgb(13 39 63))
+  );
+  --accent-foreground: var(
+    --color-text-info,
+    light-dark(rgb(51 156 255), rgb(131 195 255))
+  );
+  --destructive: var(
+    --color-text-warning,
+    light-dark(rgb(226 85 7), rgb(255 133 73))
+  );
+  --border: var(
+    --color-border-secondary,
+    light-dark(rgb(26 28 31 / 8%), rgb(255 255 255 / 8.2%))
+  );
+  --input: var(
+    --color-border-primary,
+    light-dark(
+      rgb(26 28 31 / 11.8%),
+      color-mix(in oklab, rgb(0 0 0) 10%, transparent)
+    )
+  );
+  --ring: var(
+    --color-ring-primary,
+    light-dark(rgb(51 156 255), rgb(131 195 255 / 76%))
+  );
+  --font-size-base: var(--font-text-md-size, 14px);
+  --blue: light-dark(rgb(51 156 255), rgb(51 156 255));
+  --orange: light-dark(rgb(226 85 7), rgb(251 106 34));
+  --green: light-dark(rgb(0 162 64), rgb(64 201 119));
+  --red: light-dark(rgb(224 46 42), rgb(255 103 100));
+  --purple: light-dark(rgb(146 79 247), rgb(173 123 249));
+  --yellow: light-dark(rgb(255 195 0), rgb(255 210 64));
+  --viz-series-1: var(--primary);
+  --viz-series-2: light-dark(rgb(243 136 59), rgb(245 154 86));
+  --viz-series-3: light-dark(rgb(93 201 119), rgb(116 213 139));
+  --viz-series-4: light-dark(rgb(235 119 177), rgb(240 143 192));
+  --viz-series-5: light-dark(rgb(155 121 236), rgb(170 145 239));
+  --viz-series-6: light-dark(rgb(58 185 177), rgb(90 203 194));
+
+  /* Internal implementation variables; not part of the agent contract. */
+  --font-sans: -apple-system, system-ui, &quot;Segoe UI&quot;, sans-serif;
+  --font-mono:
+    ui-monospace, SFMono-Regular, &quot;SF Mono&quot;, Menlo, Consolas, &quot;Liberation Mono&quot;,
+    monospace;
+  --font-size-normal: max(11px, var(--font-size-base));
+  --font-size-tooltip: calc(var(--font-size-base) - 1px);
+  --font-size-small: max(11px, calc(var(--font-size-base) - 2px));
+  --font-size-h1: calc(var(--font-size-normal) * 1.7142857143);
+  --font-size-h2: calc(var(--font-size-normal) * 1.4285714286);
+  --font-size-h3: calc(var(--font-size-normal) * 1.2857142857);
+  --font-weight-normal: 430;
+  --font-weight-medium: 500;
+  --line-height-normal: calc(var(--font-size-normal) * 1.5);
+  --line-height-tooltip: calc(var(--font-size-tooltip) * 1.4285714286);
+  --line-height-small: calc(var(--font-size-small) + 4px);
+  --radius: var(--border-radius-lg, 12.5px);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-2xl: calc(var(--radius) * 1.6);
+  --radius-full: 9999px;
+  --shadow-sm: 0 1px 2px -1px rgb(0 0 0 / 8%);
+  --checkmark-image: url(&quot;data:image/svg+xml,%3Csvg xmlns=&#x27;http://www.w3.org/2000/svg&#x27; viewBox=&#x27;0 0 17 17&#x27;%3E%3Cpath d=&#x27;M12.8961 3.64101C13.1297 3.41418 13.4984 3.37523 13.7779 3.56581C14.0571 3.75635 14.1554 4.11331 14.0299 4.41347L13.9615 4.53847L7.71151 13.7045C7.59411 13.8767 7.4063 13.9877 7.19881 14.0072C6.99136 14.0267 6.78564 13.9533 6.63826 13.806L2.88826 10.056L2.79842 9.9457C2.6192 9.67407 2.64927 9.30496 2.88826 9.06581C3.12738 8.82669 3.49647 8.79676 3.76815 8.97597L3.8785 9.06581L7.03084 12.2182L12.8053 3.74941L12.8961 3.64101Z&#x27;/%3E%3C/svg%3E&quot;);
+
+  /* Legacy aliases; not part of the current agent contract. */
+  --viz-bg: transparent;
+  --viz-panel: var(--card);
+  --viz-border: var(--border);
+  --viz-text: var(--foreground);
+  --viz-muted: var(--muted-foreground);
+  --viz-accent: var(--primary);
+  --viz-accent-text: var(--primary-foreground);
+  --viz-accent-bg: var(--accent);
+  --viz-font-size: var(--font-size-base);
+  --viz-warning: var(--destructive);
+}
+
+:root[data-theme=&quot;light&quot;] {
+  color-scheme: light;
+}
+
+:root[data-theme=&quot;dark&quot;] {
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html &gt; body {
+  /* Preserve MCP aliases for older inline renderers without creating :root cycles. */
+  --color-background-primary: var(
+    --background,
+    light-dark(rgb(255 255 255), rgb(24 24 24))
+  );
+  --color-text-primary: var(
+    --foreground,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --color-border-secondary: var(
+    --border,
+    light-dark(rgb(26 28 31 / 8%), rgb(255 255 255 / 8.2%))
+  );
+
+  margin: 0;
+  padding: 5px;
+  color: var(--foreground);
+  background: transparent !important;
+  font-family: var(--font-sans);
+  font-size: var(--font-size-normal);
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-normal);
+}
+
+a {
+  color: color-mix(in srgb, var(--viz-accent) 80%, var(--viz-text) 20%);
+  cursor: pointer;
+  font-weight: var(--font-weight-medium, 500);
+  text-decoration: none;
+  text-underline-offset: 2px;
+}
+
+a:is(:hover, :focus-visible) {
+  text-decoration-line: underline;
+  text-decoration-style: dashed;
+  text-decoration-thickness: 0.5px;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+  margin-block: 0;
+}
+
+h1 {
+  font-size: var(--font-size-h1);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+}
+
+h2 {
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+}
+
+h3,
+h4,
+h5,
+h6 {
+  font-size: var(--font-size-h3);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.3;
+}
+
+b,
+strong,
+th {
+  font-weight: var(--font-weight-medium);
+}
+
+code:not(pre code) {
+  display: inline;
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  corner-shape: superellipse(1.5);
+  background: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  overflow-wrap: anywhere;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  word-break: break-word;
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  color: var(--foreground);
+  font: inherit;
+  text-align: start;
+}
+
+.table :is(th, td) {
+  padding-block: 10px;
+  padding-inline: 0 24px;
+  overflow-wrap: anywhere;
+  border-bottom: 1px solid var(--border);
+  text-align: start;
+  vertical-align: top;
+}
+
+.table-responsive &gt; .table :is(th, td) {
+  overflow-wrap: break-word;
+}
+
+.table :is(th, td):last-child {
+  padding-inline-end: 0;
+}
+
+.table :is(caption, thead th) {
+  font-weight: 600;
+}
+
+.table thead th {
+  padding-block: 8px;
+  border-bottom-color: color-mix(in srgb, var(--foreground) 16%, transparent);
+}
+
+.table tbody tr:last-child :is(th, td) {
+  border-bottom: 0;
+}
+
+.table.table-sm :is(th, td) {
+  padding-block: 6px;
+}
+
+.table.table-sm :is(th, td):not(:last-child) {
+  padding-inline-end: 16px;
+}
+
+.table :is(.text-end, [align=&quot;right&quot;]) {
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+}
+
+.table :is(.text-center, [align=&quot;center&quot;]) {
+  text-align: center;
+}
+
+.table .text-nowrap {
+  white-space: nowrap;
+}
+
+#widget {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  padding: 0;
+  background: transparent !important;
+}
+
+.card {
+  min-width: 0;
+  padding: 12px;
+  overflow: hidden;
+  overflow-wrap: break-word;
+  border-radius: var(--radius-2xl);
+  corner-shape: superellipse(1.5);
+  color: var(--card-foreground);
+  background: var(--card);
+}
+
+#widget &gt; :not(.card) {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.tooltip {
+  position: fixed;
+  z-index: 50;
+  top: 0;
+  left: 0;
+  width: max-content;
+  max-width: min(
+    20rem,
+    var(--tooltip-available-width, calc(100vw - 10px)),
+    calc(100vw - 10px)
+  );
+  max-height: min(
+    var(--tooltip-available-height, calc(100vh - 10px)),
+    calc(100vh - 10px)
+  );
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  corner-shape: superellipse(1.5);
+  color: var(--popover-foreground);
+  background: var(--popover);
+  box-shadow: none;
+  font-size: var(--font-size-tooltip);
+  line-height: var(--line-height-tooltip);
+  overflow-wrap: break-word;
+  white-space: normal;
+  pointer-events: none;
+  user-select: none;
+}
+
+.viz-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(max(180px, 24%), 1fr));
+  gap: 10px;
+}
+
+.viz-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.viz-stat-value {
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+}
+
+.viz-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.viz-badge {
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  color: var(--accent-foreground);
+  background: var(--accent);
+  font-weight: var(--font-weight-medium);
+}
+
+small,
+.text-small,
+.viz-badge {
+  font-size: var(--font-size-small);
+  line-height: var(--line-height-small);
+}
+
+.text-muted {
+  color: var(--muted-foreground);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.viz-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.viz-controls &gt; .form-label {
+  display: grid;
+  min-width: min(100%, 260px);
+  flex: 1 1 280px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 2px 12px;
+  margin-bottom: 0;
+}
+
+.viz-controls &gt; .form-label &gt; :is(.form-control, .form-range, .form-select) {
+  grid-column: 1 / -1;
+}
+
+.btn,
+.form-check-input,
+.form-control,
+.form-range,
+.form-select {
+  font: inherit;
+}
+
+.btn {
+  appearance: button;
+  display: inline-flex;
+  inline-size: fit-content;
+  max-inline-size: 100%;
+  min-height: 28px;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin: 0;
+  padding: 0 8px;
+  -webkit-app-region: no-drag;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-lg);
+  corner-shape: superellipse(1.5);
+  color: var(--secondary-foreground);
+  background: var(--secondary);
+  cursor: var(--cursor-interaction, pointer);
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+.btn:is(.btn-block, .viz-tile) {
+  inline-size: 100%;
+}
+
+.btn.viz-tile {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+a.btn {
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn:not(:disabled):hover {
+  background: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.btn-primary {
+  border-color: transparent;
+  color: var(--primary-foreground);
+  background: var(--foreground);
+  background-clip: padding-box;
+}
+
+.btn-primary .text-muted {
+  color: color-mix(in srgb, var(--primary-foreground) 50%, transparent);
+}
+
+.btn-primary:not(:disabled):hover {
+  background: color-mix(in srgb, var(--foreground) 80%, transparent);
+  background-clip: padding-box;
+}
+
+.btn-ghost {
+  border-color: transparent;
+  color: var(--muted-foreground);
+  background: transparent;
+}
+
+.btn-ghost:not(:disabled):hover {
+  color: var(--foreground);
+  background: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+[data-lucide] {
+  stroke-width: 1.6;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--foreground);
+}
+
+.form-control {
+  display: block;
+  width: 100%;
+  min-height: 28px;
+  padding: 0 8px;
+  outline: none;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-lg);
+  corner-shape: superellipse(1.5);
+  color: var(--foreground);
+  background: var(--secondary);
+}
+
+.form-control::placeholder {
+  color: var(--muted-foreground);
+}
+
+.form-control[type=&quot;file&quot;] {
+  padding: 0;
+  overflow: hidden;
+  cursor: var(--cursor-interaction, pointer);
+}
+
+.form-control[type=&quot;file&quot;]::file-selector-button {
+  min-height: 26px;
+  margin-right: 8px;
+  padding: 0 8px;
+  border: 0;
+  border-right: 1px solid var(--input);
+  color: var(--secondary-foreground);
+  background: var(--secondary);
+  cursor: inherit;
+  font: inherit;
+}
+
+.form-control[type=&quot;file&quot;]:not(:disabled):hover::file-selector-button {
+  background: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.form-control-color[type=&quot;color&quot;] {
+  width: 40px;
+  height: 28px;
+  padding: 3px;
+  cursor: var(--cursor-interaction, pointer);
+}
+
+.form-control-color[type=&quot;color&quot;]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.form-control-color[type=&quot;color&quot;]::-webkit-color-swatch {
+  border: 0;
+  border-radius: calc(var(--radius-lg) - 4px);
+  corner-shape: superellipse(1.5);
+}
+
+textarea.form-control {
+  height: auto;
+  min-height: 72px;
+  padding: 8px 10px;
+  resize: vertical;
+}
+
+.form-control:focus-visible {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-control:disabled,
+.form-select:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.form-select {
+  appearance: none;
+  display: block;
+  width: 100%;
+  min-height: 28px;
+  margin: 0;
+  padding: 0 32px 0 8px;
+  outline: none;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-lg);
+  corner-shape: superellipse(1.5);
+  color: var(--foreground);
+  background-color: var(--secondary);
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--muted-foreground) 50%),
+    linear-gradient(135deg, var(--muted-foreground) 50%, transparent 50%);
+  background-position:
+    calc(100% - 14px) 50%,
+    calc(100% - 10px) 50%;
+  background-repeat: no-repeat;
+  background-size: 4px 4px;
+  cursor: var(--cursor-interaction, default);
+}
+
+.form-select:not(:disabled):hover {
+  background-color: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.form-select:focus-visible {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-check {
+  display: flex;
+  min-height: 20px;
+  align-items: center;
+  gap: 6px;
+}
+
+.form-check-input {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+  margin: 0;
+  border: 1px solid var(--input);
+  color: var(--primary-foreground);
+  background-color: transparent;
+  cursor: var(--cursor-interaction, default);
+  transition:
+    background-color 150ms,
+    border-color 150ms,
+    box-shadow 150ms;
+}
+
+.form-check:not(.form-switch) .form-check-input[type=&quot;checkbox&quot;] {
+  border-color: var(--input);
+  border-radius: var(--radius-sm);
+  corner-shape: superellipse(1.5);
+  background-color: var(--secondary);
+  box-shadow: var(--shadow-sm);
+}
+
+.form-check:not(.form-switch)
+  .form-check-input:not(:disabled):not(:checked):hover {
+  background-color: var(--card);
+}
+
+.form-check:not(.form-switch) .form-check-input[type=&quot;checkbox&quot;]:checked {
+  border-color: var(--primary);
+  background-color: var(--primary);
+}
+
+.form-check:not(.form-switch)
+  .form-check-input[type=&quot;checkbox&quot;]:checked::before {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--primary-foreground);
+  content: &quot;&quot;;
+  mask: var(--checkmark-image) center / 12px 12px no-repeat;
+}
+
+.form-check-input[type=&quot;radio&quot;] {
+  width: 14px;
+  height: 14px;
+  border-radius: var(--radius-full);
+}
+
+.form-check-input[type=&quot;radio&quot;]:checked {
+  border: 2px solid var(--primary);
+  background:
+    radial-gradient(circle, var(--primary-foreground) 0 2.5px, transparent 3px),
+    var(--primary);
+}
+
+.form-check:not(.form-switch) .form-check-input:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.form-check:not(.form-switch) .form-check-input:disabled {
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.form-check:not(.form-switch) .form-check-input:disabled + .form-check-label {
+  cursor: not-allowed;
+}
+
+.form-switch .form-check-input:disabled,
+.form-switch .form-check-input:disabled + .form-check-label {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.form-check-label {
+  color: var(--foreground);
+  cursor: var(--cursor-interaction, default);
+}
+
+.form-switch .form-check-input {
+  position: relative;
+  width: 32px;
+  height: 20px;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--muted);
+  box-shadow: none;
+  transition: background-color 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.form-switch .form-check-input::before {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 16px;
+  height: 16px;
+  box-sizing: border-box;
+  border: 1px solid light-dark(var(--primary-foreground), var(--foreground));
+  border-radius: var(--radius-full);
+  background: light-dark(var(--primary-foreground), var(--foreground));
+  box-shadow: var(--shadow-sm);
+  content: &quot;&quot;;
+  transform: translate(2px, -50%);
+  transition: transform 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.form-switch .form-check-input:checked {
+  background: var(--primary);
+}
+
+.form-switch .form-check-input:checked::before {
+  transform: translate(14px, -50%);
+}
+
+.form-switch .form-check-input:focus-visible {
+  box-shadow: 0 0 0 2px var(--ring);
+}
+
+.form-range {
+  appearance: none;
+  display: block;
+  width: 100%;
+  height: 28px;
+  flex: 1;
+  margin: 0;
+  padding: 0;
+  outline: none;
+  border: 0;
+  accent-color: var(--primary);
+  background: linear-gradient(
+      color-mix(in srgb, var(--foreground) 7%, transparent),
+      color-mix(in srgb, var(--foreground) 7%, transparent)
+    )
+    center / 100% 2px no-repeat;
+}
+
+.form-range::-webkit-slider-runnable-track {
+  height: 28px;
+  background: transparent;
+}
+
+.form-range::-webkit-slider-thumb {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  margin-top: 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: light-dark(var(--primary-foreground), var(--foreground));
+}
+
+.form-range:focus-visible::-webkit-slider-thumb {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-range::-moz-range-track {
+  height: 28px;
+  background: transparent;
+}
+
+.form-range::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: light-dark(var(--primary-foreground), var(--foreground));
+}
+
+.form-range:focus-visible::-moz-range-thumb {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-range:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.btn:not(.btn-primary, .viz-tile):is(
+    [aria-pressed=&quot;true&quot;],
+    [aria-selected=&quot;true&quot;],
+    .is-selected
+  ) {
+  border-color: var(--primary);
+  color: var(--primary-foreground);
+  background: var(--primary);
+}
+
+.btn.viz-tile:is([aria-pressed=&quot;true&quot;], [aria-selected=&quot;true&quot;], .is-selected) {
+  border-color: var(--primary);
+  box-shadow: inset 0 0 0 1px var(--primary);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+#widget &gt; svg {
+  width: 100%;
+}
+
+/* Model-authored chart rules can otherwise stretch icons after these styles load. */
+svg.lucide {
+  display: block;
+  width: 16px !important;
+  height: 16px !important;
+  flex: none;
+  margin: 0 !important;
+  stroke-width: 1.6;
+}
+
+.text-warning,
+.text-destructive {
+  color: var(--destructive);
+}
+
+html&gt;body{padding:0}&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;div id=&quot;blockchain-3d-explorer&quot; aria-labelledby=&quot;chain-explorer-heading&quot;&gt;
+  &lt;style&gt;
+    #blockchain-3d-explorer { color: var(--foreground); }
+    #blockchain-3d-explorer .explorer-layout { display: grid; grid-template-columns: minmax(0, 1fr) 210px; gap: 1rem; align-items: start; }
+    #blockchain-3d-explorer .scene-wrap { min-width: 0; }
+    #blockchain-3d-explorer #chain-scene { display: block; width: 100%; height: 430px; touch-action: none; outline: none; }
+    #blockchain-3d-explorer .chain-key { display: grid; gap: .5rem; align-content: start; padding-top: .4rem; }
+    #blockchain-3d-explorer .key-row { display: flex; gap: .5rem; align-items: center; }
+    #blockchain-3d-explorer .swatch { width: .8rem; height: .8rem; border-radius: 999px; flex: 0 0 auto; }
+    #blockchain-3d-explorer .swatch.transfer { background: var(--viz-series-1); }
+    #blockchain-3d-explorer .swatch.contract { background: var(--viz-series-4); }
+    #blockchain-3d-explorer .swatch.nft { background: var(--viz-series-2); }
+    #blockchain-3d-explorer .swatch.participant { background: var(--primary); }
+    #blockchain-3d-explorer .swatch.selected { background: var(--primary); }
+    #blockchain-3d-explorer .scene-note { margin-top: -.25rem; }
+    #blockchain-3d-explorer .detail-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .75rem; }
+    #blockchain-3d-explorer .detail-item { min-width: 0; }
+    #blockchain-3d-explorer .detail-value { overflow-wrap: anywhere; }
+    #blockchain-3d-explorer .axis-line { display: flex; justify-content: space-between; margin-top: -.25rem; }
+    @media (max-width: 580px) {
+      #blockchain-3d-explorer .explorer-layout { grid-template-columns: 1fr; }
+      #blockchain-3d-explorer .chain-key { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      #blockchain-3d-explorer #chain-scene { height: 360px; }
+      #blockchain-3d-explorer .detail-grid { grid-template-columns: 1fr; gap: .35rem; }
+    }
+  &lt;/style&gt;
+
+  &lt;h2 id=&quot;chain-explorer-heading&quot;&gt;3D blockchain explorer&lt;/h2&gt;
+  &lt;div class=&quot;viz-controls&quot; aria-label=&quot;Explorer filters&quot;&gt;
+    &lt;label class=&quot;form-label&quot; for=&quot;tx-filter&quot;&gt;Transaction type
+      &lt;select class=&quot;form-select&quot; id=&quot;tx-filter&quot;&gt;
+        &lt;option value=&quot;all&quot;&gt;All transactions&lt;/option&gt;
+        &lt;option value=&quot;transfer&quot;&gt;Transfers&lt;/option&gt;
+        &lt;option value=&quot;contract&quot;&gt;Contracts&lt;/option&gt;
+        &lt;option value=&quot;nft&quot;&gt;NFT mints&lt;/option&gt;
+      &lt;/select&gt;
+    &lt;/label&gt;
+    &lt;label class=&quot;form-label&quot; for=&quot;fee-filter&quot;&gt;Minimum fee: &lt;output id=&quot;fee-output&quot;&gt;0.00 ETH&lt;/output&gt;
+      &lt;input class=&quot;form-range&quot; id=&quot;fee-filter&quot; type=&quot;range&quot; min=&quot;0&quot; max=&quot;0.1&quot; value=&quot;0&quot; step=&quot;0.01&quot;&gt;
+    &lt;/label&gt;
+    &lt;label class=&quot;form-label&quot; for=&quot;block-speed&quot;&gt;Block pace: &lt;output id=&quot;speed-output&quot;&gt;0.40 blocks/s&lt;/output&gt;
+      &lt;input class=&quot;form-range&quot; id=&quot;block-speed&quot; type=&quot;range&quot; min=&quot;0.2&quot; max=&quot;1.2&quot; value=&quot;0.4&quot; step=&quot;0.1&quot;&gt;
+    &lt;/label&gt;
+    &lt;button class=&quot;btn&quot; type=&quot;button&quot; id=&quot;pause-simulation&quot; aria-pressed=&quot;false&quot;&gt;Pause simulation&lt;/button&gt;
+    &lt;button class=&quot;btn btn-ghost&quot; type=&quot;button&quot; id=&quot;reset-camera&quot;&gt;Reset view&lt;/button&gt;
+    &lt;span class=&quot;text-small text-muted&quot; id=&quot;simulation-status&quot; aria-live=&quot;polite&quot;&gt;Live simulation&lt;/span&gt;
+  &lt;/div&gt;
+
+  &lt;div class=&quot;explorer-layout&quot;&gt;
+    &lt;div class=&quot;scene-wrap&quot;&gt;
+      &lt;canvas id=&quot;chain-scene&quot; role=&quot;img&quot; aria-label=&quot;Interactive three-dimensional blockchain with selectable blocks. Drag to orbit and use the mouse wheel to zoom.&quot;&gt;Interactive blockchain visualization.&lt;/canvas&gt;
+      &lt;div class=&quot;axis-line text-small text-muted&quot; aria-hidden=&quot;true&quot;&gt;&lt;span&gt;Older blocks&lt;/span&gt;&lt;span&gt;Newest block&lt;/span&gt;&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;aside class=&quot;chain-key text-small&quot; aria-label=&quot;Transaction legend&quot;&gt;
+      &lt;div class=&quot;key-row&quot;&gt;&lt;span class=&quot;swatch transfer&quot;&gt;&lt;/span&gt;&lt;span&gt;Transfers&lt;/span&gt;&lt;/div&gt;
+      &lt;div class=&quot;key-row&quot;&gt;&lt;span class=&quot;swatch contract&quot;&gt;&lt;/span&gt;&lt;span&gt;Contracts&lt;/span&gt;&lt;/div&gt;
+      &lt;div class=&quot;key-row&quot;&gt;&lt;span class=&quot;swatch nft&quot;&gt;&lt;/span&gt;&lt;span&gt;NFT mints&lt;/span&gt;&lt;/div&gt;
+      &lt;div class=&quot;key-row&quot;&gt;&lt;span class=&quot;swatch participant&quot;&gt;&lt;/span&gt;&lt;span&gt;Global activity&lt;/span&gt;&lt;/div&gt;
+      &lt;div class=&quot;key-row&quot;&gt;&lt;span class=&quot;swatch selected&quot;&gt;&lt;/span&gt;&lt;span&gt;Selected block&lt;/span&gt;&lt;/div&gt;
+      &lt;p class=&quot;text-muted scene-note&quot;&gt;Drag to orbit · scroll to zoom · select a block&lt;/p&gt;
+    &lt;/aside&gt;
+  &lt;/div&gt;
+
+  &lt;section class=&quot;card&quot; aria-live=&quot;polite&quot; aria-label=&quot;Selected block details&quot;&gt;
+    &lt;div class=&quot;text-small text-muted&quot;&gt;Selected block&lt;/div&gt;
+    &lt;div class=&quot;detail-grid&quot;&gt;
+      &lt;div class=&quot;detail-item&quot;&gt;&lt;div class=&quot;text-small text-muted&quot;&gt;Height&lt;/div&gt;&lt;div class=&quot;detail-value&quot; id=&quot;detail-height&quot;&gt;—&lt;/div&gt;&lt;/div&gt;
+      &lt;div class=&quot;detail-item&quot;&gt;&lt;div class=&quot;text-small text-muted&quot;&gt;Hash&lt;/div&gt;&lt;div class=&quot;detail-value&quot; id=&quot;detail-hash&quot;&gt;—&lt;/div&gt;&lt;/div&gt;
+      &lt;div class=&quot;detail-item&quot;&gt;&lt;div class=&quot;text-small text-muted&quot;&gt;Contents&lt;/div&gt;&lt;div class=&quot;detail-value&quot; id=&quot;detail-content&quot;&gt;—&lt;/div&gt;&lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/section&gt;
+
+  &lt;p class=&quot;text-small text-muted&quot;&gt;Illustrative chain data for exploration.&lt;/p&gt;
+
+  &lt;script&gt;
+    (() =&gt; {
+      const root = document.getElementById(&#x27;blockchain-3d-explorer&#x27;);
+      const canvas = root.querySelector(&#x27;#chain-scene&#x27;);
+      const context = canvas.getContext(&#x27;2d&#x27;);
+      const typeFilter = root.querySelector(&#x27;#tx-filter&#x27;);
+      const feeFilter = root.querySelector(&#x27;#fee-filter&#x27;);
+      const feeOutput = root.querySelector(&#x27;#fee-output&#x27;);
+      const speedFilter = root.querySelector(&#x27;#block-speed&#x27;);
+      const speedOutput = root.querySelector(&#x27;#speed-output&#x27;);
+      const pauseButton = root.querySelector(&#x27;#pause-simulation&#x27;);
+      const resetButton = root.querySelector(&#x27;#reset-camera&#x27;);
+      const simulationStatus = root.querySelector(&#x27;#simulation-status&#x27;);
+      const details = {
+        height: root.querySelector(&#x27;#detail-height&#x27;),
+        hash: root.querySelector(&#x27;#detail-hash&#x27;),
+        content: root.querySelector(&#x27;#detail-content&#x27;)
+      };
+      const blocks = [
+        { height: 8418021, hash: &#x27;0x72b9…e1a4&#x27;, fee: 0.01, tx: { transfer: 7, contract: 1, nft: 0 } },
+        { height: 8418022, hash: &#x27;0x5f16…c3d0&#x27;, fee: 0.02, tx: { transfer: 3, contract: 2, nft: 1 } },
+        { height: 8418023, hash: &#x27;0xa4c8…9e5b&#x27;, fee: 0.03, tx: { transfer: 8, contract: 0, nft: 2 } },
+        { height: 8418024, hash: &#x27;0x1d6e…4af7&#x27;, fee: 0.04, tx: { transfer: 2, contract: 4, nft: 0 } },
+        { height: 8418025, hash: &#x27;0x8f34…b902&#x27;, fee: 0.05, tx: { transfer: 6, contract: 1, nft: 3 } },
+        { height: 8418026, hash: &#x27;0xc7a1…6d3e&#x27;, fee: 0.06, tx: { transfer: 4, contract: 3, nft: 0 } },
+        { height: 8418027, hash: &#x27;0x39de…f815&#x27;, fee: 0.07, tx: { transfer: 9, contract: 1, nft: 1 } },
+        { height: 8418028, hash: &#x27;0xe205…7ac9&#x27;, fee: 0.08, tx: { transfer: 1, contract: 5, nft: 2 } },
+        { height: 8418029, hash: &#x27;0x6b8a…0d42&#x27;, fee: 0.09, tx: { transfer: 5, contract: 2, nft: 0 } },
+        { height: 8418030, hash: &#x27;0x94f3…8bc6&#x27;, fee: 0.10, tx: { transfer: 7, contract: 2, nft: 4 } }
+      ];
+      const css = getComputedStyle(root);
+      const colors = {
+        transfer: css.getPropertyValue(&#x27;--viz-series-1&#x27;).trim(),
+        contract: css.getPropertyValue(&#x27;--viz-series-4&#x27;).trim(),
+        nft: css.getPropertyValue(&#x27;--viz-series-2&#x27;).trim(),
+        primary: css.getPropertyValue(&#x27;--primary&#x27;).trim(),
+        muted: css.getPropertyValue(&#x27;--muted-foreground&#x27;).trim(),
+        border: css.getPropertyValue(&#x27;--border&#x27;).trim()
+      };
+      const participantNodes = Array.from({ length: 170 }, (_, index) =&gt; {
+        const seed = (index * 9301 + 49297) % 233280 / 233280;
+        const next = ((index + 47) * 9301 + 49297) % 233280 / 233280;
+        const third = ((index + 103) * 9301 + 49297) % 233280 / 233280;
+        return { x: (seed - .5) * 16, y: (next - .5) * 6.6, z: (third - .5) * 5.2, phase: index * .37, category: index % 3 };
+      });
+      let selected = blocks[blocks.length - 1];
+      let yaw = -0.42;
+      let pitch = 0.35;
+      let zoom = 1;
+      let flow = 0;
+      let running = !window.matchMedia(&#x27;(prefers-reduced-motion: reduce)&#x27;).matches;
+      let lastFrame = performance.now();
+      let blockSeed = 8418030;
+      let liveTime = 0;
+      let dragging = false;
+      let dragStart = { x: 0, y: 0 };
+      let lastPointer = { x: 0, y: 0 };
+      let drawnBlocks = [];
+
+      function dominantType(block) {
+        return Object.entries(block.tx).sort((a, b) =&gt; b[1] - a[1])[0][0];
+      }
+      function qualifies(block) {
+        const kind = typeFilter.value;
+        return block.fee &gt;= Number(feeFilter.value) &amp;&amp; (kind === &#x27;all&#x27; || block.tx[kind] &gt; 0);
+      }
+      function contents(block) {
+        return Object.entries(block.tx).filter(([, value]) =&gt; value).map(([key, value]) =&gt; `${value} ${key}${value === 1 ? &#x27;&#x27; : &#x27;s&#x27;}`).join(&#x27; · &#x27;);
+      }
+      function makeBlock() {
+        blockSeed += 1;
+        const transfer = (blockSeed * 7) % 9 + 1;
+        const contract = (blockSeed * 3) % 5;
+        const nft = (blockSeed * 5) % 4;
+        const fee = ((blockSeed % 10) + 1) / 100;
+        const code = (blockSeed * 2654435761 &gt;&gt;&gt; 0).toString(16).padStart(8, &#x27;0&#x27;);
+        return { height: blockSeed, hash: `0x${code.slice(0, 4)}…${code.slice(4)}`, fee, tx: { transfer, contract, nft } };
+      }
+      function mineBlock() {
+        const removed = blocks.shift();
+        blocks.push(makeBlock());
+        flow -= 1;
+        if (selected === removed) selected = blocks[blocks.length - 1];
+        applyFilters();
+        updateSimulationState();
+      }
+      function updateDetails(block) {
+        if (!block) {
+          details.height.textContent = &#x27;No matching block&#x27;;
+          details.hash.textContent = &#x27;—&#x27;;
+          details.content.textContent = &#x27;Adjust filters to include a block.&#x27;;
+          return;
+        }
+        details.height.textContent = `#${block.height}`;
+        details.hash.textContent = block.hash;
+        details.content.textContent = `${contents(block)} · ${block.fee.toFixed(2)} ETH fee`;
+      }
+      function rotate(point) {
+        const cosYaw = Math.cos(yaw);
+        const sinYaw = Math.sin(yaw);
+        const cosPitch = Math.cos(pitch);
+        const sinPitch = Math.sin(pitch);
+        const x = point.x * cosYaw - point.z * sinYaw;
+        const z = point.x * sinYaw + point.z * cosYaw;
+        return { x, y: point.y * cosPitch - z * sinPitch, z: point.y * sinPitch + z * cosPitch };
+      }
+      function project(point, width, height) {
+        const rotated = rotate(point);
+        const scale = Math.min(width, height) * 0.095 * zoom / (1 - rotated.z * 0.06);
+        return { x: width / 2 + rotated.x * scale, y: height / 2 - rotated.y * scale, z: rotated.z, scale };
+      }
+      function polygon(points, fill, alpha, stroke) {
+        context.globalAlpha = alpha;
+        context.beginPath();
+        context.moveTo(points[0].x, points[0].y);
+        points.slice(1).forEach((point) =&gt; context.lineTo(point.x, point.y));
+        context.closePath();
+        context.fillStyle = fill;
+        context.fill();
+        if (stroke) {
+          context.globalAlpha = 0.72;
+          context.strokeStyle = stroke;
+          context.stroke();
+        }
+        context.globalAlpha = 1;
+      }
+      function blockVertices(block, index, width, height) {
+        const center = { x: (index - 4.5 - flow) * 1.33, y: (index % 2) * 0.24, z: Math.sin(index * 0.9) * 0.45 };
+        const corners = [
+          [-.57, -.39, -.57], [.57, -.39, -.57], [.57, .39, -.57], [-.57, .39, -.57],
+          [-.57, -.39, .57], [.57, -.39, .57], [.57, .39, .57], [-.57, .39, .57]
+        ].map(([x, y, z]) =&gt; project({ x: center.x + x, y: center.y + y, z: center.z + z }, width, height));
+        const origin = project(center, width, height);
+        return { block, index, corners, origin, depth: origin.z };
+      }
+      function drawBlock(item) {
+        const c = item.corners;
+        const fill = colors[dominantType(item.block)];
+        const edge = colors.border;
+        polygon([c[0], c[1], c[2], c[3]], fill, 0.42, edge);
+        polygon([c[1], c[5], c[6], c[2]], fill, 0.7, edge);
+        polygon([c[3], c[2], c[6], c[7]], fill, 1, edge);
+        if (item.block === selected) {
+          context.lineWidth = 2;
+          context.strokeStyle = colors.primary;
+          context.beginPath();
+          context.moveTo(c[0].x, c[0].y);
+          [c[1], c[2], c[3], c[0], c[4], c[5], c[6], c[7], c[4]].forEach((point) =&gt; context.lineTo(point.x, point.y));
+          context.moveTo(c[1].x, c[1].y); context.lineTo(c[5].x, c[5].y);
+          context.moveTo(c[2].x, c[2].y); context.lineTo(c[6].x, c[6].y);
+          context.moveTo(c[3].x, c[3].y); context.lineTo(c[7].x, c[7].y);
+          context.stroke();
+          context.lineWidth = 1;
+        }
+      }
+      function drawNetwork(width, height) {
+        participantNodes.forEach((node) =&gt; {
+          const pulse = Math.sin(liveTime * 2.8 + node.phase);
+          const point = project({ x: node.x, y: node.y + Math.cos(liveTime * 1.6 + node.phase) * .18, z: node.z + pulse * .32 }, width, height);
+          const palette = [colors.transfer, colors.contract, colors.nft];
+          context.globalAlpha = .16 + Math.max(0, pulse) * .34;
+          context.fillStyle = palette[node.category];
+          context.beginPath();
+          context.arc(point.x, point.y, Math.max(1.1, point.scale * .026), 0, Math.PI * 2);
+          context.fill();
+        });
+        context.globalAlpha = 1;
+      }
+      function render() {
+        const rect = canvas.getBoundingClientRect();
+        const ratio = Math.min(window.devicePixelRatio || 1, 2);
+        const width = Math.max(1, Math.round(rect.width));
+        const height = Math.max(1, Math.round(rect.height));
+        if (canvas.width !== width * ratio || canvas.height !== height * ratio) {
+          canvas.width = width * ratio;
+          canvas.height = height * ratio;
+        }
+        context.setTransform(ratio, 0, 0, ratio, 0, 0);
+        context.clearRect(0, 0, width, height);
+        drawnBlocks = blocks.map((block, index) =&gt; blockVertices(block, index, width, height)).filter((item) =&gt; qualifies(item.block)).sort((a, b) =&gt; a.depth - b.depth);
+        drawNetwork(width, height);
+        context.lineWidth = 1;
+        context.strokeStyle = colors.muted;
+        context.globalAlpha = 0.48;
+        for (let index = 0; index &lt; drawnBlocks.length - 1; index += 1) {
+          context.beginPath();
+          context.moveTo(drawnBlocks[index].origin.x, drawnBlocks[index].origin.y);
+          context.lineTo(drawnBlocks[index + 1].origin.x, drawnBlocks[index + 1].origin.y);
+          context.stroke();
+        }
+        context.globalAlpha = 1;
+        drawnBlocks.forEach(drawBlock);
+      }
+      function applyFilters() {
+        if (!selected || !qualifies(selected)) selected = blocks.find(qualifies) || null;
+        updateDetails(selected);
+      }
+      function updateSimulationState() {
+        pauseButton.textContent = running ? &#x27;Pause simulation&#x27; : &#x27;Resume simulation&#x27;;
+        pauseButton.setAttribute(&#x27;aria-pressed&#x27;, String(!running));
+        simulationStatus.textContent = running ? `Live simulation: 2.4M wallets around block #${blocks[blocks.length - 1].height}` : &#x27;Global simulation paused&#x27;;
+      }
+      function animate(now) {
+        const elapsed = Math.min((now - lastFrame) / 1000, 0.1);
+        lastFrame = now;
+        if (running) {
+          flow += elapsed * Number(speedFilter.value);
+          liveTime += elapsed;
+          while (flow &gt;= 1) mineBlock();
+        }
+        render();
+        window.requestAnimationFrame(animate);
+      }
+      function selectAt(event) {
+        const rect = canvas.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
+        const nearest = drawnBlocks.map((item) =&gt; ({ item, distance: Math.hypot(item.origin.x - x, item.origin.y - y) })).sort((a, b) =&gt; a.distance - b.distance)[0];
+        if (nearest &amp;&amp; nearest.distance &lt; 58) {
+          selected = nearest.item.block;
+          updateDetails(selected);
+          render();
+        }
+      }
+      canvas.addEventListener(&#x27;pointerdown&#x27;, (event) =&gt; {
+        dragging = true;
+        dragStart = { x: event.clientX, y: event.clientY };
+        lastPointer = dragStart;
+        canvas.setPointerCapture(event.pointerId);
+      });
+      canvas.addEventListener(&#x27;pointermove&#x27;, (event) =&gt; {
+        if (!dragging) return;
+        yaw -= (event.clientX - lastPointer.x) * 0.008;
+        pitch = Math.max(-0.15, Math.min(1.05, pitch + (event.clientY - lastPointer.y) * 0.008));
+        lastPointer = { x: event.clientX, y: event.clientY };
+        render();
+      });
+      canvas.addEventListener(&#x27;pointerup&#x27;, (event) =&gt; {
+        dragging = false;
+        canvas.releasePointerCapture(event.pointerId);
+        if (Math.hypot(event.clientX - dragStart.x, event.clientY - dragStart.y) &lt; 5) selectAt(event);
+      });
+      canvas.addEventListener(&#x27;wheel&#x27;, (event) =&gt; {
+        event.preventDefault();
+        zoom = Math.max(0.65, Math.min(1.8, zoom - event.deltaY * 0.0015));
+        render();
+      }, { passive: false });
+      typeFilter.addEventListener(&#x27;change&#x27;, () =&gt; { applyFilters(); render(); });
+      feeFilter.addEventListener(&#x27;input&#x27;, () =&gt; {
+        feeOutput.textContent = `${Number(feeFilter.value).toFixed(2)} ETH`;
+        applyFilters();
+        render();
+      });
+      speedFilter.addEventListener(&#x27;input&#x27;, () =&gt; {
+        speedOutput.textContent = `${Number(speedFilter.value).toFixed(2)} blocks/s`;
+      });
+      pauseButton.addEventListener(&#x27;click&#x27;, () =&gt; {
+        running = !running;
+        lastFrame = performance.now();
+        updateSimulationState();
+      });
+      resetButton.addEventListener(&#x27;click&#x27;, () =&gt; { yaw = -0.42; pitch = 0.35; zoom = 1; render(); });
+      new ResizeObserver(render).observe(canvas);
+      updateDetails(selected);
+      updateSimulationState();
+      window.requestAnimationFrame(animate);
+    })();
+  &lt;/script&gt;
+&lt;/div&gt;
+
+&lt;script src=&quot;https://unpkg.com/@floating-ui/core@1.7.3/dist/floating-ui.core.umd.min.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;https://unpkg.com/@floating-ui/dom@1.7.4/dist/floating-ui.dom.umd.min.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+(() =&gt; {
+  if (window.FloatingUIDOM == null) {
+    return;
+  }
+  const { autoUpdate, computePosition, flip, offset, shift, size } =
+    window.FloatingUIDOM;
+  const tooltipPlacements = new Set([&quot;top&quot;, &quot;right&quot;, &quot;bottom&quot;, &quot;left&quot;]);
+  const tooltipId = `codex-visualization-tooltip-${
+    window.crypto?.randomUUID?.() ?? Date.now().toString(36)
+  }`;
+  const tooltipGap = 5;
+  const hoverDelay = 700;
+  const skipDelay = 300;
+  let activeTrigger = null;
+  let pendingTrigger = null;
+  let tooltip = null;
+  let openTimeout = null;
+  let autoUpdateCleanup = null;
+  let positionRequest = 0;
+  let skipDelayUntil = 0;
+
+  const getTrigger = (target) =&gt;
+    target?.nodeType === Node.ELEMENT_NODE
+      ? target.closest(&quot;[data-tooltip]&quot;)
+      : null;
+  const containsTarget = (trigger, target) =&gt;
+    target?.nodeType != null &amp;&amp; trigger.contains(target);
+  const getContent = (trigger) =&gt;
+    trigger.getAttribute(&quot;data-tooltip&quot;)?.trim() ?? &quot;&quot;;
+  const getPlacement = (trigger) =&gt; {
+    const placement = trigger.getAttribute(&quot;data-tooltip-placement&quot;);
+    return tooltipPlacements.has(placement) ? placement : &quot;top&quot;;
+  };
+  const getTooltip = () =&gt; {
+    if (tooltip == null) {
+      tooltip = document.createElement(&quot;div&quot;);
+      tooltip.id = tooltipId;
+      tooltip.className = &quot;tooltip&quot;;
+      tooltip.setAttribute(&quot;role&quot;, &quot;tooltip&quot;);
+    }
+    return tooltip;
+  };
+  const setDescribedBy = (trigger, described) =&gt; {
+    const ids = new Set(
+      (trigger.getAttribute(&quot;aria-describedby&quot;) ?? &quot;&quot;)
+        .split(/\s+/)
+        .filter(Boolean),
+    );
+    if (described) {
+      ids.add(tooltipId);
+    } else {
+      ids.delete(tooltipId);
+    }
+    if (ids.size === 0) {
+      trigger.removeAttribute(&quot;aria-describedby&quot;);
+    } else {
+      trigger.setAttribute(&quot;aria-describedby&quot;, [...ids].join(&quot; &quot;));
+    }
+  };
+  const clearOpenTimeout = () =&gt; {
+    if (openTimeout != null) {
+      window.clearTimeout(openTimeout);
+      openTimeout = null;
+    }
+    pendingTrigger = null;
+  };
+  const closeTooltip = (activateSkipDelay = true) =&gt; {
+    clearOpenTimeout();
+    positionRequest += 1;
+    autoUpdateCleanup?.();
+    autoUpdateCleanup = null;
+    if (activeTrigger == null) {
+      return;
+    }
+    setDescribedBy(activeTrigger, false);
+    activeTrigger = null;
+    tooltip?.remove();
+    if (activateSkipDelay) {
+      skipDelayUntil = Date.now() + skipDelay;
+    }
+  };
+  const updatePosition = (trigger, floating) =&gt; {
+    const request = ++positionRequest;
+    void computePosition(trigger, floating, {
+      middleware: [
+        offset(tooltipGap),
+        flip({ padding: tooltipGap }),
+        shift({ padding: tooltipGap }),
+        size({
+          padding: tooltipGap,
+          apply({ availableHeight, availableWidth, elements }) {
+            elements.floating.style.setProperty(
+              &quot;--tooltip-available-width&quot;,
+              `${Math.max(0, availableWidth)}px`,
+            );
+            elements.floating.style.setProperty(
+              &quot;--tooltip-available-height&quot;,
+              `${Math.max(0, availableHeight)}px`,
+            );
+          },
+        }),
+      ],
+      placement: getPlacement(trigger),
+      strategy: &quot;fixed&quot;,
+    })
+      .then(({ x, y }) =&gt; {
+        if (activeTrigger !== trigger || request !== positionRequest) {
+          return;
+        }
+        const scale = window.devicePixelRatio || 1;
+        floating.style.transform = `translate(${Math.round(x * scale) / scale}px, ${Math.round(y * scale) / scale}px)`;
+        floating.style.visibility = &quot;visible&quot;;
+      })
+      .catch(() =&gt; {
+        if (activeTrigger === trigger &amp;&amp; request === positionRequest) {
+          closeTooltip(false);
+        }
+      });
+  };
+  const openTooltip = (trigger) =&gt; {
+    const content = getContent(trigger);
+    if (!trigger.isConnected || content.length === 0) {
+      return;
+    }
+    clearOpenTimeout();
+    if (activeTrigger === trigger) {
+      return;
+    }
+    closeTooltip();
+    const floating = getTooltip();
+    floating.textContent = content;
+    floating.style.visibility = &quot;hidden&quot;;
+    floating.style.transform = &quot;translate(0, 0)&quot;;
+    document.body.appendChild(floating);
+    activeTrigger = trigger;
+    setDescribedBy(trigger, true);
+    autoUpdateCleanup = autoUpdate(trigger, floating, () =&gt; {
+      updatePosition(trigger, floating);
+    });
+  };
+  const requestOpen = (trigger, immediate = false) =&gt; {
+    if (
+      getContent(trigger).length === 0 ||
+      activeTrigger === trigger ||
+      pendingTrigger === trigger
+    ) {
+      return;
+    }
+    clearOpenTimeout();
+    pendingTrigger = trigger;
+    const delay =
+      immediate || activeTrigger != null || Date.now() &lt; skipDelayUntil
+        ? 0
+        : hoverDelay;
+    if (delay === 0) {
+      openTooltip(trigger);
+      return;
+    }
+    openTimeout = window.setTimeout(() =&gt; {
+      openTimeout = null;
+      pendingTrigger = null;
+      openTooltip(trigger);
+    }, delay);
+  };
+  const handlePointerOpen = (event) =&gt; {
+    if (event.pointerType === &quot;touch&quot;) {
+      return;
+    }
+    const trigger = getTrigger(event.target);
+    if (trigger == null || containsTarget(trigger, event.relatedTarget)) {
+      return;
+    }
+    requestOpen(trigger);
+  };
+  const handleLeave = (event) =&gt; {
+    const trigger = getTrigger(event.target);
+    if (trigger == null || containsTarget(trigger, event.relatedTarget)) {
+      return;
+    }
+    if (activeTrigger === trigger || pendingTrigger === trigger) {
+      closeTooltip();
+    }
+  };
+  const handleFocusIn = (event) =&gt; {
+    const trigger = getTrigger(event.target);
+    if (trigger?.matches(&quot;:focus-visible&quot;)) {
+      requestOpen(trigger, true);
+    }
+  };
+  const handleKeyDown = (event) =&gt; {
+    if (event.key === &quot;Escape&quot;) {
+      closeTooltip();
+    }
+  };
+  const handleContextMenu = (event) =&gt; {
+    const trigger = getTrigger(event.target);
+    if (activeTrigger === trigger || pendingTrigger === trigger) {
+      closeTooltip();
+    }
+  };
+  const destroy = () =&gt; {
+    closeTooltip(false);
+    document.removeEventListener(&quot;pointerover&quot;, handlePointerOpen);
+    document.removeEventListener(&quot;pointerout&quot;, handleLeave);
+    document.removeEventListener(&quot;focusin&quot;, handleFocusIn);
+    document.removeEventListener(&quot;focusout&quot;, handleLeave);
+    document.removeEventListener(&quot;keydown&quot;, handleKeyDown);
+    document.removeEventListener(&quot;contextmenu&quot;, handleContextMenu);
+    tooltip = null;
+  };
+
+  document.addEventListener(&quot;pointerover&quot;, handlePointerOpen);
+  document.addEventListener(&quot;pointerout&quot;, handleLeave);
+  document.addEventListener(&quot;focusin&quot;, handleFocusIn);
+  document.addEventListener(&quot;focusout&quot;, handleLeave);
+  document.addEventListener(&quot;keydown&quot;, handleKeyDown);
+  document.addEventListener(&quot;contextmenu&quot;, handleContextMenu);
+  window.addEventListener(&quot;pagehide&quot;, destroy, { once: true });
+})();
+&lt;/script&gt;
+&lt;script id=&quot;codex-visualization-lucide&quot; async src=&quot;https://unpkg.com/lucide@1.17.0/dist/umd/lucide.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+(() =&gt; {
+  const initialize = () =&gt; {
+    globalThis.lucide?.createIcons({ attrs: { width: 16, height: 16 } });
+  };
+  if (globalThis.lucide != null) {
+    initialize();
+    return;
+  }
+  document
+    .getElementById(&quot;codex-visualization-lucide&quot;)
+    ?.addEventListener(&quot;load&quot;, initialize, { once: true });
+})();
+&lt;/script&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;
+"></iframe>
+</body>
+</html>
