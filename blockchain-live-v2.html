@@ -25,7 +25,10 @@
   -->
   <title>Smart Realty USA — 3D Blockchain (V2 Dev)</title>
 
-  <!-- Conservative CSP. Exact domains only. Will be refined after full adapter set. -->
+  <!-- Inline SVG favicon — no external 404 -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23090b10'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-size='16' fill='%23f7931a'%3E%E2%82%BF%3C/text%3E%3C/svg%3E" />
+
+  <!-- Conservative CSP. Cloudflare beacon intentionally NOT allowlisted. -->
   <meta http-equiv="Content-Security-Policy" content="
     default-src 'none';
     script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;
@@ -251,6 +254,24 @@
       text-transform: uppercase;
       color: var(--accent);
       font-family: Inter, sans-serif;
+      cursor: pointer;
+      user-select: none;
+    }
+    .proof-box h3::after {
+      content: ' ▾';
+      opacity: 0.6;
+      font-size: 0.65rem;
+    }
+    .proof-box.collapsed {
+      max-height: none;
+      opacity: 0.7;
+    }
+    .proof-box.collapsed pre,
+    .proof-box.collapsed .hint-inline {
+      display: none;
+    }
+    .proof-box.collapsed h3::after {
+      content: ' ▸';
     }
     .proof-box pre {
       margin: 0;
@@ -265,6 +286,18 @@
       border-radius: 8px;
       align-self: flex-start;
     }
+    /* Soften proof box on small screens — collapsed by default */
+    @media (max-width: 900px) {
+      .proof-box {
+        max-width: min(260px, 85vw);
+        max-height: 14vh;
+        opacity: 0.75;
+      }
+      .proof-box:not(.collapsed) {
+        max-height: 22vh;
+      }
+      .hint { display: none; }
+    }
 
     /* ---------- Inspector ---------- */
     .inspector {
@@ -273,12 +306,24 @@
       display: flex;
       flex-direction: column;
       min-height: 0;
+      min-width: 0;
     }
     @media (max-width: 900px) {
       .inspector {
         border-left: 0;
         border-top: 1px solid var(--border);
-        max-height: 42vh;
+        max-height: 38vh;
+        min-height: 160px;
+      }
+    }
+    /* Landscape phones / short viewports */
+    @media (max-height: 500px) and (orientation: landscape) {
+      .inspector {
+        max-height: 48vh;
+        min-height: 120px;
+      }
+      .canvas-wrap {
+        min-height: 200px;
       }
     }
     .inspector-header {
@@ -289,11 +334,14 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      flex-shrink: 0;
     }
     .inspector-body {
       padding: 1rem 1.1rem;
-      overflow: auto;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
       flex: 1;
+      min-height: 0;
       font-size: 0.85rem;
       color: var(--muted);
     }
@@ -358,11 +406,11 @@
     <div class="canvas-wrap">
       <canvas id="scene"></canvas>
       <div class="canvas-overlay">
-        <div class="proof-box" id="proofBox">
-          <h3>Raw normalized snapshot (proof before 3D)</h3>
+        <div class="proof-box collapsed" id="proofBox">
+          <h3 id="proofToggle">Raw snapshot (proof)</h3>
           <pre id="proofPre">Waiting for BitcoinAdapter…</pre>
         </div>
-        <div class="hint">Phase 1: prove real Bitcoin data first. 3D renderer will consume this exact snapshot.</div>
+        <div class="hint">Tap a block to inspect · Drag to orbit</div>
       </div>
     </div>
 
@@ -1302,6 +1350,23 @@
   })();
 
   window.BlockRenderer = BlockRenderer;
+
+  // Proof box toggle (collapsed by default on mobile-friendly layout)
+  (function () {
+    const box = document.getElementById('proofBox');
+    const toggle = document.getElementById('proofToggle');
+    if (box && toggle) {
+      // Start collapsed on narrow screens
+      if (window.matchMedia('(max-width: 900px)').matches) {
+        box.classList.add('collapsed');
+      } else {
+        box.classList.remove('collapsed');
+      }
+      toggle.addEventListener('click', () => {
+        box.classList.toggle('collapsed');
+      });
+    }
+  })();
 
   // Boot
   setStatus('CONNECTING');
