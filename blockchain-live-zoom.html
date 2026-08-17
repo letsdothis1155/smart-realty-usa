@@ -17,7 +17,7 @@
     style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
     font-src https://fonts.gstatic.com;
     img-src 'self' data: blob:;
-    connect-src 'self' https://mempool.space https://mempool.space/api wss://mempool.space;
+    connect-src 'self' https://mempool.smartrealty.us https://mempool.space wss://mempool.smartrealty.us wss://mempool.space;
     worker-src blob:;
     frame-src 'none';
     object-src 'none';
@@ -109,6 +109,7 @@
       <button data-level="3">L3 Tx</button>
     </div>
     <span id="wsPill">CONNECTING</span>
+    <span class="badge" id="srcPill">probing…</span>
     <a href="blockchain-live-v2.html">Back to V2</a>
   </header>
   <aside class="panel" id="infoPanel">
@@ -129,11 +130,46 @@
 
 <script>
 (() => {
-  const WS_URL = "wss://mempool.space/api/v1/ws";
-  const REST = "https://mempool.space/api";
   const MAX_TX = 5000;
   const HYDRATE_CAP = 320;
-  const HYDRATE_CONCURRENCY = 4;
+  const LRU_CAP = 5000;
+
+  const MempoolEndpoint = (() => {
+    const BASE = "https://mempool.smartrealty.us";
+    const FALLBACK = "https://mempool.space";
+    let active = BASE;
+    let usingFallback = false;
+    function show() {
+      const el = document.getElementById("srcPill");
+      if (el) el.textContent = usingFallback ? "API: mempool.space (fallback)" : "API: mempool.smartrealty.us";
+    }
+    function api(path) {
+      const p = path.startsWith("/") ? path : "/" + path;
+      return active.replace(/\/$/, "") + "/api" + p;
+    }
+    function ws() {
+      return active.replace(/^http/i, "ws").replace(/\/$/, "") + "/api/v1/ws";
+    }
+    function concurrency() { return usingFallback ? 4 : 8; }
+    async function probe(base) {
+      const ctrl = new AbortController();
+      const t = setTimeout(() => ctrl.abort(), 3000);
+      try {
+        const res = await fetch(base.replace(/\/$/, "") + "/api/blocks/tip/height", { cache: "no-store", signal: ctrl.signal });
+        return res.ok;
+      } catch (_) { return false; }
+      finally { clearTimeout(t); }
+    }
+    async function choose() {
+      if (await probe(BASE)) { active = BASE; usingFallback = false; }
+      else { active = FALLBACK; usingFallback = true; }
+      show();
+      return { usingFallback };
+    }
+    choose();
+    setInterval(choose, 60000);
+    return { BASE, FALLBACK, api, ws, choose, concurrency, isFallback: () => usingFallback, host: () => usingFallback ? "mempool.space" : "mempool.smartrealty.us" };
+  })();
   const LEVEL_R = [72, 22, 9, 3.4];
   const CAT = ["consolidation", "coinjoin", "inscription", "rbf", "outlier"];
   const CAT_HUE = [0.55, 0.78, 0.12, 0.92, 0.08];
@@ -303,6 +339,7 @@
     goggles: { cats: 0, text: "" },
     camTween: null,
     lastPick: -1,
+    rateLimited: false,
     lastFrame: performance.now(),
     slip: 0
   };
@@ -379,8 +416,16 @@
     const tpos = tx && tx._pos ? tx._pos : { x: bx, y: 1, z: 0 };
     return { r: LEVEL_R[3], a: -Math.PI / 2 + 0.18, b: 0.72, tx: tpos.x, ty: tpos.y, tz: tpos.z };
   }
+  function abortHydrate(block) {
+    if (block && block._hydrate && block._hydrate.abort) {
+      try { block._hydrate.abort.abort(); } catch (_) {}
+      if (block._hydrate.status === "loading") block._hydrate.status = "aborted";
+    }
+  }
   function goLevel(level, opts = {}) {
+    const prev = state.selectedBlock;
     state.level = clamp(level, 0, 3);
+    if (state.level < 1 && prev && prev.pending) abortHydrate(prev);
     if (state.level < 3) state.selectedTx = null;
     if (state.level < 1) { /* keep selectedBlock for memory */ }
     updateCrumbs();
@@ -501,15 +546,18 @@
     txBox.thinInstanceSetBuffer("color", colorBuf, 4, false);
     txBox.thinInstanceCount = n;
     const realN = rects.filter(isHydrated).length;
-    const pending = block.pending;
-    const hyd = block._hydrate;
-    if (pending && hyd && hyd.status === "loading") {
-      matchHud.textContent = `Hydrating ${hyd.done}/${hyd.total} real txs — goggles wait`;
-    } else if (pending && realN === 0) {
+    const hyd = block._hydrate || {};
+    const universe = hyd.universe || block.txCount || 0;
+    if (state.rateLimited) {
+      matchHud.textContent = "Rate limited — backing off";
+    } else if (hyd.status === "loading") {
+      matchHud.textContent = `Hydrating ${hyd.done || 0}/${hyd.total || 0} — goggles wait`;
+    } else if (realN === 0) {
       matchHud.textContent = "Goggles: 0 (no real txs yet)";
+    } else if (universe && realN < universe) {
+      matchHud.textContent = `${matchN} matches in ${realN.toLocaleString()} sampled of ${universe.toLocaleString()} txs · ${matchV.toLocaleString()} vB`;
     } else {
-      matchHud.textContent = `Matches: ${matchN.toLocaleString()} · ${matchV.toLocaleString()} vB` +
-        (pending ? ` · ${realN} hydrated` : "");
+      matchHud.textContent = `${matchN} matches in all ${realN.toLocaleString()} txs · ${matchV.toLocaleString()} vB`;
     }
   }
 
@@ -546,22 +594,62 @@
     ]);
   }
 
-  async function fetchJson(url) {
-    const r = await fetch(url, { cache: "no-store" });
-    if (!r.ok) throw new Error(url + " " + r.status);
+  const txLru = new Map();
+  function lruGet(id) {
+    if (!txLru.has(id)) return null;
+    const v = txLru.get(id);
+    txLru.delete(id); txLru.set(id, v);
+    return v;
+  }
+  function lruSet(id, v) {
+    if (txLru.has(id)) txLru.delete(id);
+    txLru.set(id, v);
+    while (txLru.size > LRU_CAP) txLru.delete(txLru.keys().next().value);
+  }
+  function mulberry32(a) {
+    return function () {
+      let t = a += 0x6D2B79F5;
+      t = Math.imul(t ^ t >>> 15, t | 1);
+      t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+  function seedFromString(s) {
+    let h = 2166136261;
+    for (let i = 0; i < (s || "").length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619);
+    return h >>> 0;
+  }
+  function sampleUniform(ids, n, seed) {
+    const rng = mulberry32(seed);
+    const arr = ids.slice();
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(rng() * (i + 1));
+      const tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
+    }
+    return arr.slice(0, n);
+  }
+
+  async function fetchJson(url, opts = {}) {
+    const r = await fetch(url, { cache: "no-store", signal: opts.signal });
+    if (r.status === 429) {
+      state.rateLimited = true;
+      throw Object.assign(new Error("rate limited"), { status: 429 });
+    }
+    if (!r.ok) throw Object.assign(new Error(url + " " + r.status), { status: r.status });
+    state.rateLimited = false;
     return r.json();
   }
 
   async function bootstrap() {
     try {
-      const raw = await fetchJson(REST + "/blocks");
+      const raw = await fetchJson(MempoolEndpoint.api("/blocks"));
       const confirmed = (raw || []).slice(0, 10).reverse().map((b) => ({
         hash: b.id, height: b.height, txCount: b.tx_count, pending: false,
         medianFee: b.extras && b.extras.medianFee, timestamp: b.timestamp
       }));
       let pending = [];
       try {
-        const mb = await fetchJson(REST + "/v1/fees/mempool-blocks");
+        const mb = await fetchJson(MempoolEndpoint.api("/v1/fees/mempool-blocks"));
         pending = (mb || []).slice(0, 3).map((p, i) => ({
           hash: "mempool-" + i, height: null, txCount: p.nTx, pending: true,
           medianFee: p.medianFee, feeRange: p.feeRange, blockVSize: p.blockVSize
@@ -575,6 +663,18 @@
     }
   }
 
+  function mapFullTx(t) {
+    const vsize = t.weight ? t.weight / 4 : (t.vsize || t.size || 200);
+    const fee = t.fee || 0;
+    const value = (t.vout || []).reduce((s, o) => s + (o.value || 0), 0);
+    const row = {
+      txid: t.txid, vsize, fee, feePerVsize: t.feePerVsize || fee / Math.max(1, vsize),
+      value, vin: t.vin || [], vout: t.vout || [], mask: 0, _grow: 0, synthetic: false
+    };
+    row.mask = classify(row);
+    return row;
+  }
+
   async function loadBlockTxs(block) {
     if (!block || block.pending) return;
     if (state.txCache.has(block.hash)) {
@@ -584,25 +684,42 @@
       return;
     }
     const acc = [];
+    const abort = new AbortController();
+    block._hydrate = { status: "loading", done: 0, total: block.txCount || MAX_TX, abort, universe: block.txCount || 0 };
     try {
-      for (let start = 0; start < MAX_TX; start += 25) {
-        const page = await fetchJson(`${REST}/block/${block.hash}/txs/${start || ""}`.replace(/\/$/, ""));
+      let start = 0;
+      while (acc.length < MAX_TX) {
+        const path = start === 0 ? `/block/${block.hash}/txs` : `/block/${block.hash}/txs/${start}`;
+        const page = await fetchJson(MempoolEndpoint.api(path), { signal: abort.signal });
         if (!Array.isArray(page) || !page.length) break;
-        for (const t of page) {
-          const vsize = t.weight ? t.weight / 4 : (t.vsize || t.size || 200);
-          const fee = t.fee || 0;
-          const value = (t.vout || []).reduce((s, o) => s + (o.value || 0), 0);
-          acc.push({
-            txid: t.txid, vsize, fee, feePerVsize: fee / Math.max(1, vsize),
-            value, vin: t.vin, vout: t.vout, mask: 0, _grow: 0
-          });
-        }
-        if (page.length < 25) break;
+        for (const t of page) acc.push(mapFullTx(t));
+        block._hydrate.done = acc.length;
+        start += page.length;
+        if (page.length < 10) break;
       }
-    } catch (_) { /* keep what we have */ }
-    acc.forEach((t) => { t.mask = classify(t); });
+    } catch (e) {
+      if (e.name === "AbortError") return;
+      if (e.status === 429) matchHud.textContent = "Rate limited — backing off";
+      if (!acc.length) {
+        try {
+          const ids = await fetchJson(MempoolEndpoint.api(`/block/${block.hash}/txids`), { signal: abort.signal });
+          if (Array.isArray(ids)) {
+            for (const id of ids.slice(0, MAX_TX)) {
+              const cached = lruGet(id);
+              if (cached) { acc.push(cached); continue; }
+              const t = await fetchJson(MempoolEndpoint.api("/tx/" + id), { signal: abort.signal });
+              const row = mapFullTx(t);
+              lruSet(id, row);
+              acc.push(row);
+            }
+          }
+        } catch (_) { /* leave acc */ }
+      }
+    }
     block.txs = acc;
+    block._hydrate = { status: "done", done: acc.length, total: acc.length, universe: block.txCount || acc.length, abort: null };
     state.txCache.set(block.hash, acc);
+    acc.forEach((t) => t.txid && lruSet(t.txid, t));
     ensureTxLayout(block);
     if (state.level >= 2) {
       rebuildInstances(true);
@@ -611,70 +728,66 @@
     refreshPanel();
   }
 
-  function mapFullTx(t) {
-    const vsize = t.weight ? t.weight / 4 : (t.vsize || t.size || 200);
-    const fee = t.fee || 0;
-    const value = (t.vout || []).reduce((s, o) => s + (o.value || 0), 0);
-    const row = {
-      txid: t.txid, vsize, fee, feePerVsize: fee / Math.max(1, vsize),
-      value, vin: t.vin || [], vout: t.vout || [], mask: 0, _grow: 0, synthetic: false
-    };
-    row.mask = classify(row);
-    return row;
-  }
-
   async function hydratePendingBlock(block) {
     if (!block || !block.pending) return;
     if (block._hydrate && (block._hydrate.status === "loading" || block._hydrate.status === "done")) return;
-    block._hydrate = { status: "loading", done: 0, total: HYDRATE_CAP };
+    const abort = new AbortController();
+    block._hydrate = { status: "loading", done: 0, total: HYDRATE_CAP, abort, universe: 0 };
     block.txs = [];
     if (state.level >= 2) rebuildInstances(true);
-    matchHud.textContent = `Hydrating 0/${HYDRATE_CAP} real txs — goggles wait`;
-    const seen = new Set();
-    const ids = [];
+    matchHud.textContent = `Hydrating 0/${HYDRATE_CAP} — goggles wait`;
+    let allIds = [];
     try {
-      const recent = await fetchJson(REST + "/mempool/recent");
-      if (Array.isArray(recent)) {
-        for (const r of recent) if (r.txid && !seen.has(r.txid)) { seen.add(r.txid); ids.push(r.txid); }
-      }
-    } catch (_) { /* continue */ }
-    try {
-      const reps = await fetchJson(REST + "/v1/replacements");
-      const list = Array.isArray(reps) ? reps : (reps && reps.replacements) || [];
-      for (const r of list) {
-        const id = r.txid || r.txId || (r.tx && r.tx.txid);
-        if (id && !seen.has(id)) { seen.add(id); ids.push(id); }
-      }
-    } catch (_) { /* optional RBF feed */ }
-    try {
-      const all = await fetchJson(REST + "/mempool/txids");
-      if (Array.isArray(all)) {
-        for (const id of all) {
-          if (ids.length >= HYDRATE_CAP) break;
-          if (id && !seen.has(id)) { seen.add(id); ids.push(id); }
-        }
-      }
-    } catch (_) { /* rate limit */ }
-    block._hydrate.total = Math.min(HYDRATE_CAP, ids.length);
+      allIds = await fetchJson(MempoolEndpoint.api("/mempool/txids"), { signal: abort.signal });
+      if (!Array.isArray(allIds)) allIds = [];
+    } catch (e) {
+      if (e.status === 429) matchHud.textContent = "Rate limited — backing off";
+      allIds = [];
+    }
+    block._hydrate.universe = allIds.length;
+    const sampleN = Math.min(HYDRATE_CAP, allIds.length);
+    const picked = sampleUniform(allIds, sampleN, seedFromString(block.hash || "mempool"));
+    block._hydrate.total = picked.length;
     let cursor = 0;
+    let backoff = 600;
     async function worker() {
-      while (cursor < ids.length && block.txs.length < HYDRATE_CAP) {
-        const id = ids[cursor++];
+      while (cursor < picked.length && !abort.signal.aborted) {
+        const id = picked[cursor++];
+        const cached = lruGet(id);
+        if (cached) {
+          block.txs.push(cached);
+          block._hydrate.done = block.txs.length;
+          continue;
+        }
         try {
-          const t = await fetchJson(REST + "/tx/" + id);
+          const t = await fetchJson(MempoolEndpoint.api("/tx/" + id), { signal: abort.signal });
           if (t && t.txid && t.vin && t.vout) {
             const row = mapFullTx(t);
+            lruSet(id, row);
             block.txs.push(row);
             block._hydrate.done = block.txs.length;
-            if (block === state.selectedBlock && state.level >= 2 && block.txs.length % 12 === 0) {
+            backoff = 600;
+            if (block === state.selectedBlock && state.level >= 2 && block.txs.length % 16 === 0) {
               ensureTxLayout(block);
               rebuildInstances(true);
             }
           }
-        } catch (_) { /* skip one tx */ }
+        } catch (e) {
+          if (e.name === "AbortError") return;
+          if (e.status === 429) {
+            matchHud.textContent = "Rate limited — backing off";
+            await new Promise((r) => setTimeout(r, backoff));
+            backoff = Math.min(8000, backoff * 1.8);
+          }
+        }
       }
     }
-    await Promise.all(Array.from({ length: HYDRATE_CONCURRENCY }, worker));
+    try {
+      await Promise.all(Array.from({ length: MempoolEndpoint.concurrency() }, worker));
+    } catch (e) {
+      if (e.name === "AbortError") return;
+    }
+    if (abort.signal.aborted) return;
     block._hydrate.status = block.txs.length ? "done" : "empty";
     ensureTxLayout(block);
     if (block === state.selectedBlock && state.level >= 2) {
@@ -724,7 +837,7 @@
   function connectWs() {
     setWs("CONNECTING");
     let ws;
-    try { ws = new WebSocket(WS_URL); } catch (e) { scheduleReconnect(); return; }
+    try { ws = new WebSocket(MempoolEndpoint.ws()); } catch (e) { scheduleReconnect(); return; }
     state.ws = ws;
     ws.onopen = () => {
       state.backoff = 800;
@@ -799,7 +912,9 @@
       return;
     }
     if (hit && hit.pickedMesh && hit.pickedMesh.metadata && hit.pickedMesh.metadata.block) {
-      state.selectedBlock = hit.pickedMesh.metadata.block;
+      const next = hit.pickedMesh.metadata.block;
+      if (state.selectedBlock && state.selectedBlock !== next) abortHydrate(state.selectedBlock);
+      state.selectedBlock = next;
       if (state.selectedBlock.pending) hydratePendingBlock(state.selectedBlock);
       goLevel(Math.max(1, state.level));
     }

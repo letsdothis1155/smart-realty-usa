@@ -40,7 +40,7 @@
     style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
     font-src https://fonts.gstatic.com;
     img-src 'self' data: blob:;
-    connect-src 'self' https://mempool.space https://mempool.space/api;
+    connect-src 'self' https://mempool.smartrealty.us https://mempool.space wss://mempool.smartrealty.us wss://mempool.space;
     worker-src blob:;
     frame-src 'none';
     object-src 'none';
@@ -397,6 +397,7 @@
       <span class="dot"></span>
       <span id="statusText">CONNECTING</span>
     </div>
+    <div class="metric" title="Live data source"><span class="label">API</span><strong id="srcPill">probing…</strong></div>
 
     <div class="metrics" id="metricsBar" aria-live="polite">
       <div class="metric"><span class="label">Height</span><strong id="mHeight">—</strong></div>
@@ -470,6 +471,52 @@
     ]);
   }
 
+  const MempoolEndpoint = (() => {
+    const BASE = 'https://mempool.smartrealty.us';
+    const FALLBACK = 'https://mempool.space';
+    let active = BASE;
+    let usingFallback = false;
+    const srcEl = () => document.getElementById('srcPill');
+    function show() {
+      const el = srcEl();
+      if (!el) return;
+      el.textContent = usingFallback ? 'mempool.space (fallback)' : 'mempool.smartrealty.us';
+    }
+    function api(path) {
+      const p = path.startsWith('/') ? path : '/' + path;
+      return active.replace(/\/$/, '') + '/api' + p;
+    }
+    async function probe(base) {
+      const ctrl = new AbortController();
+      const t = setTimeout(() => ctrl.abort(), 3000);
+      try {
+        const res = await fetch(base.replace(/\/$/, '') + '/api/blocks/tip/height', {
+          cache: 'no-store', signal: ctrl.signal
+        });
+        if (!res.ok) throw new Error('bad tip');
+        return true;
+      } catch (_) {
+        return false;
+      } finally {
+        clearTimeout(t);
+      }
+    }
+    async function choose() {
+      if (await probe(BASE)) {
+        active = BASE;
+        usingFallback = false;
+      } else {
+        active = FALLBACK;
+        usingFallback = true;
+      }
+      show();
+      return { active, usingFallback };
+    }
+    choose();
+    setInterval(choose, 60000);
+    return { BASE, FALLBACK, api, choose, isFallback: () => usingFallback, host: () => usingFallback ? 'mempool.space' : 'mempool.smartrealty.us' };
+  })();
+
   async function fetchJson(url, label) {
     if (!navigator.onLine) throw new Error(`${label} offline`);
     const res = await withTimeout(fetch(url, { cache: 'no-store' }), REQUEST_TIMEOUT_MS, label);
@@ -521,15 +568,16 @@
     }
 
     /**
-     * Fetch recent real blocks (mempool.space returns ~10 most recent).
+     * Fetch recent real blocks (own instance first; public API only as labeled fallback).
      * Every block in the array is real and carries its own height/hash/tx_count/timestamp.
      * Fees are best-effort.
      */
     async function fetchLive() {
       const now = Date.now();
+      const source = MempoolEndpoint.host();
 
       // Recent blocks — single call, all real
-      const rawBlocks = await fetchJson('https://mempool.space/api/blocks', 'recent-blocks');
+      const rawBlocks = await fetchJson(MempoolEndpoint.api('/blocks'), 'recent-blocks');
       if (!Array.isArray(rawBlocks) || rawBlocks.length === 0) {
         throw new Error('No recent blocks returned');
       }
@@ -544,7 +592,7 @@
         weight: b.weight ?? null,
         previousHash: b.previousblockhash ?? null,
         synthetic: false,
-        source: 'mempool.space'
+        source
       }));
 
       // Tip = first element (newest)
@@ -554,11 +602,11 @@
       let feeEstimate = null;
       let mempool = null;
       try {
-        const fees = await fetchJson('https://mempool.space/api/v1/fees/recommended', 'fees');
+        const fees = await fetchJson(MempoolEndpoint.api('/v1/fees/recommended'), 'fees');
         feeEstimate = fees.halfHourFee ?? fees.hourFee ?? fees.fastestFee ?? null;
       } catch (_) { /* non-fatal */ }
       try {
-        const mp = await fetchJson('https://mempool.space/api/mempool', 'mempool');
+        const mp = await fetchJson(MempoolEndpoint.api('/mempool'), 'mempool');
         mempool = {
           count: mp.count ?? null,
           vsize: mp.vsize ?? null,
@@ -568,7 +616,7 @@
 
       return {
         network: 'bitcoin',
-        source: 'mempool.space',
+        source,
         fetchedAt: now,
         dataTimestamp: tip.timestamp || now,
         synthetic: false,

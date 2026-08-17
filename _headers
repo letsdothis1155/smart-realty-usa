@@ -4,14 +4,14 @@
 
 # V2 explorer — strict CSP (same policy as the meta tag)
 /blockchain-live-v2.html
-  Content-Security-Policy: default-src 'none'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://mempool.space https://mempool.space/api; worker-src blob:; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'
+  Content-Security-Policy: default-src 'none'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://mempool.smartrealty.us https://mempool.space wss://mempool.smartrealty.us wss://mempool.space; worker-src blob:; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'
   X-Content-Type-Options: nosniff
   Referrer-Policy: no-referrer
   X-Frame-Options: DENY
 
 # Babylon zoom companion — same CSP plus WebSocket
 /blockchain-live-zoom.html
-  Content-Security-Policy: default-src 'none'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://mempool.space https://mempool.space/api wss://mempool.space; worker-src blob:; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'
+  Content-Security-Policy: default-src 'none'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://mempool.smartrealty.us https://mempool.space wss://mempool.smartrealty.us wss://mempool.space; worker-src blob:; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'
   X-Content-Type-Options: nosniff
   Referrer-Policy: no-referrer
   X-Frame-Options: DENY
