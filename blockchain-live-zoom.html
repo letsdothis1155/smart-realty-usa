@@ -340,6 +340,7 @@
     camTween: null,
     lastPick: -1,
     rateLimited: false,
+    trackedIndex: null,
     lastFrame: performance.now(),
     slip: 0
   };
@@ -427,14 +428,16 @@
     state.level = clamp(level, 0, 3);
     if (state.level < 1 && prev && prev.pending) abortHydrate(prev);
     if (state.level < 3) state.selectedTx = null;
-    if (state.level < 1) { /* keep selectedBlock for memory */ }
+    if (state.level < 1) untrackProjected();
     updateCrumbs();
     const to = framingFor(state.level, state.selectedBlock, state.selectedTx);
     if (opts.hard) applyCam(to);
     else tweenTo(to, opts.ms);
     if (state.level >= 1 && state.selectedBlock && !state.selectedBlock.pending) {
+      untrackProjected();
       loadBlockTxs(state.selectedBlock);
     } else if (state.level >= 1 && state.selectedBlock && state.selectedBlock.pending) {
+      trackProjected(state.selectedBlock.projIndex ?? 0);
       hydratePendingBlock(state.selectedBlock);
     }
     refreshPanel();
@@ -473,8 +476,7 @@
   }
 
   function ensureTxLayout(block) {
-    const txs = block.txs;
-    if (!txs || !txs.length) return;
+    const txs = (block.members && block.members.length) ? block.members : block.txs;
     const rects = squarify(txs, -1.45, -1.45, 2.9, 2.9);
     rects.forEach((r) => {
       r.feePerVsize = r.feePerVsize || ((r.fee || 0) / Math.max(1, r.vsize || 1));
@@ -554,10 +556,22 @@
       matchHud.textContent = `Hydrating ${hyd.done || 0}/${hyd.total || 0} — goggles wait`;
     } else if (realN === 0) {
       matchHud.textContent = "Goggles: 0 (no real txs yet)";
+    } else if (hyd.population === "mempool" && universe && realN < universe) {
+      matchHud.textContent = anyFilter
+        ? `${matchN} matches in ${realN.toLocaleString()} sampled of ${universe.toLocaleString()} mempool txs`
+        : `${realN.toLocaleString()} sampled of ${universe.toLocaleString()} mempool txs`;
     } else if (universe && realN < universe) {
-      matchHud.textContent = `${matchN} matches in ${realN.toLocaleString()} sampled of ${universe.toLocaleString()} txs · ${matchV.toLocaleString()} vB`;
+      matchHud.textContent = anyFilter
+        ? `${matchN} matches in ${realN.toLocaleString()} sampled of ${universe.toLocaleString()} txs in this block`
+        : `${realN.toLocaleString()} sampled of ${universe.toLocaleString()} txs in this block`;
+    } else if (hyd.population === "mempool") {
+      matchHud.textContent = anyFilter
+        ? `${matchN} matches in all ${realN.toLocaleString()} mempool txs`
+        : `all ${realN.toLocaleString()} mempool txs`;
     } else {
-      matchHud.textContent = `${matchN} matches in all ${realN.toLocaleString()} txs · ${matchV.toLocaleString()} vB`;
+      matchHud.textContent = anyFilter
+        ? `${matchN} matches in all ${realN.toLocaleString()} txs in this block`
+        : `all ${realN.toLocaleString()} txs in this block`;
     }
   }
 
@@ -576,7 +590,9 @@
       return;
     }
     if (b) {
-      panelTitle.textContent = b.pending ? "Mempool template" : `Block ${b.height ?? ""}`;
+      panelTitle.textContent = b.pending
+        ? (b.members && b.members.length ? `Projected block ${b.projIndex ?? 0}` : "Mempool sample")
+        : `Block ${b.height ?? ""}`;
       setKv([
         ["hash", (b.hash || "pending").slice(0, 20) + "…"],
         ["txs", (b.txCount || (b.txs && b.txs.length) || "—").toLocaleString?.() || String(b.txCount || "—")],
@@ -651,8 +667,8 @@
       try {
         const mb = await fetchJson(MempoolEndpoint.api("/v1/fees/mempool-blocks"));
         pending = (mb || []).slice(0, 3).map((p, i) => ({
-          hash: "mempool-" + i, height: null, txCount: p.nTx, pending: true,
-          medianFee: p.medianFee, feeRange: p.feeRange, blockVSize: p.blockVSize
+          hash: "mempool-" + i, projIndex: i, height: null, txCount: p.nTx, pending: true,
+          medianFee: p.medianFee, feeRange: p.feeRange, blockVSize: p.blockVSize, members: null
         }));
       } catch (_) { /* optional */ }
       state.blocks = pending.reverse().concat(confirmed);
@@ -728,25 +744,112 @@
     refreshPanel();
   }
 
+  function parseProjRow(row) {
+    if (!Array.isArray(row) || !row[0]) return null;
+    return {
+      txid: row[0],
+      fee: row[1] || 0,
+      vsize: row[2] || 1,
+      value: row[3] || 0,
+      feePerVsize: row[4] || ((row[1] || 0) / Math.max(1, row[2] || 1)),
+      mask: 0, _grow: 1, synthetic: false, vin: null, vout: null
+    };
+  }
+  function trackProjected(index) {
+    if (index == null || index < 0) return untrackProjected();
+    if (state.ws && state.ws.readyState === 1) {
+      state.ws.send(JSON.stringify({ "track-mempool-block": index }));
+    }
+    state.trackedIndex = index;
+  }
+  function untrackProjected() {
+    if (state.ws && state.ws.readyState === 1 && state.trackedIndex != null) {
+      try { state.ws.send(JSON.stringify({ "track-mempool-block": -1 })); } catch (_) {}
+    }
+    state.trackedIndex = null;
+  }
+  function applyProjected(p) {
+    if (!p || p.index == null) return;
+    const block = state.blocks.find((b) => b.pending && b.projIndex === p.index);
+    if (!block) return;
+    if (Array.isArray(p.blockTransactions)) {
+      const prev = new Map((block.members || []).map((m) => [m.txid, m]));
+      block.members = p.blockTransactions.map(parseProjRow).filter(Boolean).map((row) => {
+        const old = prev.get(row.txid);
+        if (old && isHydrated(old)) {
+          row.vin = old.vin; row.vout = old.vout; row.mask = old.mask;
+        }
+        return row;
+      });
+      block.txCount = block.members.length;
+      block.rects = null;
+      if (block === state.selectedBlock && state.level >= 2) {
+        ensureTxLayout(block);
+        rebuildInstances(true);
+      }
+      if (block === state.selectedBlock && state.level >= 1) hydratePendingBlock(block);
+      placeBlocks();
+      refreshPanel();
+    }
+    if (p.delta && block.members) {
+      const byId = new Map(block.members.map((m) => [m.txid, m]));
+      for (const id of p.delta.removed || []) byId.delete(id);
+      for (const row of p.delta.added || []) {
+        const parsed = parseProjRow(row);
+        if (parsed) byId.set(parsed.txid, parsed);
+      }
+      for (const ch of p.delta.changed || []) {
+        if (!Array.isArray(ch) || !ch[0]) continue;
+        const cur = byId.get(ch[0]);
+        if (!cur) continue;
+        if (ch[1] != null) cur.feePerVsize = ch[1];
+        if (ch[2] != null) cur.fee = ch[2];
+      }
+      block.members = [...byId.values()];
+      block.txCount = block.members.length;
+      block.rects = null;
+      if (block === state.selectedBlock && state.level >= 2) {
+        ensureTxLayout(block);
+        rebuildInstances(false);
+      }
+    }
+  }
+
+  async function waitForMembers(block, ms) {
+    const start = Date.now();
+    while (Date.now() - start < ms) {
+      if (block.members && block.members.length) return true;
+      await new Promise((r) => setTimeout(r, 120));
+    }
+    return !!(block.members && block.members.length);
+  }
+
   async function hydratePendingBlock(block) {
     if (!block || !block.pending) return;
     if (block._hydrate && (block._hydrate.status === "loading" || block._hydrate.status === "done")) return;
     const abort = new AbortController();
-    block._hydrate = { status: "loading", done: 0, total: HYDRATE_CAP, abort, universe: 0 };
-    block.txs = [];
-    if (state.level >= 2) rebuildInstances(true);
+    block._hydrate = { status: "loading", done: 0, total: HYDRATE_CAP, abort, universe: 0, population: "block" };
     matchHud.textContent = `Hydrating 0/${HYDRATE_CAP} — goggles wait`;
+    const haveMembers = await waitForMembers(block, 3500);
+    if (abort.signal.aborted) return;
     let allIds = [];
-    try {
-      allIds = await fetchJson(MempoolEndpoint.api("/mempool/txids"), { signal: abort.signal });
-      if (!Array.isArray(allIds)) allIds = [];
-    } catch (e) {
-      if (e.status === 429) matchHud.textContent = "Rate limited — backing off";
-      allIds = [];
+    if (haveMembers) {
+      allIds = block.members.map((m) => m.txid).filter(Boolean);
+      block._hydrate.population = "block";
+      block._hydrate.universe = allIds.length;
+    } else {
+      try {
+        allIds = await fetchJson(MempoolEndpoint.api("/mempool/txids"), { signal: abort.signal });
+        if (!Array.isArray(allIds)) allIds = [];
+      } catch (e) {
+        if (e.status === 429) matchHud.textContent = "Rate limited — backing off";
+        allIds = [];
+      }
+      block._hydrate.population = "mempool";
+      block._hydrate.universe = allIds.length;
     }
-    block._hydrate.universe = allIds.length;
     const sampleN = Math.min(HYDRATE_CAP, allIds.length);
-    const picked = sampleUniform(allIds, sampleN, seedFromString(block.hash || "mempool"));
+    const picked = sampleUniform(allIds, sampleN, seedFromString(block.hash || "mempool-" + (block.projIndex || 0)));
     block._hydrate.total = picked.length;
     let cursor = 0;
     let backoff = 600;
@@ -756,6 +859,8 @@
         const cached = lruGet(id);
         if (cached) {
           block.txs.push(cached);
+          const mem = (block.members || []).find((m) => m.txid === id);
+          if (mem) { mem.vin = cached.vin; mem.vout = cached.vout; mem.mask = cached.mask; }
           block._hydrate.done = block.txs.length;
           continue;
         }
@@ -765,6 +870,8 @@
             const row = mapFullTx(t);
             lruSet(id, row);
             block.txs.push(row);
+            const mem = (block.members || []).find((m) => m.txid === id);
+            if (mem) { mem.vin = row.vin; mem.vout = row.vout; mem.mask = row.mask; }
             block._hydrate.done = block.txs.length;
             backoff = 600;
             if (block === state.selectedBlock && state.level >= 2 && block.txs.length % 16 === 0) {
@@ -843,10 +950,14 @@
       state.backoff = 800;
       setWs("LIVE");
       ws.send(JSON.stringify({ action: "want", data: ["blocks", "mempool-blocks", "stats"] }));
+      if (state.trackedIndex != null) {
+        ws.send(JSON.stringify({ "track-mempool-block": state.trackedIndex }));
+      }
     };
     ws.onmessage = (ev) => {
       let msg;
       try { msg = JSON.parse(ev.data); } catch (_) { return; }
+      if (msg["projected-block-transactions"]) applyProjected(msg["projected-block-transactions"]);
       if (msg.block) onNewBlock(msg.block);
       if (msg.blocks && Array.isArray(msg.blocks) && msg.blocks[0] && msg.blocks[0].height) {
         /* snapshot of recent confirmed — ignore full replace to keep camera */
@@ -855,9 +966,10 @@
         const mb = msg["mempool-blocks"];
         const existing = state.blocks.filter((b) => b.pending);
         mb.slice(0, 3).forEach((p, i) => {
-          const slot = existing[existing.length - 1 - i] || {
-            hash: "mempool-" + i, pending: true, txs: null, rects: null
+          const slot = existing.find((b) => b.projIndex === i) || existing[existing.length - 1 - i] || {
+            hash: "mempool-" + i, projIndex: i, pending: true, txs: null, rects: null, members: null
           };
+          slot.projIndex = i;
           const prevCount = slot.txCount;
           slot.txCount = p.nTx;
           slot.medianFee = p.medianFee;
