@@ -547,13 +547,39 @@
     txBox.thinInstanceSetBuffer("matrix", matrixBuf, 16, false);
     txBox.thinInstanceSetBuffer("color", colorBuf, 4, false);
     txBox.thinInstanceCount = n;
-    const realN = rects.filter(isHydrated).length;
+    updateMatchHud(block, { matchN, matchV, anyFilter, realN: rects.filter(isHydrated).length });
+  }
+
+  function updateMatchHud(block, counts) {
+    if (!block) return;
     const hyd = block._hydrate || {};
-    const universe = hyd.universe || block.txCount || 0;
+    const members = block.members || [];
+    if (hyd.population === "block" && members.length) {
+      hyd.universe = members.length;
+      block.txCount = members.length;
+      if (hyd.universe !== members.length) {
+        console.warn("[zoom] denom drift", { universe: hyd.universe, members: members.length });
+      }
+    }
+    const anyFilter = counts && counts.anyFilter != null
+      ? counts.anyFilter
+      : !!(state.goggles.cats || state.goggles.text.trim());
+    const source = members.length ? members : (block.txs || []);
+    let matchN = counts && counts.matchN;
+    let matchV = counts && counts.matchV;
+    let realN = counts && counts.realN;
+    if (matchN == null) {
+      matchN = 0; matchV = 0; realN = 0;
+      for (const r of source) {
+        if (isHydrated(r)) realN++;
+        if (goggleMatch(r)) { matchN++; matchV += r.vsize || 0; }
+      }
+    }
+    const universe = hyd.universe || block.txCount || source.length;
     if (state.rateLimited) {
       matchHud.textContent = "Rate limited — backing off";
-    } else if (hyd.status === "loading") {
-      matchHud.textContent = `Hydrating ${hyd.done || 0}/${hyd.total || 0} — goggles wait`;
+    } else if (hyd.status === "loading" && realN === 0) {
+      matchHud.textContent = `Hydrating ${hyd.done || 0}/${hyd.total || universe || 0} — goggles wait`;
     } else if (realN === 0) {
       matchHud.textContent = "Goggles: 0 (no real txs yet)";
     } else if (hyd.population === "mempool" && universe && realN < universe) {
@@ -768,35 +794,82 @@
     }
     state.trackedIndex = null;
   }
+  function stampHydration(member, row) {
+    if (!member || !row) return;
+    member.vin = row.vin;
+    member.vout = row.vout;
+    member.mask = classify(member);
+    member.fee = row.fee != null ? row.fee : member.fee;
+    member.vsize = row.vsize != null ? row.vsize : member.vsize;
+    member.feePerVsize = row.feePerVsize != null ? row.feePerVsize : member.feePerVsize;
+    member.value = row.value != null ? row.value : member.value;
+  }
+  function syncSampleToMembers(block) {
+    if (!block.members) return;
+    const live = new Set(block.members.map((m) => m.txid));
+    if (block.txs) block.txs = block.txs.filter((t) => live.has(t.txid));
+    if (block._hydrate && Array.isArray(block._hydrate.order)) {
+      block._hydrate.order = block._hydrate.order.filter((id) => live.has(id));
+      block._hydrate.cursor = Math.min(block._hydrate.cursor || 0, block._hydrate.order.length);
+    }
+    block.txCount = block.members.length;
+    if (block._hydrate && block._hydrate.population === "block") {
+      if (block._hydrate.universe != null && block._hydrate.universe !== block.members.length) {
+        console.warn("[zoom] denom drift", { universe: block._hydrate.universe, members: block.members.length });
+      }
+      block._hydrate.universe = block.members.length;
+      block._hydrate.done = block.members.filter(isHydrated).length;
+      block._hydrate.total = block._hydrate.order ? block._hydrate.order.length : block.members.length;
+    }
+  }
+  function extendHydrateOrder(block) {
+    const seedKey = block.hash || ("mempool-" + (block.projIndex || 0));
+    if (!block._hydrate) {
+      block._hydrate = { status: "idle", order: [], cursor: 0, done: 0, total: 0, universe: 0, population: "block", abort: null };
+    }
+    const hyd = block._hydrate;
+    const ids = (block.members || []).map((m) => m.txid).filter(Boolean);
+    if (!hyd.order) hyd.order = [];
+    if (!hyd.order.length) {
+      hyd.order = sampleUniform(ids, ids.length, seedFromString(seedKey));
+    } else {
+      const have = new Set(hyd.order);
+      const fresh = ids.filter((id) => !have.has(id));
+      if (fresh.length) {
+        hyd.order.push(...sampleUniform(fresh, fresh.length, seedFromString(seedKey + ":ext:" + hyd.order.length)));
+      }
+      const live = new Set(ids);
+      hyd.order = hyd.order.filter((id) => live.has(id));
+    }
+    hyd.cursor = Math.min(hyd.cursor || 0, hyd.order.length);
+    hyd.total = hyd.order.length;
+    hyd.universe = ids.length;
+    hyd.done = (block.members || []).filter(isHydrated).length;
+    hyd.population = block.members && block.members.length ? "block" : hyd.population;
+  }
   function applyProjected(p) {
     if (!p || p.index == null) return;
     const block = state.blocks.find((b) => b.pending && b.projIndex === p.index);
     if (!block) return;
+    let membershipChanged = false;
     if (Array.isArray(p.blockTransactions)) {
       const prev = new Map((block.members || []).map((m) => [m.txid, m]));
       block.members = p.blockTransactions.map(parseProjRow).filter(Boolean).map((row) => {
         const old = prev.get(row.txid);
-        if (old && isHydrated(old)) {
-          row.vin = old.vin; row.vout = old.vout; row.mask = old.mask;
-        }
+        if (old && isHydrated(old)) stampHydration(row, old);
         return row;
       });
-      block.txCount = block.members.length;
-      block.rects = null;
-      if (block === state.selectedBlock && state.level >= 2) {
-        ensureTxLayout(block);
-        rebuildInstances(true);
-      }
-      if (block === state.selectedBlock && state.level >= 1) hydratePendingBlock(block);
-      placeBlocks();
-      refreshPanel();
+      membershipChanged = true;
     }
-    if (p.delta && block.members) {
+    if (p.delta) {
+      if (!block.members) block.members = [];
       const byId = new Map(block.members.map((m) => [m.txid, m]));
-      for (const id of p.delta.removed || []) byId.delete(id);
+      for (const id of p.delta.removed || []) {
+        if (byId.delete(id)) membershipChanged = true;
+      }
       for (const row of p.delta.added || []) {
         const parsed = parseProjRow(row);
-        if (parsed) byId.set(parsed.txid, parsed);
+        if (parsed) { byId.set(parsed.txid, parsed); membershipChanged = true; }
       }
       for (const ch of p.delta.changed || []) {
         if (!Array.isArray(ch) || !ch[0]) continue;
@@ -804,15 +877,27 @@
         if (!cur) continue;
         if (ch[1] != null) cur.feePerVsize = ch[1];
         if (ch[2] != null) cur.fee = ch[2];
+        if (ch[3] != null) cur.vsize = ch[3];
+        if (isHydrated(cur)) cur.mask = classify(cur);
       }
       block.members = [...byId.values()];
-      block.txCount = block.members.length;
-      block.rects = null;
-      if (block === state.selectedBlock && state.level >= 2) {
+    }
+    syncSampleToMembers(block);
+    extendHydrateOrder(block);
+    if (block === state.selectedBlock && state.level >= 2) {
+      if (membershipChanged) {
+        block.rects = null;
         ensureTxLayout(block);
+        rebuildInstances(true);
+      } else {
         rebuildInstances(false);
       }
+    } else {
+      updateMatchHud(block);
     }
+    if (block === state.selectedBlock && state.level >= 1) hydratePendingBlock(block);
+    placeBlocks();
+    refreshPanel();
   }
 
   async function waitForMembers(block, ms) {
@@ -824,44 +909,73 @@
     return !!(block.members && block.members.length);
   }
 
+  function yieldIfBusy() {
+    return new Promise((resolve) => {
+      if (state.camTween || (engine.getDeltaTime && engine.getDeltaTime() > 22)) {
+        requestAnimationFrame(() => resolve());
+      } else resolve();
+    });
+  }
+
   async function hydratePendingBlock(block) {
     if (!block || !block.pending) return;
-    if (block._hydrate && (block._hydrate.status === "loading" || block._hydrate.status === "done")) return;
+    if (block._hydrate && block._hydrate.status === "loading") return;
     const abort = new AbortController();
-    block._hydrate = { status: "loading", done: 0, total: HYDRATE_CAP, abort, universe: 0, population: "block" };
-    matchHud.textContent = `Hydrating 0/${HYDRATE_CAP} — goggles wait`;
+    if (!block._hydrate || !block._hydrate.order) {
+      block._hydrate = { status: "loading", order: [], cursor: 0, done: 0, total: 0, universe: 0, population: "block", abort };
+    } else {
+      if (block._hydrate.abort) {
+        try { block._hydrate.abort.abort(); } catch (_) {}
+      }
+      block._hydrate.abort = abort;
+      block._hydrate.status = "loading";
+    }
+    if (!block.txs) block.txs = [];
     const haveMembers = await waitForMembers(block, 3500);
     if (abort.signal.aborted) return;
-    let allIds = [];
     if (haveMembers) {
-      allIds = block.members.map((m) => m.txid).filter(Boolean);
-      block._hydrate.population = "block";
-      block._hydrate.universe = allIds.length;
+      extendHydrateOrder(block);
     } else {
       try {
-        allIds = await fetchJson(MempoolEndpoint.api("/mempool/txids"), { signal: abort.signal });
-        if (!Array.isArray(allIds)) allIds = [];
+        const allIds = await fetchJson(MempoolEndpoint.api("/mempool/txids"), { signal: abort.signal });
+        const ids = Array.isArray(allIds) ? allIds : [];
+        block._hydrate.population = "mempool";
+        block._hydrate.universe = ids.length;
+        if (!block._hydrate.order.length) {
+          block._hydrate.order = sampleUniform(ids, ids.length, seedFromString(block.hash || "mempool"));
+        }
+        block._hydrate.total = block._hydrate.order.length;
       } catch (e) {
         if (e.status === 429) matchHud.textContent = "Rate limited — backing off";
-        allIds = [];
+        block._hydrate.status = "empty";
+        return;
       }
-      block._hydrate.population = "mempool";
-      block._hydrate.universe = allIds.length;
     }
-    const sampleN = Math.min(HYDRATE_CAP, allIds.length);
-    const picked = sampleUniform(allIds, sampleN, seedFromString(block.hash || "mempool-" + (block.projIndex || 0)));
-    block._hydrate.total = picked.length;
-    let cursor = 0;
+    const hyd = block._hydrate;
+    for (let i = 0; i < hyd.order.length; i++) {
+      const cached = lruGet(hyd.order[i]);
+      const mem = (block.members || []).find((m) => m.txid === hyd.order[i]);
+      if (cached) {
+        stampHydration(mem || { txid: hyd.order[i] }, cached);
+        if (mem) {
+          if (!block.txs.some((t) => t.txid === cached.txid)) block.txs.push(mem);
+        }
+      }
+    }
+    hyd.done = (block.members || block.txs || []).filter(isHydrated).length;
+    updateMatchHud(block);
     let backoff = 600;
     async function worker() {
-      while (cursor < picked.length && !abort.signal.aborted) {
-        const id = picked[cursor++];
+      while (hyd.cursor < hyd.order.length && !abort.signal.aborted) {
+        await yieldIfBusy();
+        const id = hyd.order[hyd.cursor++];
+        const mem = (block.members || []).find((m) => m.txid === id);
+        if (mem && isHydrated(mem)) { hyd.done = (block.members || []).filter(isHydrated).length; continue; }
         const cached = lruGet(id);
         if (cached) {
-          block.txs.push(cached);
-          const mem = (block.members || []).find((m) => m.txid === id);
-          if (mem) { mem.vin = cached.vin; mem.vout = cached.vout; mem.mask = cached.mask; }
-          block._hydrate.done = block.txs.length;
+          stampHydration(mem || cached, cached);
+          if (mem && !block.txs.some((t) => t.txid === id)) block.txs.push(mem);
+          hyd.done = (block.members || []).filter(isHydrated).length;
           continue;
         }
         try {
@@ -869,14 +983,14 @@
           if (t && t.txid && t.vin && t.vout) {
             const row = mapFullTx(t);
             lruSet(id, row);
-            block.txs.push(row);
-            const mem = (block.members || []).find((m) => m.txid === id);
-            if (mem) { mem.vin = row.vin; mem.vout = row.vout; mem.mask = row.mask; }
-            block._hydrate.done = block.txs.length;
+            stampHydration(mem || row, row);
+            if (mem && !block.txs.some((x) => x.txid === id)) block.txs.push(mem);
+            else if (!mem) block.txs.push(row);
+            hyd.done = (block.members || block.txs).filter(isHydrated).length;
             backoff = 600;
-            if (block === state.selectedBlock && state.level >= 2 && block.txs.length % 16 === 0) {
-              ensureTxLayout(block);
-              rebuildInstances(true);
+            if (block === state.selectedBlock && hyd.done % 24 === 0) {
+              if (state.goggles.cats || state.goggles.text.trim()) rebuildInstances(false);
+              else updateMatchHud(block);
             }
           }
         } catch (e) {
@@ -895,11 +1009,11 @@
       if (e.name === "AbortError") return;
     }
     if (abort.signal.aborted) return;
-    block._hydrate.status = block.txs.length ? "done" : "empty";
-    ensureTxLayout(block);
-    if (block === state.selectedBlock && state.level >= 2) {
-      rebuildInstances(true);
-      animateGrow(block.txs);
+    hyd.status = hyd.done ? "done" : "empty";
+    hyd.done = (block.members || block.txs || []).filter(isHydrated).length;
+    if (block === state.selectedBlock) {
+      if (state.level >= 2 && state.goggles.cats) rebuildInstances(false);
+      else updateMatchHud(block);
     }
     refreshPanel();
   }
@@ -1105,7 +1219,14 @@
 
   window.__ZOOM = {
     goLevel, getState: () => state, camera,
-    forceBlock: (i) => { state.selectedBlock = state.blocks[i]; goLevel(1); }
+    forceBlock: (i) => { state.selectedBlock = state.blocks[i]; goLevel(1); },
+    assertMembership: (block) => {
+      const b = block || state.selectedBlock;
+      if (!b || !b.members || !b._hydrate) return true;
+      const ok = b._hydrate.universe === b.members.length;
+      if (!ok) console.warn("[zoom] denom != membership", b._hydrate.universe, b.members.length);
+      return ok;
+    }
   };
 
   updateCrumbs();
