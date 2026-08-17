@@ -132,6 +132,8 @@
   const WS_URL = "wss://mempool.space/api/v1/ws";
   const REST = "https://mempool.space/api";
   const MAX_TX = 5000;
+  const HYDRATE_CAP = 320;
+  const HYDRATE_CONCURRENCY = 4;
   const LEVEL_R = [72, 22, 9, 3.4];
   const CAT = ["consolidation", "coinjoin", "inscription", "rbf", "outlier"];
   const CAT_HUE = [0.55, 0.78, 0.12, 0.92, 0.08];
@@ -271,15 +273,19 @@
     return out;
   }
 
+  function isHydrated(tx) {
+    return !!(tx && !tx.synthetic && /^[0-9a-f]{64}$/i.test(tx.txid || "") && Array.isArray(tx.vin) && Array.isArray(tx.vout));
+  }
   function classify(tx) {
+    if (!isHydrated(tx)) return 0;
     let mask = 0;
-    const vin = tx.vin || tx.inputs || [];
-    const vout = tx.vout || tx.outputs || [];
+    const vin = tx.vin || [];
+    const vout = tx.vout || [];
     if (vin.length >= 5 && vout.length <= 2) mask |= 1 << 0;
     if (vin.length >= 5 && vout.length >= 5 && Math.abs(vin.length - vout.length) <= 2) mask |= 1 << 1;
-    const hex = (tx.vout || []).some((o) => (o.scriptpubkey_type || "").includes("op_return") || (o.scriptpubkey_asm || "").includes("OP_RETURN"));
-    if (hex || (tx.vsize || 0) > 4000) mask |= 1 << 2;
-    if (tx.vin && tx.vin.some((i) => i.sequence < 0xfffffffe)) mask |= 1 << 3;
+    const hex = vout.some((o) => (o.scriptpubkey_type || "").includes("op_return") || (o.scriptpubkey_asm || "").includes("OP_RETURN"));
+    if (hex) mask |= 1 << 2;
+    if (vin.some((i) => i.sequence < 0xfffffffe)) mask |= 1 << 3;
     if ((tx.feePerVsize || tx.fee / Math.max(1, tx.vsize || 1)) >= 40) mask |= 1 << 4;
     return mask;
   }
@@ -383,8 +389,8 @@
     else tweenTo(to, opts.ms);
     if (state.level >= 1 && state.selectedBlock && !state.selectedBlock.pending) {
       loadBlockTxs(state.selectedBlock);
-    } else if (state.level >= 2 && state.selectedBlock) {
-      ensureTxLayout(state.selectedBlock);
+    } else if (state.level >= 1 && state.selectedBlock && state.selectedBlock.pending) {
+      hydratePendingBlock(state.selectedBlock);
     }
     refreshPanel();
     if (state.level >= 2) rebuildInstances(false);
@@ -427,7 +433,7 @@
     const rects = squarify(txs, -1.45, -1.45, 2.9, 2.9);
     rects.forEach((r) => {
       r.feePerVsize = r.feePerVsize || ((r.fee || 0) / Math.max(1, r.vsize || 1));
-      r.mask = r.mask != null ? r.mask : classify(r);
+      r.mask = isHydrated(r) ? classify(r) : 0;
       r._h = logHeight(r.feePerVsize);
       r._pos = { x: (block._x || 0) + r.x + r.w / 2, y: r._h / 2, z: r.z + r.d / 2 };
     });
@@ -437,6 +443,8 @@
   function goggleMatch(tx) {
     const g = state.goggles;
     const text = g.text.trim().toLowerCase();
+    if (!g.cats && !text) return isHydrated(tx);
+    if (!isHydrated(tx)) return false;
     let catOk = true;
     if (g.cats) catOk = (tx.mask & g.cats) !== 0;
     let textOk = true;
@@ -444,7 +452,6 @@
       const blob = `${tx.txid || ""} ${(tx.vout || []).map((o) => o.scriptpubkey_address || "").join(" ")}`.toLowerCase();
       textOk = blob.includes(text);
     }
-    if (!g.cats && !text) return true;
     return catOk && textOk;
   }
 
@@ -493,7 +500,17 @@
     txBox.thinInstanceSetBuffer("matrix", matrixBuf, 16, false);
     txBox.thinInstanceSetBuffer("color", colorBuf, 4, false);
     txBox.thinInstanceCount = n;
-    matchHud.textContent = `Matches: ${matchN.toLocaleString()} · ${matchV.toLocaleString()} vB`;
+    const realN = rects.filter(isHydrated).length;
+    const pending = block.pending;
+    const hyd = block._hydrate;
+    if (pending && hyd && hyd.status === "loading") {
+      matchHud.textContent = `Hydrating ${hyd.done}/${hyd.total} real txs — goggles wait`;
+    } else if (pending && realN === 0) {
+      matchHud.textContent = "Goggles: 0 (no real txs yet)";
+    } else {
+      matchHud.textContent = `Matches: ${matchN.toLocaleString()} · ${matchV.toLocaleString()} vB` +
+        (pending ? ` · ${realN} hydrated` : "");
+    }
   }
 
   function refreshPanel() {
@@ -594,22 +611,77 @@
     refreshPanel();
   }
 
-  function synthPendingTxs(block) {
-    if (block.txs && block.txs.length) return;
-    const n = clamp(block.txCount || 180, 40, 900);
-    const range = block.feeRange || [1, 2, 4, 8, 16, 32];
-    const txs = [];
-    for (let i = 0; i < n; i++) {
-      const feePerVsize = range[i % range.length] * (0.7 + (i % 7) * 0.11);
-      const vsize = 140 + (i * 17) % 900;
-      txs.push({
-        txid: `${block.hash}-s${i.toString(16)}`, vsize, fee: feePerVsize * vsize,
-        feePerVsize, value: 1e6 * ((i * 13) % 80), mask: 0, _grow: 0, synthetic: true
-      });
+  function mapFullTx(t) {
+    const vsize = t.weight ? t.weight / 4 : (t.vsize || t.size || 200);
+    const fee = t.fee || 0;
+    const value = (t.vout || []).reduce((s, o) => s + (o.value || 0), 0);
+    const row = {
+      txid: t.txid, vsize, fee, feePerVsize: fee / Math.max(1, vsize),
+      value, vin: t.vin || [], vout: t.vout || [], mask: 0, _grow: 0, synthetic: false
+    };
+    row.mask = classify(row);
+    return row;
+  }
+
+  async function hydratePendingBlock(block) {
+    if (!block || !block.pending) return;
+    if (block._hydrate && (block._hydrate.status === "loading" || block._hydrate.status === "done")) return;
+    block._hydrate = { status: "loading", done: 0, total: HYDRATE_CAP };
+    block.txs = [];
+    if (state.level >= 2) rebuildInstances(true);
+    matchHud.textContent = `Hydrating 0/${HYDRATE_CAP} real txs — goggles wait`;
+    const seen = new Set();
+    const ids = [];
+    try {
+      const recent = await fetchJson(REST + "/mempool/recent");
+      if (Array.isArray(recent)) {
+        for (const r of recent) if (r.txid && !seen.has(r.txid)) { seen.add(r.txid); ids.push(r.txid); }
+      }
+    } catch (_) { /* continue */ }
+    try {
+      const reps = await fetchJson(REST + "/v1/replacements");
+      const list = Array.isArray(reps) ? reps : (reps && reps.replacements) || [];
+      for (const r of list) {
+        const id = r.txid || r.txId || (r.tx && r.tx.txid);
+        if (id && !seen.has(id)) { seen.add(id); ids.push(id); }
+      }
+    } catch (_) { /* optional RBF feed */ }
+    try {
+      const all = await fetchJson(REST + "/mempool/txids");
+      if (Array.isArray(all)) {
+        for (const id of all) {
+          if (ids.length >= HYDRATE_CAP) break;
+          if (id && !seen.has(id)) { seen.add(id); ids.push(id); }
+        }
+      }
+    } catch (_) { /* rate limit */ }
+    block._hydrate.total = Math.min(HYDRATE_CAP, ids.length);
+    let cursor = 0;
+    async function worker() {
+      while (cursor < ids.length && block.txs.length < HYDRATE_CAP) {
+        const id = ids[cursor++];
+        try {
+          const t = await fetchJson(REST + "/tx/" + id);
+          if (t && t.txid && t.vin && t.vout) {
+            const row = mapFullTx(t);
+            block.txs.push(row);
+            block._hydrate.done = block.txs.length;
+            if (block === state.selectedBlock && state.level >= 2 && block.txs.length % 12 === 0) {
+              ensureTxLayout(block);
+              rebuildInstances(true);
+            }
+          }
+        } catch (_) { /* skip one tx */ }
+      }
     }
-    txs.forEach((t) => { t.mask = classify(t); });
-    block.txs = txs;
+    await Promise.all(Array.from({ length: HYDRATE_CONCURRENCY }, worker));
+    block._hydrate.status = block.txs.length ? "done" : "empty";
     ensureTxLayout(block);
+    if (block === state.selectedBlock && state.level >= 2) {
+      rebuildInstances(true);
+      animateGrow(block.txs);
+    }
+    refreshPanel();
   }
 
   function animateGrow(list) {
@@ -679,11 +751,8 @@
           slot.feeRange = p.feeRange;
           slot.blockVSize = p.blockVSize;
           if (!state.blocks.includes(slot)) state.blocks.unshift(slot);
-          if (slot === state.selectedBlock && state.level >= 2 && prevCount !== p.nTx) {
-            slot.txs = null; slot.rects = null;
-            synthPendingTxs(slot);
-            rebuildInstances(true);
-            animateGrow(slot.txs || []);
+          if (slot === state.selectedBlock && state.level >= 2 && !slot._hydrate) {
+            hydratePendingBlock(slot);
           }
         });
         placeBlocks();
@@ -731,7 +800,7 @@
     }
     if (hit && hit.pickedMesh && hit.pickedMesh.metadata && hit.pickedMesh.metadata.block) {
       state.selectedBlock = hit.pickedMesh.metadata.block;
-      if (state.selectedBlock.pending) synthPendingTxs(state.selectedBlock);
+      if (state.selectedBlock.pending) hydratePendingBlock(state.selectedBlock);
       goLevel(Math.max(1, state.level));
     }
   });
@@ -744,7 +813,7 @@
         state.selectedBlock = state.blocks.filter((b) => !b.pending).slice(-1)[0] || state.blocks.slice(-1)[0];
       }
       if (next >= 1 && state.selectedBlock && !state.selectedBlock.pending) loadBlockTxs(state.selectedBlock);
-      if (next >= 2 && state.selectedBlock && state.selectedBlock.pending) synthPendingTxs(state.selectedBlock);
+      if (next >= 1 && state.selectedBlock && state.selectedBlock.pending) hydratePendingBlock(state.selectedBlock);
       updateCrumbs();
       refreshPanel();
       if (next >= 2) rebuildInstances(false);
@@ -764,7 +833,7 @@
     if (lv >= 1 && !state.selectedBlock) {
       state.selectedBlock = state.blocks.filter((x) => !x.pending).slice(-1)[0] || state.blocks[0];
     }
-    if (lv >= 2 && state.selectedBlock && state.selectedBlock.pending) synthPendingTxs(state.selectedBlock);
+    if (lv >= 1 && state.selectedBlock && state.selectedBlock.pending) hydratePendingBlock(state.selectedBlock);
     goLevel(lv);
   });
   document.querySelectorAll(".goggles [data-cat]").forEach((el) => {
