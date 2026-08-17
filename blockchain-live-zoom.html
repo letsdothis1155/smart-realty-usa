@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="referrer" content="no-referrer" />
+  <title>Smart Realty USA — Chain Zoom (Babylon, V2 companion)</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23060a12'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-size='16' fill='%232dd4bf'%3E%E2%82%BF%3C/text%3E%3C/svg%3E" />
+  <!--
+    Companion to blockchain-live-v2.html (Three.js). There was no Babylon
+    scene to extend — this file is the new Babylon.js continuous zoom.
+    Production blockchain-live.html is untouched.
+  -->
+  <meta http-equiv="Content-Security-Policy" content="
+    default-src 'none';
+    script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;
+    style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+    font-src https://fonts.gstatic.com;
+    img-src 'self' data: blob:;
+    connect-src 'self' https://mempool.space https://mempool.space/api wss://mempool.space;
+    worker-src blob:;
+    frame-src 'none';
+    object-src 'none';
+    base-uri 'none';
+    form-action 'none';
+  ">
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/babylonjs@7.54.3/babylon.js"></script>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #060a12;
+      --panel: rgba(8,12,22,0.88);
+      --text: #e8eef7;
+      --muted: #8b97ab;
+      --teal: #2dd4bf;
+      --lime: #84cc16;
+      --amber: #f59e0b;
+      --live: #22c55e;
+      --warn: #eab308;
+      --border: rgba(255,255,255,0.10);
+      font-family: Inter, system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); overflow: hidden; }
+    #renderCanvas { width: 100%; height: 100%; display: block; touch-action: none; outline: none; }
+    .hud { position: fixed; z-index: 4; pointer-events: none; }
+    .hud > * { pointer-events: auto; }
+    header.hud {
+      top: 0; left: 0; right: 0;
+      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+      padding: 10px 14px;
+      background: linear-gradient(180deg, rgba(6,10,18,0.92), transparent);
+    }
+    .brand { font-weight: 700; letter-spacing: -0.02em; }
+    .badge { font-size: 11px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); color: var(--muted); }
+    .crumbs { display: flex; gap: 6px; align-items: center; font-size: 12px; }
+    .crumbs button {
+      background: rgba(255,255,255,0.04); color: var(--muted); border: 1px solid var(--border);
+      border-radius: 8px; padding: 4px 8px; cursor: pointer; font: inherit;
+    }
+    .crumbs button.on { color: var(--teal); border-color: rgba(45,212,191,0.4); }
+    #wsPill { font-size: 11px; padding: 3px 8px; border-radius: 999px; background: #163; color: #b7f7c8; }
+    #wsPill.reconnecting { background: #3a2a00; color: #fde68a; }
+    #wsPill.down { background: #3b1212; color: #fecaca; }
+    .goggles {
+      position: fixed; left: 12px; bottom: 12px; z-index: 4;
+      background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+      padding: 10px 12px; width: min(320px, calc(100vw - 24px));
+      backdrop-filter: blur(10px);
+    }
+    .goggles h3 { margin: 0 0 8px; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+    .goggles label { display: flex; align-items: center; gap: 8px; font-size: 12px; margin: 4px 0; cursor: pointer; }
+    .goggles input[type="text"] {
+      width: 100%; margin-top: 8px; background: #0b1220; border: 1px solid var(--border);
+      color: var(--text); border-radius: 8px; padding: 6px 8px; font: inherit;
+    }
+    #matchHud { font-size: 11px; color: var(--muted); margin-top: 8px; }
+    .panel {
+      position: fixed; right: 12px; top: 58px; z-index: 4;
+      width: min(320px, calc(100vw - 24px));
+      background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+      padding: 12px; backdrop-filter: blur(10px); font-size: 13px;
+    }
+    .panel h2 { margin: 0 0 8px; font-size: 13px; }
+    .kv { display: grid; grid-template-columns: 110px 1fr; gap: 4px 8px; }
+    .kv span { color: var(--muted); }
+    .kv b { font-weight: 600; word-break: break-all; }
+    #tip { position: fixed; z-index: 6; display: none; pointer-events: none;
+      background: #0b1220; border: 1px solid var(--border); border-radius: 8px;
+      padding: 6px 8px; font-size: 11px; }
+    a { color: var(--teal); }
+    @media (max-width: 720px) {
+      .panel { top: auto; bottom: 170px; }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="renderCanvas"></canvas>
+  <header class="hud">
+    <div class="brand">Smart Realty USA</div>
+    <span class="badge">ZOOM DEV</span>
+    <div class="crumbs" id="crumbs">
+      <button data-level="0">L0 Chain</button>
+      <button data-level="1">L1 Block</button>
+      <button data-level="2">L2 Treemap</button>
+      <button data-level="3">L3 Tx</button>
+    </div>
+    <span id="wsPill">CONNECTING</span>
+    <a href="blockchain-live-v2.html">Back to V2</a>
+  </header>
+  <aside class="panel" id="infoPanel">
+    <h2 id="panelTitle">Chain overview</h2>
+    <div class="kv" id="panelKv"></div>
+  </aside>
+  <aside class="goggles">
+    <h3>Mempool goggles</h3>
+    <label><input type="checkbox" data-cat="0" /> Consolidation</label>
+    <label><input type="checkbox" data-cat="1" /> Coinjoin</label>
+    <label><input type="checkbox" data-cat="2" /> Data / inscription</label>
+    <label><input type="checkbox" data-cat="3" /> RBF signalling</label>
+    <label><input type="checkbox" data-cat="4" /> High-fee outlier</label>
+    <input type="text" id="goggleFilter" placeholder="Filter txid / address" />
+    <div id="matchHud">Matches: 0 · 0 vB</div>
+  </aside>
+  <div id="tip"></div>
+
+<script>
+(() => {
+  const WS_URL = "wss://mempool.space/api/v1/ws";
+  const REST = "https://mempool.space/api";
+  const MAX_TX = 5000;
+  const LEVEL_R = [72, 22, 9, 3.4];
+  const CAT = ["consolidation", "coinjoin", "inscription", "rbf", "outlier"];
+  const CAT_HUE = [0.55, 0.78, 0.12, 0.92, 0.08];
+
+  const canvas = document.getElementById("renderCanvas");
+  const tipEl = document.getElementById("tip");
+  const wsPill = document.getElementById("wsPill");
+  const panelTitle = document.getElementById("panelTitle");
+  const panelKv = document.getElementById("panelKv");
+  const matchHud = document.getElementById("matchHud");
+
+  const engine = new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: false, stencil: true }, true);
+  if (engine.getCaps) {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    engine.setHardwareScalingLevel(1 / dpr);
+  }
+  const scene = new BABYLON.Scene(engine);
+  scene.clearColor = new BABYLON.Color4(0.024, 0.039, 0.07, 1);
+  scene.fogMode = BABYLON.Scene.FOGMODE_EXP2;
+  scene.fogDensity = 0.012;
+  scene.fogColor = new BABYLON.Color3(0.024, 0.039, 0.07);
+
+  const camera = new BABYLON.ArcRotateCamera("cam", -Math.PI / 2.2, 1.15, LEVEL_R[0], new BABYLON.Vector3(0, 0.6, 0), scene);
+  camera.attachControl(canvas, true);
+  camera.lowerBetaLimit = 0.18;
+  camera.upperBetaLimit = Math.PI / 2 - 0.08;
+  camera.lowerRadiusLimit = 1.6;
+  camera.upperRadiusLimit = 110;
+  camera.wheelPrecision = 28;
+  camera.pinchPrecision = 40;
+  camera.panningSensibility = 80;
+  camera.inertia = 0.78;
+  camera.minZ = 0.05;
+  camera.maxZ = 400;
+
+  const light = new BABYLON.HemisphericLight("hemi", new BABYLON.Vector3(0.2, 1, 0.15), scene);
+  light.intensity = 0.55;
+  light.groundColor = new BABYLON.Color3(0.05, 0.08, 0.12);
+  const key = new BABYLON.DirectionalLight("key", new BABYLON.Vector3(-0.4, -1, 0.25), scene);
+  key.intensity = 0.45;
+
+  const pipeline = new BABYLON.DefaultRenderingPipeline("pipe", true, scene, [camera]);
+  pipeline.imageProcessingEnabled = true;
+  pipeline.imageProcessing.toneMappingEnabled = true;
+  pipeline.imageProcessing.toneMappingType = BABYLON.ImageProcessingConfiguration.TONEMAPPING_ACES;
+  pipeline.imageProcessing.exposure = 1.05;
+  pipeline.fxaaEnabled = true;
+  pipeline.bloomEnabled = true;
+  pipeline.bloomThreshold = 0.72;
+  pipeline.bloomWeight = 0.18;
+  pipeline.bloomKernel = 32;
+  pipeline.depthOfFieldEnabled = true;
+  pipeline.depthOfField.fStop = 8.2;
+  pipeline.depthOfField.focusDistance = 8000;
+  pipeline.depthOfField.focalLength = 50;
+
+  const glow = new BABYLON.GlowLayer("glow", scene, { blurKernelSize: 16 });
+  glow.intensity = 0.28;
+  const highlight = new BABYLON.HighlightLayer("hl", scene);
+  highlight.innerGlow = false;
+
+  /* ---------- math / layout ---------- */
+  function easeInOutCubic(t) {
+    return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  }
+  function lerp(a, b, t) { return a + (b - a) * t; }
+  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+  function logHeight(satVb) {
+    const x = Math.max(0.1, satVb || 1);
+    return 0.12 + Math.log10(1 + x) * 1.15;
+  }
+  function feeColor(satVb) {
+    const t = clamp(Math.log10(1 + (satVb || 1)) / Math.log10(501), 0, 1);
+    if (t > 0.88) return new BABYLON.Color3(1.0, 0.55, 0.12);
+    if (t > 0.7) return new BABYLON.Color3(0.72, 0.95, 0.18);
+    if (t > 0.42) return new BABYLON.Color3(0.22, 0.78, 0.38);
+    if (t > 0.2) return new BABYLON.Color3(0.12, 0.68, 0.52);
+    return new BABYLON.Color3(0.05, 0.38, 0.42);
+  }
+
+  function squarify(items, x, y, w, h) {
+    const nodes = items.map((it) => ({ ...it, area: Math.max(1, it.vsize || 1) }))
+      .sort((a, b) => b.area - a.area);
+    const total = nodes.reduce((s, n) => s + n.area, 0) || 1;
+    const out = [];
+    const scale = (w * h) / total;
+    nodes.forEach((n) => { n.area *= scale; });
+    function worst(row, len) {
+      if (!row.length) return Infinity;
+      const s = row.reduce((a, b) => a + b.area, 0);
+      let max = 0, min = Infinity;
+      for (const r of row) { max = Math.max(max, r.area); min = Math.min(min, r.area); }
+      return Math.max((len * len * max) / (s * s), (s * s) / (len * len * min));
+    }
+    function layout(row, xx, yy, ww, hh, horizontal) {
+      const s = row.reduce((a, b) => a + b.area, 0);
+      if (horizontal) {
+        const rh = s / ww;
+        let cx = xx;
+        for (const r of row) {
+          const rw = r.area / rh;
+          out.push({ ...r, x: cx, z: yy, w: rw, d: rh });
+          cx += rw;
+        }
+      } else {
+        const rw = s / hh;
+        let cz = yy;
+        for (const r of row) {
+          const rd = r.area / rw;
+          out.push({ ...r, x: xx, z: cz, w: rw, d: rd });
+          cz += rd;
+        }
+      }
+    }
+    function step(list, xx, yy, ww, hh) {
+      if (!list.length) return;
+      const horizontal = ww >= hh;
+      const len = horizontal ? ww : hh;
+      const row = [];
+      while (list.length) {
+        const n = list[0];
+        if (row.length && worst(row.concat([n]), len) > worst(row, len)) break;
+        row.push(list.shift());
+      }
+      const s = row.reduce((a, b) => a + b.area, 0);
+      if (horizontal) {
+        const rh = s / ww;
+        layout(row, xx, yy, ww, hh, true);
+        step(list, xx, yy + rh, ww, hh - rh);
+      } else {
+        const rw = s / hh;
+        layout(row, xx, yy, ww, hh, false);
+        step(list, xx + rw, yy, ww - rw, hh);
+      }
+    }
+    step(nodes.slice(), x, y, w, h);
+    return out;
+  }
+
+  function classify(tx) {
+    let mask = 0;
+    const vin = tx.vin || tx.inputs || [];
+    const vout = tx.vout || tx.outputs || [];
+    if (vin.length >= 5 && vout.length <= 2) mask |= 1 << 0;
+    if (vin.length >= 5 && vout.length >= 5 && Math.abs(vin.length - vout.length) <= 2) mask |= 1 << 1;
+    const hex = (tx.vout || []).some((o) => (o.scriptpubkey_type || "").includes("op_return") || (o.scriptpubkey_asm || "").includes("OP_RETURN"));
+    if (hex || (tx.vsize || 0) > 4000) mask |= 1 << 2;
+    if (tx.vin && tx.vin.some((i) => i.sequence < 0xfffffffe)) mask |= 1 << 3;
+    if ((tx.feePerVsize || tx.fee / Math.max(1, tx.vsize || 1)) >= 40) mask |= 1 << 4;
+    return mask;
+  }
+
+  /* ---------- state ---------- */
+  const state = {
+    level: 0,
+    blocks: [],
+    selectedBlock: null,
+    selectedTx: null,
+    txCache: new Map(),
+    ws: null,
+    backoff: 800,
+    wsState: "CONNECTING",
+    goggles: { cats: 0, text: "" },
+    camTween: null,
+    lastPick: -1,
+    lastFrame: performance.now(),
+    slip: 0
+  };
+
+  /* ---------- materials / meshes ---------- */
+  const blockMatPending = new BABYLON.StandardMaterial("bp", scene);
+  blockMatPending.diffuseColor = new BABYLON.Color3(0.12, 0.28, 0.34);
+  blockMatPending.emissiveColor = new BABYLON.Color3(0.04, 0.12, 0.16);
+  blockMatPending.specularColor = new BABYLON.Color3(0.1, 0.15, 0.16);
+  const blockMatConfirmed = new BABYLON.StandardMaterial("bc", scene);
+  blockMatConfirmed.diffuseColor = new BABYLON.Color3(0.09, 0.42, 0.38);
+  blockMatConfirmed.emissiveColor = new BABYLON.Color3(0.03, 0.16, 0.14);
+  const blockMatSel = new BABYLON.StandardMaterial("bs", scene);
+  blockMatSel.diffuseColor = new BABYLON.Color3(0.18, 0.62, 0.48);
+  blockMatSel.emissiveColor = new BABYLON.Color3(0.08, 0.28, 0.2);
+  [blockMatPending, blockMatConfirmed, blockMatSel].forEach((m) => m.freeze());
+
+  const chainRoot = new BABYLON.TransformNode("chain", scene);
+  const blockMeshes = [];
+
+  const txMat = new BABYLON.StandardMaterial("txm", scene);
+  txMat.specularColor = new BABYLON.Color3(0.08, 0.1, 0.1);
+  txMat.emissiveColor = new BABYLON.Color3(0.04, 0.1, 0.09);
+  txMat.disableLighting = false;
+  const txBox = BABYLON.MeshBuilder.CreateBox("txbox", { width: 1, height: 1, depth: 1 }, scene);
+  txBox.material = txMat;
+  txBox.isPickable = true;
+  txBox.thinInstanceEnablePicking = true;
+  txBox.alwaysSelectAsActiveMesh = true;
+  txBox.position.y = -200;
+  let txInstances = [];
+  let colorBuf = null;
+  let matrixBuf = null;
+
+  function setKv(rows) {
+    panelKv.innerHTML = rows.map(([k, v]) => `<span>${k}</span><b>${v}</b>`).join("");
+  }
+  function setWs(s) {
+    state.wsState = s;
+    wsPill.textContent = s;
+    wsPill.className = s === "RECONNECTING" ? "reconnecting" : s === "LIVE" ? "" : "down";
+  }
+  function levelFromRadius(r) {
+    if (r > (LEVEL_R[0] + LEVEL_R[1]) / 2) return 0;
+    if (r > (LEVEL_R[1] + LEVEL_R[2]) / 2) return 1;
+    if (r > (LEVEL_R[2] + LEVEL_R[3]) / 2) return 2;
+    return 3;
+  }
+  function updateCrumbs() {
+    document.querySelectorAll("#crumbs button").forEach((b) => {
+      b.classList.toggle("on", Number(b.dataset.level) === state.level);
+    });
+    pipeline.depthOfField.fStop = [9.5, 5.5, 3.2, 1.8][state.level];
+    pipeline.depthOfField.focusDistance = [14000, 7000, 3200, 1400][state.level];
+  }
+
+  function snapshotCam() {
+    return { r: camera.radius, a: camera.alpha, b: camera.beta, tx: camera.target.x, ty: camera.target.y, tz: camera.target.z };
+  }
+  function applyCam(c) {
+    camera.radius = c.r; camera.alpha = c.a; camera.beta = c.b;
+    camera.target.copyFromFloats(c.tx, c.ty, c.tz);
+  }
+  function tweenTo(to, ms) {
+    const from = snapshotCam();
+    state.camTween = { from, to, t: 0, dur: clamp(ms || 1050, 900, 1200) };
+  }
+  function framingFor(level, block, tx) {
+    const idx = state.blocks.indexOf(block);
+    const bx = idx >= 0 ? (idx - Math.max(0, state.blocks.length - 8)) * 4.4 : 0;
+    if (level === 0) return { r: LEVEL_R[0], a: -Math.PI / 2.2, b: 1.15, tx: 6, ty: 0.6, tz: 0 };
+    if (level === 1) return { r: LEVEL_R[1], a: -Math.PI / 2.05, b: 1.05, tx: bx, ty: 0.8, tz: 0 };
+    if (level === 2) return { r: LEVEL_R[2], a: -Math.PI / 2, b: 0.85, tx: bx, ty: 0.4, tz: 0 };
+    const tpos = tx && tx._pos ? tx._pos : { x: bx, y: 1, z: 0 };
+    return { r: LEVEL_R[3], a: -Math.PI / 2 + 0.18, b: 0.72, tx: tpos.x, ty: tpos.y, tz: tpos.z };
+  }
+  function goLevel(level, opts = {}) {
+    state.level = clamp(level, 0, 3);
+    if (state.level < 3) state.selectedTx = null;
+    if (state.level < 1) { /* keep selectedBlock for memory */ }
+    updateCrumbs();
+    const to = framingFor(state.level, state.selectedBlock, state.selectedTx);
+    if (opts.hard) applyCam(to);
+    else tweenTo(to, opts.ms);
+    if (state.level >= 1 && state.selectedBlock && !state.selectedBlock.pending) {
+      loadBlockTxs(state.selectedBlock);
+    } else if (state.level >= 2 && state.selectedBlock) {
+      ensureTxLayout(state.selectedBlock);
+    }
+    refreshPanel();
+    if (state.level >= 2) rebuildInstances(false);
+    else hideInstances();
+  }
+
+  function hideInstances() {
+    txBox.thinInstanceCount = 0;
+    txBox.setEnabled(false);
+  }
+
+  function placeBlocks() {
+    const start = Math.max(0, state.blocks.length - 12);
+    const vis = state.blocks.slice(start);
+    while (blockMeshes.length < vis.length) {
+      const m = BABYLON.MeshBuilder.CreateBox("blk" + blockMeshes.length, { width: 3.2, height: 2.0, depth: 3.2 }, scene);
+      m.parent = chainRoot;
+      blockMeshes.push(m);
+    }
+    blockMeshes.forEach((m, i) => {
+      if (i >= vis.length) { m.setEnabled(false); return; }
+      const b = vis[i];
+      m.setEnabled(true);
+      m.position.x = i * 4.4;
+      m.position.y = 1.0;
+      m.position.z = 0;
+      const sel = b === state.selectedBlock;
+      m.material = b.pending ? blockMatPending : (sel ? blockMatSel : blockMatConfirmed);
+      m.scaling.y = 0.85 + Math.min(1.4, (b.txCount || 1) / 4000);
+      m.metadata = { block: b, visIndex: i };
+      b._mesh = m;
+      b._x = m.position.x;
+    });
+    chainRoot.position.x = -Math.max(0, vis.length - 6) * 2.2;
+  }
+
+  function ensureTxLayout(block) {
+    const txs = block.txs;
+    if (!txs || !txs.length) return;
+    const rects = squarify(txs, -1.45, -1.45, 2.9, 2.9);
+    rects.forEach((r) => {
+      r.feePerVsize = r.feePerVsize || ((r.fee || 0) / Math.max(1, r.vsize || 1));
+      r.mask = r.mask != null ? r.mask : classify(r);
+      r._h = logHeight(r.feePerVsize);
+      r._pos = { x: (block._x || 0) + r.x + r.w / 2, y: r._h / 2, z: r.z + r.d / 2 };
+    });
+    block.rects = rects;
+  }
+
+  function goggleMatch(tx) {
+    const g = state.goggles;
+    const text = g.text.trim().toLowerCase();
+    let catOk = true;
+    if (g.cats) catOk = (tx.mask & g.cats) !== 0;
+    let textOk = true;
+    if (text) {
+      const blob = `${tx.txid || ""} ${(tx.vout || []).map((o) => o.scriptpubkey_address || "").join(" ")}`.toLowerCase();
+      textOk = blob.includes(text);
+    }
+    if (!g.cats && !text) return true;
+    return catOk && textOk;
+  }
+
+  function rebuildInstances(full) {
+    const block = state.selectedBlock;
+    if (!block || state.level < 2) { hideInstances(); return; }
+    if (!block.rects) ensureTxLayout(block);
+    const rects = (block.rects || []).slice(0, MAX_TX);
+    txInstances = rects;
+    if (!rects.length) { hideInstances(); return; }
+    txBox.setEnabled(true);
+    const n = rects.length;
+    if (full || !matrixBuf || matrixBuf.length !== n * 16) {
+      matrixBuf = new Float32Array(n * 16);
+      colorBuf = new Float32Array(n * 4);
+    }
+    const tmp = BABYLON.Matrix.Identity();
+    const scl = new BABYLON.Vector3();
+    const pos = new BABYLON.Vector3();
+    const rot = BABYLON.Quaternion.Identity();
+    let matchN = 0, matchV = 0;
+    const anyFilter = !!(state.goggles.cats || state.goggles.text.trim());
+    for (let i = 0; i < n; i++) {
+      const r = rects[i];
+      const match = goggleMatch(r);
+      if (match) { matchN++; matchV += r.vsize || 0; }
+      const lift = match ? 0.08 : (anyFilter ? -0.06 : 0);
+      const h = r._h * (r._grow == null ? 1 : r._grow);
+      scl.copyFromFloats(Math.max(0.04, r.w * 0.92), Math.max(0.04, h), Math.max(0.04, r.d * 0.92));
+      pos.copyFromFloats((block._x || 0) + r.x + r.w / 2, h / 2 + lift, r.z + r.d / 2);
+      r._pos = { x: pos.x, y: pos.y, z: pos.z };
+      BABYLON.Matrix.ComposeToRef(scl, rot, pos, tmp);
+      tmp.copyToArray(matrixBuf, i * 16);
+      const c = feeColor(r.feePerVsize);
+      const sat = anyFilter ? (match ? 1 : 0.22) : 1;
+      const a = anyFilter ? (match ? 1 : 0.35) : 1;
+      colorBuf[i * 4] = c.r * sat + 0.05;
+      colorBuf[i * 4 + 1] = c.g * sat + 0.06;
+      colorBuf[i * 4 + 2] = c.b * sat + 0.07;
+      colorBuf[i * 4 + 3] = a;
+      if (anyFilter && match) {
+        const hue = CAT_HUE[CAT.findIndex((_, b) => (r.mask & state.goggles.cats) & (1 << b))] ?? 0.5;
+        colorBuf[i * 4] = lerp(colorBuf[i * 4], 0.4 + 0.5 * Math.cos(hue * Math.PI * 2), 0.35);
+      }
+    }
+    txBox.thinInstanceSetBuffer("matrix", matrixBuf, 16, false);
+    txBox.thinInstanceSetBuffer("color", colorBuf, 4, false);
+    txBox.thinInstanceCount = n;
+    matchHud.textContent = `Matches: ${matchN.toLocaleString()} · ${matchV.toLocaleString()} vB`;
+  }
+
+  function refreshPanel() {
+    const b = state.selectedBlock;
+    const tx = state.selectedTx;
+    if (state.level === 3 && tx) {
+      panelTitle.textContent = "Transaction";
+      setKv([
+        ["txid", (tx.txid || "").slice(0, 24) + "…"],
+        ["fee rate", `${(tx.feePerVsize || 0).toFixed(1)} sat/vB`],
+        ["vsize", `${tx.vsize || "—"} vB`],
+        ["value", tx.value != null ? `${(tx.value / 1e8).toFixed(4)} BTC` : "—"],
+        ["status", b && b.pending ? "unconfirmed" : "confirmed"]
+      ]);
+      return;
+    }
+    if (b) {
+      panelTitle.textContent = b.pending ? "Mempool template" : `Block ${b.height ?? ""}`;
+      setKv([
+        ["hash", (b.hash || "pending").slice(0, 20) + "…"],
+        ["txs", (b.txCount || (b.txs && b.txs.length) || "—").toLocaleString?.() || String(b.txCount || "—")],
+        ["median fee", b.medianFee != null ? `${b.medianFee.toFixed(1)} sat/vB` : "—"],
+        ["state", b.pending ? "pending" : "confirmed"]
+      ]);
+      return;
+    }
+    panelTitle.textContent = "Chain overview";
+    const tip = state.blocks.filter((x) => !x.pending).slice(-1)[0];
+    setKv([
+      ["tip", tip ? String(tip.height) : "—"],
+      ["blocks shown", String(state.blocks.length)],
+      ["ws", state.wsState]
+    ]);
+  }
+
+  async function fetchJson(url) {
+    const r = await fetch(url, { cache: "no-store" });
+    if (!r.ok) throw new Error(url + " " + r.status);
+    return r.json();
+  }
+
+  async function bootstrap() {
+    try {
+      const raw = await fetchJson(REST + "/blocks");
+      const confirmed = (raw || []).slice(0, 10).reverse().map((b) => ({
+        hash: b.id, height: b.height, txCount: b.tx_count, pending: false,
+        medianFee: b.extras && b.extras.medianFee, timestamp: b.timestamp
+      }));
+      let pending = [];
+      try {
+        const mb = await fetchJson(REST + "/v1/fees/mempool-blocks");
+        pending = (mb || []).slice(0, 3).map((p, i) => ({
+          hash: "mempool-" + i, height: null, txCount: p.nTx, pending: true,
+          medianFee: p.medianFee, feeRange: p.feeRange, blockVSize: p.blockVSize
+        }));
+      } catch (_) { /* optional */ }
+      state.blocks = pending.reverse().concat(confirmed);
+      placeBlocks();
+      refreshPanel();
+    } catch (e) {
+      setWs("DEMO");
+    }
+  }
+
+  async function loadBlockTxs(block) {
+    if (!block || block.pending) return;
+    if (state.txCache.has(block.hash)) {
+      block.txs = state.txCache.get(block.hash);
+      ensureTxLayout(block);
+      if (state.level >= 2) rebuildInstances(true);
+      return;
+    }
+    const acc = [];
+    try {
+      for (let start = 0; start < MAX_TX; start += 25) {
+        const page = await fetchJson(`${REST}/block/${block.hash}/txs/${start || ""}`.replace(/\/$/, ""));
+        if (!Array.isArray(page) || !page.length) break;
+        for (const t of page) {
+          const vsize = t.weight ? t.weight / 4 : (t.vsize || t.size || 200);
+          const fee = t.fee || 0;
+          const value = (t.vout || []).reduce((s, o) => s + (o.value || 0), 0);
+          acc.push({
+            txid: t.txid, vsize, fee, feePerVsize: fee / Math.max(1, vsize),
+            value, vin: t.vin, vout: t.vout, mask: 0, _grow: 0
+          });
+        }
+        if (page.length < 25) break;
+      }
+    } catch (_) { /* keep what we have */ }
+    acc.forEach((t) => { t.mask = classify(t); });
+    block.txs = acc;
+    state.txCache.set(block.hash, acc);
+    ensureTxLayout(block);
+    if (state.level >= 2) {
+      rebuildInstances(true);
+      animateGrow(acc);
+    }
+    refreshPanel();
+  }
+
+  function synthPendingTxs(block) {
+    if (block.txs && block.txs.length) return;
+    const n = clamp(block.txCount || 180, 40, 900);
+    const range = block.feeRange || [1, 2, 4, 8, 16, 32];
+    const txs = [];
+    for (let i = 0; i < n; i++) {
+      const feePerVsize = range[i % range.length] * (0.7 + (i % 7) * 0.11);
+      const vsize = 140 + (i * 17) % 900;
+      txs.push({
+        txid: `${block.hash}-s${i.toString(16)}`, vsize, fee: feePerVsize * vsize,
+        feePerVsize, value: 1e6 * ((i * 13) % 80), mask: 0, _grow: 0, synthetic: true
+      });
+    }
+    txs.forEach((t) => { t.mask = classify(t); });
+    block.txs = txs;
+    ensureTxLayout(block);
+  }
+
+  function animateGrow(list) {
+    const start = performance.now();
+    const step = () => {
+      const t = (performance.now() - start) / 900;
+      list.forEach((tx, i) => {
+        const local = clamp((t - i * 0.0008) / 0.35, 0, 1);
+        const s = 1 - Math.pow(1 - local, 3);
+        tx._grow = s;
+      });
+      if (state.level >= 2) rebuildInstances(false);
+      if (t < 1.2) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }
+
+  function onNewBlock(b) {
+    const incoming = {
+      hash: b.id || b.hash, height: b.height, txCount: b.tx_count || b.txCount,
+      pending: false, medianFee: b.extras && b.extras.medianFee, timestamp: b.timestamp
+    };
+    const inside = state.selectedBlock && state.selectedBlock.pending;
+    if (inside) {
+      const oldHash = state.selectedBlock.hash;
+      Object.assign(state.selectedBlock, incoming, { pending: false });
+      state.txCache.delete(oldHash);
+      loadBlockTxs(state.selectedBlock);
+    } else {
+      state.blocks.push(incoming);
+      if (state.blocks.filter((x) => !x.pending).length > 14) {
+        const i = state.blocks.findIndex((x) => !x.pending);
+        if (i >= 0) state.blocks.splice(i, 1);
+      }
+    }
+    placeBlocks();
+    refreshPanel();
+  }
+
+  function connectWs() {
+    setWs("CONNECTING");
+    let ws;
+    try { ws = new WebSocket(WS_URL); } catch (e) { scheduleReconnect(); return; }
+    state.ws = ws;
+    ws.onopen = () => {
+      state.backoff = 800;
+      setWs("LIVE");
+      ws.send(JSON.stringify({ action: "want", data: ["blocks", "mempool-blocks", "stats"] }));
+    };
+    ws.onmessage = (ev) => {
+      let msg;
+      try { msg = JSON.parse(ev.data); } catch (_) { return; }
+      if (msg.block) onNewBlock(msg.block);
+      if (msg.blocks && Array.isArray(msg.blocks) && msg.blocks[0] && msg.blocks[0].height) {
+        /* snapshot of recent confirmed — ignore full replace to keep camera */
+      }
+      if (msg["mempool-blocks"]) {
+        const mb = msg["mempool-blocks"];
+        const existing = state.blocks.filter((b) => b.pending);
+        mb.slice(0, 3).forEach((p, i) => {
+          const slot = existing[existing.length - 1 - i] || {
+            hash: "mempool-" + i, pending: true, txs: null, rects: null
+          };
+          const prevCount = slot.txCount;
+          slot.txCount = p.nTx;
+          slot.medianFee = p.medianFee;
+          slot.feeRange = p.feeRange;
+          slot.blockVSize = p.blockVSize;
+          if (!state.blocks.includes(slot)) state.blocks.unshift(slot);
+          if (slot === state.selectedBlock && state.level >= 2 && prevCount !== p.nTx) {
+            slot.txs = null; slot.rects = null;
+            synthPendingTxs(slot);
+            rebuildInstances(true);
+            animateGrow(slot.txs || []);
+          }
+        });
+        placeBlocks();
+        if (state.level === 0) refreshPanel();
+      }
+    };
+    ws.onclose = () => { setWs("RECONNECTING"); scheduleReconnect(); };
+    ws.onerror = () => { try { ws.close(); } catch (_) {} };
+  }
+  function scheduleReconnect() {
+    setWs("RECONNECTING");
+    const wait = state.backoff;
+    state.backoff = Math.min(12000, state.backoff * 1.7);
+    setTimeout(connectWs, wait);
+  }
+
+  /* ---------- picking / input ---------- */
+  canvas.addEventListener("pointermove", (e) => {
+    const hit = scene.pick(e.offsetX, e.offsetY);
+    if (hit && hit.pickedMesh === txBox && hit.thinInstanceIndex >= 0) {
+      const tx = txInstances[hit.thinInstanceIndex];
+      if (tx) {
+        tipEl.style.display = "block";
+        tipEl.style.left = e.clientX + 12 + "px";
+        tipEl.style.top = e.clientY + 12 + "px";
+        tipEl.textContent = `${(tx.feePerVsize || 0).toFixed(1)} sat/vB · ${tx.vsize} vB · ${tx.value != null ? (tx.value / 1e8).toFixed(4) + " BTC" : ""}`;
+        if (state.lastPick !== hit.thinInstanceIndex) {
+          highlight.removeAllMeshes();
+          highlight.addMesh(txBox, BABYLON.Color3.FromHexString("#fde68a"));
+          state.lastPick = hit.thinInstanceIndex;
+        }
+      }
+    } else {
+      tipEl.style.display = "none";
+      highlight.removeAllMeshes();
+      state.lastPick = -1;
+    }
+  });
+  canvas.addEventListener("pointerdown", (e) => {
+    const hit = scene.pick(e.offsetX, e.offsetY);
+    if (hit && hit.pickedMesh === txBox && hit.thinInstanceIndex >= 0 && state.level >= 2) {
+      state.selectedTx = txInstances[hit.thinInstanceIndex];
+      goLevel(3);
+      return;
+    }
+    if (hit && hit.pickedMesh && hit.pickedMesh.metadata && hit.pickedMesh.metadata.block) {
+      state.selectedBlock = hit.pickedMesh.metadata.block;
+      if (state.selectedBlock.pending) synthPendingTxs(state.selectedBlock);
+      goLevel(Math.max(1, state.level));
+    }
+  });
+  canvas.addEventListener("wheel", () => {
+    state.camTween = null;
+    const next = levelFromRadius(camera.radius);
+    if (next !== state.level) {
+      state.level = next;
+      if (next >= 1 && !state.selectedBlock) {
+        state.selectedBlock = state.blocks.filter((b) => !b.pending).slice(-1)[0] || state.blocks.slice(-1)[0];
+      }
+      if (next >= 1 && state.selectedBlock && !state.selectedBlock.pending) loadBlockTxs(state.selectedBlock);
+      if (next >= 2 && state.selectedBlock && state.selectedBlock.pending) synthPendingTxs(state.selectedBlock);
+      updateCrumbs();
+      refreshPanel();
+      if (next >= 2) rebuildInstances(false);
+      else hideInstances();
+    }
+  }, { passive: true });
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" || e.key === "Backspace") {
+      e.preventDefault();
+      goLevel(state.level - 1);
+    }
+  });
+  document.getElementById("crumbs").addEventListener("click", (e) => {
+    const b = e.target.closest("button");
+    if (!b) return;
+    const lv = Number(b.dataset.level);
+    if (lv >= 1 && !state.selectedBlock) {
+      state.selectedBlock = state.blocks.filter((x) => !x.pending).slice(-1)[0] || state.blocks[0];
+    }
+    if (lv >= 2 && state.selectedBlock && state.selectedBlock.pending) synthPendingTxs(state.selectedBlock);
+    goLevel(lv);
+  });
+  document.querySelectorAll(".goggles [data-cat]").forEach((el) => {
+    el.addEventListener("change", () => {
+      let mask = 0;
+      document.querySelectorAll(".goggles [data-cat]").forEach((c) => {
+        if (c.checked) mask |= 1 << Number(c.dataset.cat);
+      });
+      state.goggles.cats = mask;
+      if (state.level >= 2) rebuildInstances(false);
+    });
+  });
+  document.getElementById("goggleFilter").addEventListener("input", (e) => {
+    state.goggles.text = e.target.value;
+    if (state.level >= 2) rebuildInstances(false);
+  });
+
+  window.addEventListener("resize", () => engine.resize());
+
+  engine.runRenderLoop(() => {
+    const now = performance.now();
+    const dt = Math.min(0.05, (now - state.lastFrame) / 1000);
+    state.lastFrame = now;
+    if (state.camTween) {
+      state.camTween.t += dt * 1000;
+      const u = easeInOutCubic(clamp(state.camTween.t / state.camTween.dur, 0, 1));
+      const a = state.camTween.from, b = state.camTween.to;
+      applyCam({
+        r: lerp(a.r, b.r, u), a: lerp(a.a, b.a, u), b: lerp(a.b, b.b, u),
+        tx: lerp(a.tx, b.tx, u), ty: lerp(a.ty, b.ty, u), tz: lerp(a.tz, b.tz, u)
+      });
+      if (u >= 1) state.camTween = null;
+    }
+    const ft = engine.getDeltaTime();
+    if (ft > 28) {
+      state.slip++;
+      if (state.slip > 20 && pipeline.bloomEnabled) pipeline.bloomEnabled = false;
+      if (state.slip > 40 && pipeline.depthOfFieldEnabled) pipeline.depthOfFieldEnabled = false;
+    } else state.slip = Math.max(0, state.slip - 1);
+    scene.render();
+  });
+
+  window.__ZOOM = {
+    goLevel, getState: () => state, camera,
+    forceBlock: (i) => { state.selectedBlock = state.blocks[i]; goLevel(1); }
+  };
+
+  updateCrumbs();
+  bootstrap().then(connectWs);
+})();
+</script>
+</body>
+</html>
