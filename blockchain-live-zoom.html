@@ -131,7 +131,7 @@
 <script>
 (() => {
   const MAX_TX = 5000;
-  const HYDRATE_CAP = 320;
+  const HYDRATE_CAP_FALLBACK = 320;
   const LRU_CAP = 5000;
 
   const MempoolEndpoint = (() => {
@@ -139,6 +139,7 @@
     const FALLBACK = "https://mempool.space";
     let active = BASE;
     let usingFallback = false;
+    let onSwitch = null;
     function show() {
       const el = document.getElementById("srcPill");
       if (el) el.textContent = usingFallback ? "API: mempool.space (fallback)" : "API: mempool.smartrealty.us";
@@ -161,14 +162,17 @@
       finally { clearTimeout(t); }
     }
     async function choose() {
+      const was = usingFallback;
       if (await probe(BASE)) { active = BASE; usingFallback = false; }
       else { active = FALLBACK; usingFallback = true; }
       show();
+      if (was !== usingFallback && onSwitch) onSwitch(usingFallback, was);
       return { usingFallback };
     }
+    function setOnSwitch(fn) { onSwitch = fn; }
     choose();
     setInterval(choose, 60000);
-    return { BASE, FALLBACK, api, ws, choose, concurrency, isFallback: () => usingFallback, host: () => usingFallback ? "mempool.space" : "mempool.smartrealty.us" };
+    return { BASE, FALLBACK, api, ws, choose, concurrency, setOnSwitch, isFallback: () => usingFallback, host: () => usingFallback ? "mempool.space" : "mempool.smartrealty.us" };
   })();
   const LEVEL_R = [72, 22, 9, 3.4];
   const CAT = ["consolidation", "coinjoin", "inscription", "rbf", "outlier"];
@@ -578,6 +582,11 @@
     const universe = hyd.universe || block.txCount || source.length;
     if (state.rateLimited) {
       matchHud.textContent = "Rate limited — backing off";
+    } else if (hyd.paused && MempoolEndpoint.isFallback() && universe && realN < universe) {
+      const pop = hyd.population === "mempool" ? "mempool txs" : "txs in this block";
+      matchHud.textContent = anyFilter
+        ? `${matchN} matches in ${realN.toLocaleString()} sampled of ${universe.toLocaleString()} ${pop} — paused, public API`
+        : `${realN.toLocaleString()} sampled of ${universe.toLocaleString()} ${pop} — paused, public API`;
     } else if (hyd.status === "loading" && realN === 0) {
       matchHud.textContent = `Hydrating ${hyd.done || 0}/${hyd.total || universe || 0} — goggles wait`;
     } else if (realN === 0) {
@@ -920,6 +929,10 @@
   async function hydratePendingBlock(block) {
     if (!block || !block.pending) return;
     if (block._hydrate && block._hydrate.status === "loading") return;
+    if (block._hydrate && block._hydrate.paused && MempoolEndpoint.isFallback()) {
+      updateMatchHud(block);
+      return;
+    }
     const abort = new AbortController();
     if (!block._hydrate || !block._hydrate.order) {
       block._hydrate = { status: "loading", order: [], cursor: 0, done: 0, total: 0, universe: 0, population: "block", abort };
@@ -963,10 +976,27 @@
       }
     }
     hyd.done = (block.members || block.txs || []).filter(isHydrated).length;
+    hyd.fallbackIssued = hyd.fallbackIssued || 0;
+    if (MempoolEndpoint.isFallback() && hyd.fallbackIssued >= HYDRATE_CAP_FALLBACK) {
+      hyd.paused = true;
+      hyd.status = "paused";
+      updateMatchHud(block);
+      return;
+    }
+    hyd.paused = false;
     updateMatchHud(block);
     let backoff = 600;
+    function canIssueNetworkFetch() {
+      if (hyd.paused) return false;
+      if (!MempoolEndpoint.isFallback()) return true;
+      return hyd.fallbackIssued < HYDRATE_CAP_FALLBACK;
+    }
     async function worker() {
       while (hyd.cursor < hyd.order.length && !abort.signal.aborted) {
+        if (!canIssueNetworkFetch()) {
+          hyd.paused = true;
+          break;
+        }
         await yieldIfBusy();
         const id = hyd.order[hyd.cursor++];
         const mem = (block.members || []).find((m) => m.txid === id);
@@ -978,7 +1008,13 @@
           hyd.done = (block.members || []).filter(isHydrated).length;
           continue;
         }
+        if (!canIssueNetworkFetch()) {
+          hyd.cursor = Math.max(0, hyd.cursor - 1);
+          hyd.paused = true;
+          break;
+        }
         try {
+          if (MempoolEndpoint.isFallback()) hyd.fallbackIssued += 1;
           const t = await fetchJson(MempoolEndpoint.api("/tx/" + id), { signal: abort.signal });
           if (t && t.txid && t.vin && t.vout) {
             const row = mapFullTx(t);
@@ -1009,8 +1045,19 @@
       if (e.name === "AbortError") return;
     }
     if (abort.signal.aborted) return;
-    hyd.status = hyd.done ? "done" : "empty";
     hyd.done = (block.members || block.txs || []).filter(isHydrated).length;
+    const covered = hyd.universe && hyd.done >= hyd.universe;
+    if (hyd.paused && MempoolEndpoint.isFallback()) {
+      hyd.status = "paused";
+    } else if (covered || hyd.cursor >= hyd.order.length) {
+      hyd.status = hyd.done ? "done" : "empty";
+    } else if (!MempoolEndpoint.isFallback() && block === state.selectedBlock && state.level >= 1) {
+      hyd.status = "idle";
+      hydratePendingBlock(block);
+      return;
+    } else {
+      hyd.status = "paused";
+    }
     if (block === state.selectedBlock) {
       if (state.level >= 2 && state.goggles.cats) rebuildInstances(false);
       else updateMatchHud(block);
@@ -1215,6 +1262,26 @@
       if (state.slip > 40 && pipeline.depthOfFieldEnabled) pipeline.depthOfFieldEnabled = false;
     } else state.slip = Math.max(0, state.slip - 1);
     scene.render();
+  });
+
+  MempoolEndpoint.setOnSwitch((nowFallback, wasFallback) => {
+    if (nowFallback && !wasFallback) {
+      for (const b of state.blocks) {
+        if (b._hydrate && b._hydrate.status === "loading") b._hydrate.paused = true;
+      }
+      if (state.selectedBlock) updateMatchHud(state.selectedBlock);
+    }
+    if (!nowFallback && wasFallback) {
+      for (const b of state.blocks) {
+        if (b._hydrate) b._hydrate.paused = false;
+      }
+      if (state.selectedBlock && state.selectedBlock.pending && state.level >= 1) {
+        const hyd = state.selectedBlock._hydrate;
+        if (hyd && hyd.status === "loading") return;
+        if (hyd) hyd.status = "idle";
+        hydratePendingBlock(state.selectedBlock);
+      } else if (state.selectedBlock) updateMatchHud(state.selectedBlock);
+    }
   });
 
   window.__ZOOM = {
