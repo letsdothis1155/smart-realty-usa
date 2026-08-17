@@ -28,7 +28,12 @@
   <!-- Inline SVG favicon — no external 404 -->
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23090b10'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-size='16' fill='%23f7931a'%3E%E2%82%BF%3C/text%3E%3C/svg%3E" />
 
-  <!-- Conservative CSP. Cloudflare beacon intentionally NOT allowlisted. -->
+  <!--
+    CSP strategy:
+    - Meta tag = fallback for GitHub Pages (cannot set response headers).
+    - HTTP header via repo root _headers = primary on Cloudflare Pages.
+    - Same policy both places. Cloudflare Insights beacon NOT allowlisted.
+  -->
   <meta http-equiv="Content-Security-Policy" content="
     default-src 'none';
     script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;

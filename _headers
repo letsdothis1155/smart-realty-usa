@@ -1,0 +1,15 @@
+# Cloudflare Pages / Netlify-style headers
+# GitHub Pages ignores this file.
+# Applies HTTP CSP so meta tag is no longer the only enforcement on CF previews.
+
+# V2 explorer — strict CSP (same policy as the meta tag)
+/blockchain-live-v2.html
+  Content-Security-Policy: default-src 'none'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://mempool.space https://mempool.space/api; worker-src blob:; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: no-referrer
+  X-Frame-Options: DENY
+
+# Default for other static assets on this project (preview only)
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: no-referrer
