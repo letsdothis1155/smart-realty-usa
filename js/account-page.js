@@ -74,7 +74,8 @@
       .reverse()
       .map((r) => {
         const when = r.at ? new Date(r.at).toLocaleString() : "";
-        return `<div class="account-pending-row"><strong>${esc(r.name || "Request")}</strong><span>${esc(r.email || "")}</span><span class="muted">${esc(when)}</span></div>`;
+        const extra = [r.intent, r.city, r.state].filter(Boolean).join(" · ");
+        return `<div class="account-pending-row"><strong>${esc(r.name || "Request")}</strong><span>${esc(r.email || "")}</span><span class="muted">${esc(extra || when)}</span></div>`;
       })
       .join("");
   }
@@ -144,6 +145,10 @@
     }
     const name = $("#reqName").value.trim();
     const email = $("#reqEmail").value.trim();
+    const phone = $("#reqPhone")?.value.trim() || "";
+    const city = $("#reqCity")?.value.trim() || "";
+    const state = $("#reqState")?.value.trim() || "";
+    const intent = $("#reqIntent")?.value || "";
     const note = $("#reqNote")?.value.trim() || "";
     const website = $("#reqWebsite")?.value || "";
     const btn = $("#reqBtn");
@@ -153,7 +158,19 @@
       btn.textContent = "Please wait…";
     }
     try {
-      const data = await window.SRU_AUTH.requestAccount({ name, email, note, website });
+      const data = await window.SRU_AUTH.requestAccount({
+        name,
+        email,
+        phone,
+        city,
+        state,
+        intent,
+        note,
+        website,
+      });
+      const mailBody = encodeURIComponent(
+        `Name: ${name}\nEmail: ${email}\nPhone: ${phone || "(none)"}\nCity: ${city || "(none)"}\nState: ${state || "(none)"}\nIntent: ${intent || "(none)"}\nNote: ${note}\n\nSent from the accounts page on smartrealty.us.`,
+      );
       if (data.emailed) {
         showOk(
           data.message ||
@@ -161,10 +178,7 @@
         );
         e.target.reset();
       } else {
-        const body = encodeURIComponent(
-          `Name: ${name}\nEmail: ${email}\nNote: ${note}\n\nSent from the accounts page on smartrealty.us.`,
-        );
-        const mailto = `mailto:${SIGNUP_TO}?subject=${encodeURIComponent("Account request: " + name)}&body=${body}`;
+        const mailto = `mailto:${SIGNUP_TO}?subject=${encodeURIComponent("Account request: " + name)}&body=${mailBody}`;
         showOk(data.message || "Request saved on this device.");
         const err = $("#accError");
         err.innerHTML = `Also <a href="${mailto}">email ${SIGNUP_TO}</a> so it hits the inbox.`;
@@ -174,7 +188,7 @@
       renderStats(null);
     } catch (err) {
       const body = encodeURIComponent(
-        `Name: ${name}\nEmail: ${email}\nNote: ${note}\n\nSent from the accounts page on smartrealty.us.`,
+        `Name: ${name}\nEmail: ${email}\nPhone: ${phone || "(none)"}\nCity: ${city || "(none)"}\nState: ${state || "(none)"}\nIntent: ${intent || "(none)"}\nNote: ${note}\n\nSent from the accounts page on smartrealty.us.`,
       );
       const mailto = `mailto:${SIGNUP_TO}?subject=${encodeURIComponent("Account request: " + name)}&body=${body}`;
       const box = $("#accError");

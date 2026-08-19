@@ -1,8 +1,9 @@
-# D‑U‑N‑S® Application Worksheet — Smart Realty USA
+# D‑U‑N‑S® Application Worksheet — SMART REALTY.US LLC
 
-**Status:** DRAFT — ready for you to copy into Dun & Bradstreet  
-**Who must submit:** You (owner/officer). An AI cannot complete D&B verification for you.  
-**Cost of D‑U‑N‑S Number:** FREE (skip paid expedite/packages unless you want them)
+**Status:** Ready to copy into Dun & Bradstreet — LLC is already filed.  
+**Who must submit:** Andrew Iredale Jr (owner). An AI cannot complete D&B verification.  
+**Cost of D‑U‑N‑S Number:** FREE (skip paid expedite/packages unless you want them)  
+**Do not file a second Kentucky LLC.** Legal name is **SMART REALTY.US LLC**, not “Smart Realty USA LLC”.
 
 ---
 
@@ -20,35 +21,35 @@
 
 ## COPY-PASTE FIELDS FOR D&B
 
-### Already filled from your project (edit if wrong)
+### Copy-paste — match the Kentucky Articles
 
 | D&B field | Value to enter | Notes |
 |-----------|----------------|--------|
-| Trade / brand name | **Smart Realty USA** | OK as DBA / operating name |
-| Legal business name (planned) | **Smart Realty USA LLC** | Confirm after KY filing |
-| Entity type | **LLC** | Kentucky domestic LLC |
-| State of formation | **Kentucky** | |
-| Owner / officer full legal name | **Andrew Iredale** | |
+| Legal business name | **SMART REALTY.US LLC** | Exact SOS name. Period after REALTY. |
+| Trade / brand name | **Smart Realty USA** | Operating name on the website |
+| Entity type | **LLC** | Kentucky domestic, member-managed |
+| State of formation | **Kentucky** | Filed 3 Aug 2026 |
+| Year business started | **2026** | SOS 1614978.06 |
+| Owner / officer full legal name | **Andrew Iredale Jr** | 100% member |
+| Registered agent (Articles) | **Andrew Iredale** | As printed on the Articles |
 | Title | **Owner / Managing Member** | |
-| Website | **https://smartrealty.us** | Change if different |
-| Business email | **ai@smartrealty.us** | Must be an inbox you check |
-| Country | **United States** | Confirmed |
-| Primary line of business | **Real estate services / real estate technology platform** | Adjust if picklist differs |
-| Multiple locations | **No** | Change if more than one site |
-| Full-time employees | **1** | Update if more |
-| Part-time employees | **0** | Update if more |
-
-### YOU MUST FILL (street address, phone, year, EIN)
-
-| D&B field | Enter your real info here |
-|-----------|---------------------------|
-| **Year business started** | `_______________________________` (use LLC filing year) |
-| **Physical street address** | `_______________________________` Kentucky street |
-| **City** | `_______________________________` |
-| **ZIP code** | `_______________________________` |
-| **Mailing address** (if different) | `_______________________________` |
-| **Direct phone** (they may call) | `_______________________________` |
-| **EIN** (after IRS) | `_______________________________` XX-XXXXXXX |
+| Physical street address | **2611 Harmony Rd** | No P.O. box |
+| City | **Louisville** | |
+| State | **KY** | |
+| ZIP | **40299** | |
+| Mailing address | **Same as physical** | |
+| Public phone | **1-800-762-7879** | On smartrealty.us |
+| Direct phone (D&B may call) | **502-539-1090** | Owner line from the company one-pager |
+| Business email | **ai@smartrealty.us** | Public contact |
+| Account-request inbox | **andrewiredale@smartrealty.us** | Not the D&B login email |
+| Website | **https://smartrealty.us** | |
+| Country | **United States** | |
+| Multiple locations | **No** | |
+| Full-time employees | **1** | |
+| Part-time employees | **0** | |
+| Primary line of business | **Software / digital technology** | Loan package activity. Not a licensed brokerage. |
+| Short description | **Software and digital technology. Public real-estate product demo. Not a licensed brokerage.** | If D&B forces a real-estate picklist, use Other Real Estate / Internet — never claim a broker license. |
+| EIN | **Do not type here or on the public site** | Retrieve from IRS if already assigned. Do not apply a second time. |
 
 ---
 
@@ -56,13 +57,12 @@
 
 If D&B shows a dropdown, try one of these in order:
 
-1. Real Estate  
-2. Real Estate Agents and Brokers  
-3. Other Real Estate  
-4. Internet Publishing / Software (only if you position as a tech platform only)
+1. Internet Publishing / Software  
+2. Other Real Estate (only if software is not on the list)  
+3. Real Estate — **do not** pick Agents and Brokers. The LLC is not a licensed brokerage.
 
 **Description (short):**  
-“Smart Realty USA provides transparent residential real estate listings, valuation tools, and digital purchase/rental services.”
+“SMART REALTY.US LLC is a Kentucky software and digital-technology company. smartrealty.us is a public real-estate product demo (Blue Book-style estimates, Bitcoin quotes). Not a licensed brokerage.”
 
 ---
 
@@ -85,11 +85,10 @@ If D&B shows a dropdown, try one of these in order:
 ## After you receive the number
 
 ```js
-// domain-config.js
-legalName: "YOUR EXACT LEGAL NAME LLC",
-dunsNumber: "123456789",
-ein: "XX-XXXXXXX",  // optional on the public site
-businessAddress: "Street, City, ST ZIP",
+// domain-config.js — EIN stays empty on the public file
+legalName: "SMART REALTY.US LLC",
+dunsNumber: "123456789", // 9 digits, no spaces
+businessAddress: "2611 Harmony Rd, Louisville, KY 40299",
 ```
 
 ---

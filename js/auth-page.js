@@ -115,11 +115,7 @@
       });
       await goIn(data);
     } catch (err) {
-      if (err && (err.code === "NO_API" || err.status === 405 || err.status === 404 || /405/.test(err.message || ""))) {
-        showError("Password sign-in is not live on this host. Request an account — it emails andrewiredale@smartrealty.us.");
-      } else {
-        showError(err.message);
-      }
+      showError(err.message);
     } finally {
       setBusy(btn, false);
     }
@@ -135,6 +131,10 @@
     }
     const name = $("#signupName").value.trim();
     const email = $("#signupEmail").value.trim();
+    const phone = $("#signupPhone")?.value.trim() || "";
+    const city = $("#signupCity")?.value.trim() || "";
+    const state = $("#signupState")?.value.trim() || "";
+    const intent = $("#signupIntent")?.value || "";
     const note = $("#signupNote")?.value.trim() || "";
     const website = $("#signupWebsite")?.value || "";
     if (name.length < 2) {
@@ -145,12 +145,24 @@
       showError("Enter your email.");
       return;
     }
+    const to =
+      (window.SRU_CONFIG && window.SRU_CONFIG.auth && window.SRU_CONFIG.auth.signupEmail) ||
+      "andrewiredale@smartrealty.us";
+    const mailBody = encodeURIComponent(
+      `Name: ${name}\nEmail: ${email}\nPhone: ${phone || "(none)"}\nCity: ${city || "(none)"}\nState: ${state || "(none)"}\nIntent: ${intent || "(none)"}\nNote: ${note}\n\nSent from the account request page on smartrealty.us.`,
+    );
     setBusy(btn, true);
     try {
-      const data = await window.SRU_AUTH.requestAccount({ name, email, note, website });
-      const to =
-        (window.SRU_CONFIG && window.SRU_CONFIG.auth && window.SRU_CONFIG.auth.signupEmail) ||
-        "andrewiredale@smartrealty.us";
+      const data = await window.SRU_AUTH.requestAccount({
+        name,
+        email,
+        phone,
+        city,
+        state,
+        intent,
+        note,
+        website,
+      });
       if (data.emailed) {
         showStatus(
           data.message ||
@@ -158,10 +170,7 @@
         );
         $("#signupForm").reset();
       } else {
-        const body = encodeURIComponent(
-          `Name: ${name}\nEmail: ${email}\nNote: ${note}\n\nSent from the account request page on smartrealty.us.`,
-        );
-        const mailto = `mailto:${to}?subject=${encodeURIComponent("Account request: " + name)}&body=${body}`;
+        const mailto = `mailto:${to}?subject=${encodeURIComponent("Account request: " + name)}&body=${mailBody}`;
         showStatus(
           data.message || "Request saved on our side. Send the same note by email so it hits the inbox.",
         );
@@ -169,13 +178,7 @@
         errorEl.classList.remove("hidden");
       }
     } catch (err) {
-      const to =
-        (window.SRU_CONFIG && window.SRU_CONFIG.auth && window.SRU_CONFIG.auth.signupEmail) ||
-        "andrewiredale@smartrealty.us";
-      const body = encodeURIComponent(
-        `Name: ${name}\nEmail: ${email}\nNote: ${note}\n\nSent from the account request page on smartrealty.us.`,
-      );
-      const mailto = `mailto:${to}?subject=${encodeURIComponent("Account request: " + name)}&body=${body}`;
+      const mailto = `mailto:${to}?subject=${encodeURIComponent("Account request: " + name)}&body=${mailBody}`;
       errorEl.innerHTML = `${err.message || "Could not send."} You can also <a href="${mailto}">email ${to}</a>.`;
       errorEl.classList.remove("hidden");
       statusEl.classList.add("hidden");

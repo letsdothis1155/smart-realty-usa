@@ -67,7 +67,37 @@ type SignupBody = {
   website?: unknown;
   company?: unknown;
   password?: unknown;
+  phone?: unknown;
+  city?: unknown;
+  state?: unknown;
+  intent?: unknown;
 };
+
+const INTENTS: Record<string, string> = {
+  browse: "Browse homes / Blue Book",
+  buy: "Buy",
+  sell: "Sell / list",
+  rent: "Rent / stay",
+  services: "Digital services / listing copy",
+  dcw: "Daily Cache Wiper",
+  bitcoin: "Bitcoin / node",
+  investor: "Investor",
+  other: "Other",
+};
+
+function cleanPhone(value: string): string {
+  return value.replace(/[^\d+().\-\s]/g, "").replace(/\s+/g, " ").trim().slice(0, 32);
+}
+
+function cleanState(value: string): string {
+  const s = cleanHeader(value, 40).toUpperCase();
+  return s.length === 2 ? s : s.slice(0, 40);
+}
+
+function cleanIntent(value: string): string {
+  const key = cleanHeader(value, 40).toLowerCase();
+  return INTENTS[key] ? key : "";
+}
 
 function buildMime(opts: {
   fromName: string;
@@ -251,6 +281,10 @@ export default {
       const name = cleanHeader(String(body.name || ""), 80);
       const email = cleanHeader(String(body.email || "").toLowerCase(), 120);
       const note = cleanHeader(String(body.note || ""), 500);
+      const phone = cleanPhone(String(body.phone || ""));
+      const city = cleanHeader(String(body.city || ""), 80);
+      const state = cleanState(String(body.state || ""));
+      const intent = cleanIntent(String(body.intent || ""));
       if (name.length < 2) {
         return json({ ok: false, error: "Enter your name." }, 400, request);
       }
@@ -274,6 +308,10 @@ export default {
         id,
         name,
         email,
+        phone,
+        city,
+        state,
+        intent,
         note,
         receivedAt,
         ip,
@@ -284,12 +322,17 @@ export default {
         }),
       );
 
-      const subject = `Account request: ${name}`;
+      const intentLabel = intent ? INTENTS[intent] : "(none)";
+      const subject = `Account request: ${name}${intent ? ` (${intentLabel})` : ""}`;
       const text = [
         "New account request from smartrealty.us",
         "",
         `Name: ${name}`,
         `Email: ${email}`,
+        `Phone: ${phone || "(none)"}`,
+        `City: ${city || "(none)"}`,
+        `State: ${state || "(none)"}`,
+        `Intent: ${intentLabel}`,
         note ? `Note: ${note}` : "Note: (none)",
         `When: ${receivedAt}`,
         `Request ID: ${id}`,
@@ -302,6 +345,10 @@ export default {
         <ul>
           <li><strong>Name:</strong> ${escapeHtml(name)}</li>
           <li><strong>Email:</strong> ${escapeHtml(email)}</li>
+          <li><strong>Phone:</strong> ${phone ? escapeHtml(phone) : "(none)"}</li>
+          <li><strong>City:</strong> ${city ? escapeHtml(city) : "(none)"}</li>
+          <li><strong>State:</strong> ${state ? escapeHtml(state) : "(none)"}</li>
+          <li><strong>Intent:</strong> ${escapeHtml(intentLabel)}</li>
           <li><strong>Note:</strong> ${note ? escapeHtml(note) : "(none)"}</li>
           <li><strong>When:</strong> ${escapeHtml(receivedAt)}</li>
           <li><strong>Request ID:</strong> ${escapeHtml(id)}</li>
