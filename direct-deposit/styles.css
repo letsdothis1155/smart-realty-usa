@@ -1,0 +1,647 @@
+/* SmartRealty Direct Deposit — original product UI
+   Uses the site design tokens from ../styles.css
+   Mobile-first: 360–430px, then tablet / desktop */
+
+.dd-body {
+  min-height: 100dvh;
+  background:
+    radial-gradient(1200px 480px at 80% -10%, rgba(91, 140, 255, 0.16), transparent 55%),
+    radial-gradient(900px 420px at -10% 90%, rgba(232, 200, 122, 0.08), transparent 50%),
+    var(--bg);
+  color: var(--text);
+  padding-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
+}
+
+.dd-skip {
+  position: absolute;
+  left: 12px;
+  top: 8px;
+  z-index: 200;
+  padding: 0.55rem 0.8rem;
+  background: var(--bg-card);
+  border-radius: 8px;
+  transform: translateY(-120%);
+}
+
+.dd-skip:focus {
+  transform: none;
+}
+
+.dd-sandbox {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  min-height: 36px;
+  padding: 0.4rem 0.85rem;
+  padding-top: calc(0.4rem + env(safe-area-inset-top, 0px));
+  background: linear-gradient(90deg, rgba(232, 200, 122, 0.18), rgba(91, 140, 255, 0.12));
+  border-bottom: 1px solid var(--gold-soft);
+  color: var(--gold);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  text-align: center;
+  line-height: 1.35;
+}
+
+.dd-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.85rem 1.1rem 0.4rem;
+}
+
+.dd-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-height: 44px;
+}
+
+.dd-brand .logo-mark {
+  width: 36px;
+  height: 36px;
+  font-size: 0.75rem;
+}
+
+.dd-brand-name {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+
+.dd-brand-name strong {
+  font-size: 0.92rem;
+}
+
+.dd-brand-name small {
+  color: var(--text-dim);
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.dd-top-link {
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0.5rem 0.75rem;
+  color: var(--text-muted);
+  border-radius: 10px;
+}
+
+.dd-top-link:hover,
+.dd-top-link:focus-visible {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.04);
+  outline: none;
+}
+
+.dd-shell {
+  width: min(100% - 1.5rem, 430px);
+  margin: 0 auto;
+  padding-bottom: 1.5rem;
+}
+
+@media (min-width: 720px) {
+  .dd-shell {
+    width: min(100% - 2.5rem, 720px);
+  }
+}
+
+@media (min-width: 1080px) {
+  .dd-shell {
+    width: min(100% - 3rem, 880px);
+  }
+}
+
+.dd-kicker {
+  color: var(--gold);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  margin: 0.4rem 0 0.35rem;
+}
+
+.dd-title {
+  font-family: var(--serif);
+  font-size: clamp(1.55rem, 7.2vw, 2.35rem);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
+}
+
+.dd-sub {
+  color: var(--text-muted);
+  margin-top: 0.55rem;
+  font-size: 0.98rem;
+}
+
+.dd-legal {
+  margin-top: 0.75rem;
+  color: var(--text-dim);
+  font-size: 0.78rem;
+}
+
+.dd-card {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.015));
+  border: 1px solid var(--border);
+  border-radius: var(--card-radius);
+  box-shadow: var(--shadow-soft);
+  padding: 1rem;
+}
+
+.dd-card + .dd-card {
+  margin-top: 0.85rem;
+}
+
+.dd-steps {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 1.1rem 0 1.2rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.dd-steps::-webkit-scrollbar {
+  display: none;
+}
+
+.dd-step-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--bg-soft);
+  border: 1px solid var(--border-strong);
+  flex: 0 0 auto;
+}
+
+.dd-step-dot[data-on="1"] {
+  background: var(--gold);
+  border-color: var(--gold);
+  box-shadow: 0 0 0 4px var(--gold-soft);
+}
+
+.dd-step-line {
+  flex: 1;
+  height: 1px;
+  min-width: 16px;
+  background: linear-gradient(90deg, rgba(232, 200, 122, 0.45), rgba(255, 255, 255, 0.08));
+}
+
+.dd-search {
+  position: relative;
+  margin: 0.85rem 0 0.75rem;
+}
+
+.dd-search input {
+  width: 100%;
+  min-height: 52px;
+  border-radius: 16px;
+  border: 1px solid var(--border-strong);
+  background: var(--bg-elevated);
+  padding: 0.8rem 1rem 0.8rem 2.8rem;
+  outline: none;
+}
+
+.dd-search input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px var(--primary-soft);
+}
+
+.dd-search-ico {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-dim);
+  pointer-events: none;
+}
+
+.dd-tabs {
+  display: flex;
+  gap: 0.35rem;
+  overflow-x: auto;
+  padding-bottom: 0.35rem;
+  margin-bottom: 0.85rem;
+  scrollbar-width: none;
+}
+
+.dd-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.dd-tab {
+  min-height: 44px;
+  padding: 0.45rem 0.85rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  background: transparent;
+  font-weight: 600;
+  font-size: 0.84rem;
+  white-space: nowrap;
+}
+
+.dd-tab[aria-selected="true"] {
+  color: var(--bg);
+  background: var(--text);
+  border-color: var(--text);
+}
+
+.dd-tab:focus-visible,
+.dd-payer:focus-visible,
+.dd-choice:focus-visible,
+.dd-cta:focus-visible,
+.dd-ghost:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.dd-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+@media (min-width: 720px) {
+  .dd-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.85rem;
+  }
+}
+
+.dd-payer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.45rem;
+  min-height: 108px;
+  padding: 0.75rem 0.4rem 0.65rem;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  text-align: center;
+  transition: transform 0.2s var(--ease), border-color 0.2s, background 0.2s;
+}
+
+.dd-payer:hover {
+  transform: translateY(-2px);
+  border-color: var(--primary);
+  background: var(--bg-soft);
+}
+
+.dd-payer-mark {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  font-size: 0.78rem;
+  letter-spacing: -0.03em;
+  background: linear-gradient(160deg, rgba(91, 140, 255, 0.28), rgba(61, 214, 198, 0.12));
+  color: var(--text);
+}
+
+.dd-payer[data-type="gig"] .dd-payer-mark {
+  background: linear-gradient(160deg, rgba(247, 147, 26, 0.28), rgba(232, 200, 122, 0.12));
+}
+
+.dd-payer[data-type="government"] .dd-payer-mark {
+  background: linear-gradient(160deg, rgba(62, 207, 142, 0.22), rgba(91, 140, 255, 0.12));
+}
+
+.dd-payer[data-type="employer"] .dd-payer-mark {
+  background: linear-gradient(160deg, rgba(232, 200, 122, 0.24), rgba(91, 140, 255, 0.1));
+}
+
+.dd-payer-name {
+  font-size: 0.74rem;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--text);
+}
+
+.dd-empty,
+.dd-error,
+.dd-status-note {
+  padding: 1rem;
+  border-radius: 14px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.dd-error {
+  color: var(--danger);
+  background: rgba(255, 107, 122, 0.08);
+  border: 1px solid rgba(255, 107, 122, 0.2);
+}
+
+.dd-skeleton {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.65rem;
+}
+
+.dd-skel {
+  height: 108px;
+  border-radius: 16px;
+  background: linear-gradient(90deg, var(--bg-card), var(--bg-soft), var(--bg-card));
+  background-size: 200% 100%;
+  animation: dd-shimmer 1.2s ease-in-out infinite;
+}
+
+@keyframes dd-shimmer {
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+
+.dd-choices {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.dd-choice {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  min-height: 64px;
+  width: 100%;
+  text-align: left;
+  padding: 0.9rem 1rem;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+}
+
+.dd-choice[aria-checked="true"] {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+}
+
+.dd-choice-radio {
+  width: 18px;
+  height: 18px;
+  margin-top: 3px;
+  border-radius: 50%;
+  border: 2px solid var(--border-strong);
+  flex: 0 0 auto;
+}
+
+.dd-choice[aria-checked="true"] .dd-choice-radio {
+  border-color: var(--primary);
+  box-shadow: inset 0 0 0 4px var(--primary);
+}
+
+.dd-choice strong {
+  display: block;
+  font-size: 0.95rem;
+}
+
+.dd-choice span {
+  display: block;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  margin-top: 0.15rem;
+}
+
+.dd-field {
+  display: grid;
+  gap: 0.35rem;
+  margin-top: 0.85rem;
+}
+
+.dd-field input {
+  min-height: 48px;
+  border-radius: 12px;
+  border: 1px solid var(--border-strong);
+  background: var(--bg-elevated);
+  padding: 0.65rem 0.85rem;
+}
+
+.dd-dest {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.dd-dest-mark {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  font-weight: 800;
+  font-size: 0.75rem;
+}
+
+.dd-dest small {
+  color: var(--text-dim);
+}
+
+.dd-review dt {
+  color: var(--text-dim);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-top: 0.7rem;
+}
+
+.dd-review dd {
+  margin: 0.15rem 0 0;
+  font-weight: 600;
+}
+
+.dd-success-mark {
+  width: 72px;
+  height: 72px;
+  margin: 0.5rem auto 1rem;
+  border-radius: 24px;
+  display: grid;
+  place-items: center;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 1.8rem;
+}
+
+.dd-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 32px;
+  padding: 0.25rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.dd-status[data-s="not_configured"],
+.dd-status[data-s="disabled"] { background: var(--bg-soft); color: var(--text-muted); }
+.dd-status[data-s="setup_started"] { background: var(--primary-soft); color: var(--primary); }
+.dd-status[data-s="pending"] { background: var(--gold-soft); color: var(--gold); }
+.dd-status[data-s="active"] { background: var(--accent-soft); color: var(--accent); }
+.dd-status[data-s="action_required"] { background: var(--btc-soft); color: var(--btc); }
+.dd-status[data-s="failed"] { background: rgba(255, 107, 122, 0.12); color: var(--danger); }
+
+.dd-actions {
+  display: grid;
+  gap: 0.55rem;
+  margin-top: 1rem;
+}
+
+.dd-cta,
+.dd-ghost {
+  min-height: 48px;
+  width: 100%;
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+.dd-cta {
+  background: linear-gradient(135deg, #6b97ff, #4a7af0);
+  color: #fff;
+  box-shadow: 0 8px 24px rgba(74, 122, 240, 0.35);
+}
+
+.dd-cta:disabled {
+  opacity: 0.5;
+  box-shadow: none;
+}
+
+.dd-ghost {
+  border: 1px solid var(--border-strong);
+  background: transparent;
+  color: var(--text);
+}
+
+.dd-dock {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 30;
+  padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(180deg, transparent, rgba(10, 12, 16, 0.92) 28%);
+}
+
+.dd-dock .dd-cta,
+.dd-dock .dd-ghost,
+.dd-dock a.dd-cta {
+  width: 100%;
+  max-width: 430px;
+  margin: 0 auto;
+  display: flex;
+}
+
+.dd-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgba(4, 6, 10, 0.72);
+  display: grid;
+  align-items: end;
+}
+
+@media (min-width: 720px) {
+  .dd-modal {
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+.dd-modal-card {
+  width: min(100%, 430px);
+  margin: 0 auto;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-strong);
+  border-radius: 24px 24px 0 0;
+  padding: 1.15rem 1.15rem calc(1.15rem + env(safe-area-inset-bottom, 0px));
+}
+
+@media (min-width: 720px) {
+  .dd-modal-card {
+    border-radius: 24px;
+  }
+}
+
+.dd-sensitive dt {
+  color: var(--text-dim);
+  font-size: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.dd-sensitive dd {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.dd-row-btns {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.dd-row-btns button {
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0 0.8rem;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+
+.dd-intro-art {
+  height: 132px;
+  margin: 1rem 0 1.1rem;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background:
+    linear-gradient(135deg, rgba(91, 140, 255, 0.16), rgba(232, 200, 122, 0.08)),
+    repeating-linear-gradient(90deg, transparent, transparent 18px, rgba(255, 255, 255, 0.03) 19px);
+  position: relative;
+  overflow: hidden;
+}
+
+.dd-intro-art::after {
+  content: "";
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  top: 42%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), var(--accent), transparent);
+  animation: dd-ledger 2.4s var(--ease) infinite;
+}
+
+@keyframes dd-ledger {
+  0%, 100% { opacity: 0.35; transform: scaleX(0.86); }
+  50% { opacity: 1; transform: scaleX(1); }
+}
+
+.hidden {
+  display: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dd-skel,
+  .dd-intro-art::after,
+  .dd-payer {
+    animation: none;
+    transition: none;
+  }
+}

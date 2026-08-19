@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Direct deposit setup (preview) — SmartRealty</title>
+  <meta name="description" content="Preview the SmartRealty direct deposit setup flow. Live payroll switching is not on. SmartRealty is not a bank." />
+  <meta name="robots" content="noindex, follow" />
+  <link rel="canonical" href="https://smartrealty.us/direct-deposit/setup/" />
+  <meta name="theme-color" content="#0a0c10" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+  <link rel="stylesheet" href="/growth.css" />
+  <script src="/domain-config.js"></script>
+  <script src="/js/auth-client.js"></script>
+  <script src="/js/analytics.js"></script>
+  <script src="/js/growth.js"></script>
+</head>
+<body class="g-page" data-growth="setup">
+  <div id="gChrome"></div>
+  <main class="g-section">
+    <div class="container">
+      <p class="g-kicker">Preview · not live money movement</p>
+      <h1>Set up direct deposit</h1>
+      <p class="g-lead">This walkthrough teaches the path. It does not switch your real payroll or move funds. Employer search in production comes from a partner API — these names are examples only.</p>
+      <p class="g-disclaimer">SmartRealty never asks for your payroll password. Account and routing numbers, when they exist, will be issued by a regulated partner and shown masked.</p>
+
+      <section class="setup-step g-card" data-step="0">
+        <h2>1. How this works</h2>
+        <p>You choose a payer, pick an allocation, and review a destination account. Until partners are live, nothing is submitted to an employer.</p>
+        <button type="button" class="btn btn-primary" data-next>Continue</button>
+      </section>
+
+      <section class="setup-step g-card hidden" data-step="1">
+        <h2>2. Connect</h2>
+        <label>Search employer, payroll provider, or gig platform
+          <input type="search" id="payerSearch" placeholder="Example search (not a live directory)" />
+        </label>
+        <div class="g-cta-row" style="margin-top:1rem">
+          <button type="button" class="btn btn-outline" data-payer="example-payroll">Example Payroll Co.</button>
+          <button type="button" class="btn btn-outline" data-payer="example-gig">Example Gig Platform</button>
+        </div>
+        <p class="g-fine">Production search will use the partner directory. This is not a hard-coded employer database.</p>
+        <button type="button" class="btn btn-ghost" data-prev>Back</button>
+      </section>
+
+      <section class="setup-step g-card hidden" data-step="2">
+        <h2>3. Allocation</h2>
+        <p>Choose how much eligible income you would want deposited when switching is live.</p>
+        <label><input type="radio" name="alloc" value="entire" checked /> Entire net pay</label>
+        <label><input type="radio" name="alloc" value="percent" /> Percentage</label>
+        <label><input type="radio" name="alloc" value="fixed" /> Fixed dollar amount</label>
+        <p class="g-fine">Destination (example, masked): •••• 4821 — issued by a partner when live. SmartRealty is not a bank.</p>
+        <div class="g-cta-row">
+          <button type="button" class="btn btn-ghost" data-prev>Back</button>
+          <button type="button" class="btn btn-primary" id="submitSetup">Save preview</button>
+        </div>
+      </section>
+
+      <section class="setup-step g-card hidden" data-step="3">
+        <h2>Preview saved</h2>
+        <p>Your walkthrough is stored on this device. It is not a completed transfer and not an employer change.</p>
+        <div class="g-cta-row">
+          <a class="btn btn-primary" href="/direct-deposit/app/#/setup">Open sandbox setup</a>
+          <a class="btn btn-outline" href="/goals/">Create a property goal</a>
+          <a class="btn btn-outline" href="/early-access/">Join early access</a>
+          <a class="btn btn-ghost" href="/direct-deposit/#smartsplit">Preview SmartSplit <span class="g-soon">Coming soon</span></a>
+        </div>
+      </section>
+      <div id="gSuggest"></div>
+    </div>
+  </main>
+  <div id="gFoot"></div>
+  <script src="/js/growth-ui.js"></script>
+</body>
+</html>

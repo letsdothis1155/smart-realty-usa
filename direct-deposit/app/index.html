@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>SmartRealty Direct Deposit (sandbox)</title>
+  <meta name="description" content="Connect who pays you and route eligible direct deposit to a SmartRealty-linked account. SmartRealty is not a bank. Sandbox only." />
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="theme-color" content="#0a0c10" />
+  <link rel="canonical" href="https://smartrealty.us/direct-deposit/app/" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../../styles.css" />
+  <link rel="stylesheet" href="../styles.css" />
+  <script src="../../domain-config.js"></script>
+  <script src="../../js/auth-client.js"></script>
+  <script src="../../js/analytics.js"></script>
+  <script src="../../js/growth.js"></script>
+</head>
+<body class="dd-body">
+  <a class="dd-skip" href="#ddMain">Skip to content</a>
+  <div class="dd-sandbox" role="status">Sandbox · no live payroll or ACH · SmartRealty is not a bank</div>
+
+  <header class="dd-top">
+    <a class="dd-brand" href="../../index.html">
+      <span class="logo-mark">SR</span>
+      <span class="dd-brand-name">
+        <strong>Smart Realty</strong>
+        <small>Direct Deposit</small>
+      </span>
+    </a>
+    <a class="dd-top-link" href="../">How it works</a>
+    <a class="dd-top-link" href="../../account.html">Account</a>
+  </header>
+
+  <div class="dd-shell" id="ddRoot">
+    <p class="dd-error hidden" id="ddError" role="alert"></p>
+    <p class="dd-kicker">SmartRealty</p>
+    <h1 class="dd-title" id="ddHeadTitle">SmartRealty Direct Deposit</h1>
+    <p class="dd-sub" id="ddHeadSub">Put your income to work.</p>
+    <div class="dd-steps hidden" id="ddSteps" aria-hidden="true"></div>
+    <div id="ddPayers" class="hidden"></div>
+    <main id="ddMain"></main>
+  </div>
+
+  <div class="dd-dock" id="ddDock"></div>
+  <div id="ddModal"></div>
+
+  <script src="../../js/direct-deposit/client.js"></script>
+  <script src="../../js/direct-deposit/components.js"></script>
+  <script src="../../js/direct-deposit/app.js"></script>
+  <script>
+    if (window.SRU_GROWTH) {
+      SRU_GROWTH.touchSession();
+      SRU_GROWTH.track("direct_deposit_viewed", { page: "app" });
+      SRU_GROWTH.recordFunnel("education");
+    }
+  </script>
+</body>
+</html>
