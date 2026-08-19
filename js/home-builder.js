@@ -52,13 +52,18 @@ function buildHouse() {
   walls.receiveShadow = true;
   group.add(walls);
 
+  // Walls are 8 (X, ridge direction) x 6 (Z, front-back). ExtrudeGeometry
+  // builds the triangle in local XY then extrudes along local Z; rotateY(90)
+  // then swaps them (local Z -> final X, local X -> final Z) — so the
+  // triangle half-width below must track wall depth/2, and the extrude
+  // length must track wall width, or the roof misaligns with the walls.
   const roofShape = new THREE.Shape();
-  roofShape.moveTo(-4.6, 0);
+  roofShape.moveTo(-3.3, 0);
   roofShape.lineTo(0, 2.4);
-  roofShape.lineTo(4.6, 0);
-  roofShape.lineTo(-4.6, 0);
-  const roofGeo = new THREE.ExtrudeGeometry(roofShape, { depth: 6.6, bevelEnabled: false });
-  roofGeo.translate(0, 0, -3.3);
+  roofShape.lineTo(3.3, 0);
+  roofShape.lineTo(-3.3, 0);
+  const roofGeo = new THREE.ExtrudeGeometry(roofShape, { depth: 8.6, bevelEnabled: false });
+  roofGeo.translate(0, 0, -4.3);
   roofGeo.rotateY(Math.PI / 2);
   const roofMat = new THREE.MeshStandardMaterial({ color: OPTIONS.roofing[0].color, roughness: 0.7 });
   const roof = new THREE.Mesh(roofGeo, roofMat);
@@ -70,7 +75,7 @@ function buildHouse() {
     new THREE.BoxGeometry(0.5, 1.4, 0.5),
     new THREE.MeshStandardMaterial({ color: "#7a746c", roughness: 0.9 })
   );
-  chimney.position.set(2.4, 4.4, -0.8);
+  chimney.position.set(2.4, 4.9, -0.8);
   chimney.castShadow = true;
   group.add(chimney);
 
