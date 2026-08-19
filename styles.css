@@ -104,6 +104,19 @@ ul {
   display: none !important;
 }
 
+.sr-hp {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.auth-optional {
+  font-weight: 400;
+  opacity: 0.65;
+}
+
 /* Ambient background glow */
 .ambient {
   position: fixed;
@@ -4607,7 +4620,8 @@ html.auth-open-boot #demoGate {
 
 .auth-form input[type="email"],
 .auth-form input[type="password"],
-.auth-form input[type="text"] {
+.auth-form input[type="text"],
+.auth-form textarea {
   width: 100%;
   background: rgba(0, 0, 0, 0.3);
   border: 1px solid var(--border);
@@ -4617,7 +4631,13 @@ html.auth-open-boot #demoGate {
   outline: none;
 }
 
-.auth-form input:focus {
+.auth-form textarea {
+  min-height: 4.5rem;
+  resize: vertical;
+}
+
+.auth-form input:focus,
+.auth-form textarea:focus {
   border-color: rgba(91, 140, 255, 0.55);
   box-shadow: 0 0 0 3px var(--primary-soft);
 }

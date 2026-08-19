@@ -1,0 +1,37 @@
+{
+  "$schema": "https://www.unpkg.com/wrangler@4.124.0/config-schema.json",
+  "name": "smart-realty-signup",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-08-19",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": true,
+  "observability": {
+    "enabled": true,
+    "logs": { "enabled": true, "head_sampling_rate": 1 }
+  },
+  "vars": {
+    "SIGNUP_TO": "andrewiredale@smartrealty.us",
+    "SIGNUP_FROM": "signup@smartrealty.us",
+    "SIGNUP_FROM_NAME": "Smart Realty USA"
+  },
+  "kv_namespaces": [
+    {
+      "binding": "SIGNUPS",
+      "id": "d71a200b06064443acb30da6b5212590",
+      "preview_id": "e51f0b2d769046d79554e613f5755253"
+    }
+  ],
+  "send_email": [
+    {
+      "name": "EMAIL",
+      "allowed_destination_addresses": [
+        "andrewiredale@smartrealty.us",
+        "andrewiredalejr@gmail.com"
+      ]
+    }
+  ],
+  "routes": [
+    { "pattern": "smartrealty.us/api/signup*", "zone_name": "smartrealty.us" },
+    { "pattern": "www.smartrealty.us/api/signup*", "zone_name": "smartrealty.us" }
+  ]
+}

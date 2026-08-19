@@ -72,12 +72,15 @@
     const live = window.SRU_AUTH.hasLiveApi
       ? await window.SRU_AUTH.hasLiveApi()
       : false;
+    const signupTo =
+      (window.SRU_CONFIG && window.SRU_CONFIG.auth && window.SRU_CONFIG.auth.signupEmail) ||
+      "andrewiredale@smartrealty.us";
     if (live) {
-      apiHint.textContent = "Accounts service online · passwords hashed on the server";
+      apiHint.textContent = `Accounts service online · new requests still email ${signupTo}`;
       apiHint.classList.add("ok");
     } else if (base) {
       apiHint.textContent =
-        "Browse is open. Member accounts need the PHP API (not on GitHub Pages). Use Demo access or keep browsing.";
+        `Browse is open. Request an account and it emails ${signupTo}. Sign-in needs the PHP API (not on GitHub Pages).`;
       apiHint.classList.add("warn");
     } else {
       apiHint.textContent =
@@ -122,30 +125,56 @@
     e.preventDefault();
     clearMsgs();
     const btn = $("#signupBtn");
-    const pw = $("#signupPassword").value;
-    const confirm = $("#signupConfirm").value;
-    if (pw !== confirm) {
-      showError("Passwords do not match.");
-      return;
-    }
     if (!$("#signupTerms").checked) {
       showError("Please confirm you understand this is a demo platform.");
       return;
     }
+    const name = $("#signupName").value.trim();
+    const email = $("#signupEmail").value.trim();
+    const note = $("#signupNote")?.value.trim() || "";
+    const website = $("#signupWebsite")?.value || "";
+    if (name.length < 2) {
+      showError("Enter your name.");
+      return;
+    }
+    if (!email) {
+      showError("Enter your email.");
+      return;
+    }
     setBusy(btn, true);
     try {
-      if (!window.SRU_AUTH.apiBase()) {
-        throw new Error("Account creation needs the Auth API. Run: cd server && npm install && npm start");
+      const data = await window.SRU_AUTH.requestAccount({ name, email, note, website });
+      const to =
+        (window.SRU_CONFIG && window.SRU_CONFIG.auth && window.SRU_CONFIG.auth.signupEmail) ||
+        "andrewiredale@smartrealty.us";
+      if (data.emailed) {
+        showStatus(
+          data.message ||
+            `Request sent to Smart Realty. We will email you at ${email} when your account is ready.`,
+        );
+        $("#signupForm").reset();
+      } else {
+        const body = encodeURIComponent(
+          `Name: ${name}\nEmail: ${email}\nNote: ${note}\n\nSent from the account request page on smartrealty.us.`,
+        );
+        const mailto = `mailto:${to}?subject=${encodeURIComponent("Account request: " + name)}&body=${body}`;
+        showStatus(
+          data.message || "Request saved on our side. Send the same note by email so it hits the inbox.",
+        );
+        errorEl.innerHTML = `Also <a href="${mailto}">email ${to}</a> so we see it right away.`;
+        errorEl.classList.remove("hidden");
       }
-      const data = await window.SRU_AUTH.register({
-        name: $("#signupName").value,
-        email: $("#signupEmail").value,
-        password: pw,
-        remember: $("#signupRemember").checked,
-      });
-      await goIn(data);
     } catch (err) {
-      showError(err.message);
+      const to =
+        (window.SRU_CONFIG && window.SRU_CONFIG.auth && window.SRU_CONFIG.auth.signupEmail) ||
+        "andrewiredale@smartrealty.us";
+      const body = encodeURIComponent(
+        `Name: ${name}\nEmail: ${email}\nNote: ${note}\n\nSent from the account request page on smartrealty.us.`,
+      );
+      const mailto = `mailto:${to}?subject=${encodeURIComponent("Account request: " + name)}&body=${body}`;
+      errorEl.innerHTML = `${err.message || "Could not send."} You can also <a href="${mailto}">email ${to}</a>.`;
+      errorEl.classList.remove("hidden");
+      statusEl.classList.add("hidden");
     } finally {
       setBusy(btn, false);
     }
