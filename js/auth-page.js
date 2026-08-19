@@ -115,7 +115,11 @@
       });
       await goIn(data);
     } catch (err) {
-      showError(err.message);
+      if (err && (err.code === "NO_API" || err.status === 405 || err.status === 404 || /405/.test(err.message || ""))) {
+        showError("Password sign-in is not live on this host. Request an account — it emails andrewiredale@smartrealty.us.");
+      } else {
+        showError(err.message);
+      }
     } finally {
       setBusy(btn, false);
     }

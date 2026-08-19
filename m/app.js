@@ -6,16 +6,16 @@
   }));
   const FAV_KEY = "sru_m_favs";
   const CITIES = [
+    "Louisville",
+    "Lexington",
     "Las Vegas",
     "Austin",
     "Miami",
-    "Seattle",
     "Nashville",
     "Denver",
     "Chicago",
     "Boise",
     "Charleston",
-    "Beverly Hills",
   ];
 
   let state = {
@@ -87,8 +87,17 @@
       if (state.min && p.offer < state.min) return false;
       if (state.max && p.offer > state.max) return false;
       if (!q) return true;
-      const hay = `${p.title} ${p.location} ${(p.tags || []).join(" ")} ${p.desc}`.toLowerCase();
-      return q.split(/\s+/).every((w) => hay.includes(w));
+      const loc = p.location || "";
+      const extra = [];
+      if (/\bKY\b|Louisville|Lexington/i.test(loc)) extra.push("kentucky", "kentuckiana", "ky");
+      const hay = `${p.title} ${loc} ${(p.tags || []).join(" ")} ${p.desc || ""} ${extra.join(" ")}`.toLowerCase();
+      return q.split(/\s+/).every((w) => {
+        if (w.length <= 2) {
+          const escaped = w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+          return new RegExp("\\b" + escaped + "\\b", "i").test(hay);
+        }
+        return hay.includes(w);
+      });
     });
     if (state.sort === "price-asc") list.sort((a, b) => a.offer - b.offer);
     else if (state.sort === "price-desc") list.sort((a, b) => b.offer - a.offer);
@@ -179,7 +188,7 @@
       box.innerHTML = `<div class="empty-state">
         <div class="empty-ico">🔍</div>
         <h3>No matches</h3>
-        <p>Try Las Vegas, Austin, or clear filters.</p>
+        <p>Try Louisville, Las Vegas, or Austin — or clear filters.</p>
         <button type="button" class="btn-filled" id="clearAll">Clear search</button>
       </div>`;
       $("#clearAll")?.addEventListener("click", () => {

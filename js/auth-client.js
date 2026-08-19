@@ -268,6 +268,13 @@
   }
 
   async function login({ email, password, remember }) {
+    const live = typeof hasLiveApi === "function" ? await hasLiveApi() : false;
+    if (!live) {
+      const err = new Error("Password sign-in is not live on this host.");
+      err.code = "NO_API";
+      err.status = 405;
+      throw err;
+    }
     const data = await api(ep("login"), {
       method: "POST",
       body: { email, password },
