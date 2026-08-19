@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Listing copy workshop — SMART REALTY.US LLC</title>
+  <meta name="description" content="Draft headlines and a property description. You edit every fact. Starting quote $150. Not an appraisal. Not a brokerage." />
+  <link rel="canonical" href="https://smartrealty.us/copy/" />
+  <meta name="theme-color" content="#0a0c10" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+  <script src="/domain-config.js"></script>
+  <style>
+    .hire-sheet { max-width: 960px; margin: 0 auto; }
+    .hire-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .hire-sheet input, .hire-sheet textarea {
+      width: 100%;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.65rem 0.8rem;
+      color: var(--text);
+    }
+    .hire-sheet label { display: grid; gap: 0.3rem; font-size: 0.82rem; color: var(--text-muted); margin-bottom: 0.75rem; }
+    .hire-actions { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 0.75rem; }
+    .hire-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem; }
+    @media (max-width: 800px) {
+      .hire-grid, .hire-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body class="legal-page">
+  <header class="legal-header">
+    <div class="container legal-header-inner">
+      <a href="/index.html" class="logo">
+        <span class="logo-mark">SR</span>
+        <span class="logo-text"><strong>Smart Realty</strong><small>USA</small></span>
+      </a>
+      <nav class="legal-nav">
+        <a href="/index.html">Home</a>
+        <a href="/copy/" aria-current="page">$150 copy</a>
+        <a href="/invoice/">Invoice</a>
+        <a href="/apps/daily-cache-wiper/">Daily Cache Wiper</a>
+      </nav>
+    </div>
+  </header>
+  <main class="container legal-main hire-sheet">
+    <p class="eyebrow">$150 listing copy pack · you still edit</p>
+    <h1>Write the listing, then invoice it</h1>
+    <p class="muted">Draft headlines and a description here. Confirm every fact with the owner before you publish. Copywriting from <strong>SMART REALTY.US LLC</strong> — not an appraisal, CMA, sale, or brokerage listing. Pay off-site. Revenue is $0 until an invoice is paid.</p>
+    <div class="hire-grid">
+      <form id="copyForm">
+        <label>Address or nickname <input id="cAddr" placeholder="2611 Harmony Rd" autocomplete="street-address" /></label>
+        <div class="hire-row">
+          <label>City <input id="cCity" value="Louisville" /></label>
+          <label>Type <input id="cType" value="house" /></label>
+          <label>Beds <input id="cBeds" type="number" min="0" value="3" /></label>
+        </div>
+        <div class="hire-row">
+          <label>Baths <input id="cBaths" type="number" min="0" step="0.5" value="2" /></label>
+          <label>Sqft <input id="cSqft" type="number" min="0" value="1800" /></label>
+        </div>
+        <label>Facts the owner confirmed <textarea id="cFeats" rows="3" placeholder="Updated kitchen, fenced yard…"></textarea></label>
+        <label>Your email (for the $150 job) <input id="cEmail" type="email" autocomplete="email" placeholder="you@email.com" /></label>
+        <button type="submit" class="btn btn-outline">Refresh draft</button>
+      </form>
+      <div>
+        <label>Draft
+          <textarea id="copyOut" rows="16"></textarea>
+        </label>
+        <div class="hire-actions">
+          <button type="button" class="btn btn-primary" id="copyBtn">Copy draft</button>
+          <a class="btn btn-outline" id="copyMail" href="mailto:ai@smartrealty.us?subject=Listing%20copy%20%24150">Email $150 job</a>
+          <a class="btn btn-ghost" href="/invoice/">Print an invoice</a>
+        </div>
+        <p class="muted" id="copyMsg"></p>
+      </div>
+    </div>
+    <p class="muted">Do not invent square footage, schools, or flood status. If the owner did not confirm it, leave it out. This site does not collect cards.</p>
+  </main>
+  <footer class="legal-footer container">
+    <a href="/index.html">← Home</a>
+    <span>© 2026 SMART REALTY.US LLC</span>
+  </footer>
+  <script src="/js/copy-tool.js?v=hire2"></script>
+</body>
+</html>

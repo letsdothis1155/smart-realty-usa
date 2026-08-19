@@ -41,13 +41,14 @@
       </a>
       <nav class="legal-nav">
         <a href="/index.html">Home</a>
-        <a href="/account.html">Request an account</a>
+        <a href="/copy/">$150 copy</a>
         <a href="/invoice/" aria-current="page">Invoice</a>
+        <a href="/apps/daily-cache-wiper/">Daily Cache Wiper</a>
       </nav>
     </div>
   </header>
   <main class="container legal-main">
-    <p class="eyebrow no-print">Print → Save as PDF · no cards or bank numbers on this page</p>
+    <p class="eyebrow no-print">Print → Save as PDF · email the PDF · no cards or bank numbers on this page</p>
     <article class="glass inv-sheet" id="inv">
       <div class="inv-from">
         <p><strong>SMART REALTY.US LLC</strong></p>
@@ -81,7 +82,8 @@
     </article>
     <div class="inv-actions no-print">
       <button type="button" class="btn btn-primary" id="invPrint">Print / PDF</button>
-      <a class="btn btn-ghost" href="mailto:ai@smartrealty.us">Email ai@smartrealty.us</a>
+      <a class="btn btn-outline" id="invMail" href="mailto:ai@smartrealty.us">Email this invoice</a>
+      <a class="btn btn-ghost" href="/copy/">Write the copy</a>
       <a class="btn btn-ghost" href="/account.html">Request an account</a>
     </div>
   </main>
@@ -98,8 +100,40 @@
       function tot() {
         var a = Number(document.getElementById("invAmt").value) || 0;
         document.getElementById("invTotal").textContent = "Total due: $" + a.toFixed(2);
+        mail();
       }
-      document.getElementById("invAmt").addEventListener("input", tot);
+      function mail() {
+        var a = document.getElementById("invMail");
+        if (!a) return;
+        var no = (document.getElementById("invNo").value || "").trim();
+        var item = document.getElementById("invItem").value;
+        var amt = Number(document.getElementById("invAmt").value) || 0;
+        var to = (document.getElementById("invTo").value || "").trim();
+        var em = (document.getElementById("invEmail").value || "").trim();
+        var where = (document.getElementById("invWhere").value || "").trim();
+        var notes = (document.getElementById("invNotes").value || "").trim();
+        var sub = no + " — " + item + " $" + amt.toFixed(2);
+        var body = [
+          "Invoice from SMART REALTY.US LLC",
+          no,
+          "Bill to: " + (to || "(name)") + (em ? " <" + em + ">" : ""),
+          where ? "Where: " + where : "",
+          "Item: " + item,
+          "Amount due: $" + amt.toFixed(2) + " USD",
+          "",
+          notes,
+          "",
+          "Pay off-site. This website does not collect cards or bank numbers.",
+          "Print the invoice page to PDF if you need a file."
+        ].filter(Boolean).join("\n");
+        var dest = em || "ai@smartrealty.us";
+        a.href = "mailto:" + dest + "?cc=ai@smartrealty.us&subject=" + encodeURIComponent(sub) + "&body=" + encodeURIComponent(body);
+      }
+      ["invNo","invDate","invTo","invEmail","invWhere","invItem","invAmt","invNotes"].forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el) el.addEventListener("input", tot);
+        if (el) el.addEventListener("change", tot);
+      });
       tot();
       document.getElementById("invPrint").addEventListener("click", function () { window.print(); });
     })();
