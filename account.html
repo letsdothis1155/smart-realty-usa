@@ -13,8 +13,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="growth.css" />
-  <script src="domain-config.js?v=accounts2"></script>
-  <script src="js/auth-client.js?v=accounts2"></script>
+  <script src="domain-config.js?v=accounts3"></script>
+  <script src="js/auth-client.js?v=accounts3"></script>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏡</text></svg>" />
 </head>
 <body class="auth-page account-page">
@@ -31,9 +31,10 @@
         Request access from this page. It emails
         <a href="mailto:andrewiredale@smartrealty.us">andrewiredale@smartrealty.us</a>.
         GitHub Pages cannot store member passwords — no password is collected here.
+        Invoices bill from SMART REALTY.US LLC.
       </p>
       <ul class="auth-perks">
-        <li>Account requests go to Andrew’s inbox</li>
+        <li>Name, email, and what you need — plus optional phone and city</li>
         <li>Saved homes stay on this device until login is live</li>
         <li>Node explorer and 3D chain stay public</li>
       </ul>
@@ -51,17 +52,41 @@
         <form id="accountRequestForm" class="auth-form" autocomplete="on">
           <h2>Request an account</h2>
           <p class="auth-lead">
-            Send your name and email. We write back when member login is ready.
+            Send your name, email, and what you need. We write back when member login is ready.
             Password sign-in is not live on this GitHub Pages host.
           </p>
           <label>Full name
-            <input type="text" id="reqName" name="name" required minlength="2" maxlength="80" autocomplete="name" placeholder="Andrew Iredale" />
+            <input type="text" id="reqName" name="name" required minlength="2" maxlength="80" autocomplete="name" placeholder="Your name" />
           </label>
           <label>Email
             <input type="email" id="reqEmail" name="email" required autocomplete="email" placeholder="you@email.com" />
           </label>
+          <label>Phone <span class="auth-optional">(optional)</span>
+            <input type="tel" id="reqPhone" name="phone" maxlength="32" autocomplete="tel" placeholder="502-555-0100" />
+          </label>
+          <div class="auth-row">
+            <label>City <span class="auth-optional">(optional)</span>
+              <input type="text" id="reqCity" name="city" maxlength="80" autocomplete="address-level2" placeholder="Louisville" />
+            </label>
+            <label>State <span class="auth-optional">(optional)</span>
+              <input type="text" id="reqState" name="state" maxlength="2" autocomplete="address-level1" placeholder="KY" />
+            </label>
+          </div>
+          <label>What do you need?
+            <select id="reqIntent" name="intent">
+              <option value="browse">Browse homes / Blue Book</option>
+              <option value="buy">Buy</option>
+              <option value="sell">Sell / list</option>
+              <option value="rent">Rent / stay</option>
+              <option value="services">Digital services / listing copy</option>
+              <option value="dcw">Daily Cache Wiper</option>
+              <option value="bitcoin">Bitcoin / node</option>
+              <option value="investor">Investor</option>
+              <option value="other">Other</option>
+            </select>
+          </label>
           <label>Note <span class="auth-optional">(optional)</span>
-            <textarea id="reqNote" name="note" maxlength="500" rows="3" placeholder="What you need access for"></textarea>
+            <textarea id="reqNote" name="note" maxlength="500" rows="3" placeholder="Anything Andrew should know"></textarea>
           </label>
           <div class="sr-hp" aria-hidden="true">
             <label>Company website
@@ -150,7 +175,7 @@
   <script src="js/analytics.js"></script>
   <script src="js/growth.js"></script>
   <script src="js/growth-ui.js"></script>
-  <script src="js/account-page.js?v=accounts2"></script>
+  <script src="js/account-page.js?v=accounts3"></script>
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       if (window.SRU_GROWTH) {

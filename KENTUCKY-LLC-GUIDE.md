@@ -1,11 +1,25 @@
-# Form Smart Realty USA LLC — Kentucky (Andrew Iredale)
+# Kentucky LLC — SMART REALTY.US LLC
 
-**Owner / organizer:** Andrew Iredale  
-**State:** Kentucky  
-**Suggested legal name:** `Smart Realty USA LLC`  
-**Brand name:** Smart Realty USA  
+**Status (19 Aug 2026): FILED. Do not file again.**
 
-This is a practical checklist, not legal advice. For tax election or liability questions, talk to a Kentucky attorney/CPA.
+| Field | Filed value |
+|-------|-------------|
+| Legal name | **SMART REALTY.US LLC** (not “Smart Realty USA LLC”) |
+| Brand / trade name | Smart Realty USA |
+| Entity | Kentucky member-managed LLC |
+| Formed | 3 August 2026 |
+| KY SOS | **1614978.06** |
+| Owner (100%) | Andrew Iredale Jr |
+| Registered agent (Articles) | Andrew Iredale |
+| Address | 2611 Harmony Rd, Louisville, KY 40299 |
+| Public phone | 1-800-762-7879 |
+| Owner phone | 502-539-1090 |
+| Public email | ai@smartrealty.us |
+| Account requests | andrewiredale@smartrealty.us |
+| D‑U‑N‑S | Not issued yet |
+| EIN | Retrieve if already assigned — do not apply a second time; do not publish |
+
+This is a practical checklist, not legal advice. The steps below are the original how-to. Use the table above for accounting, invoices, D&B, and banks.
 
 ---
 
@@ -25,15 +39,15 @@ This is a practical checklist, not legal advice. For tax election or liability q
 
 | Field | Draft value |
 |-------|-------------|
-| Legal name | **Smart Realty USA LLC** |
-| Organizer / member | **Andrew Iredale** |
+| Legal name | **SMART REALTY.US LLC** (filed) |
+| Organizer / member | **Andrew Iredale Jr** |
 | Title | Owner / Managing Member |
 | State | **Kentucky** |
-| Principal office | *Your KY street address* (required — fill in) |
-| Registered agent name | **Andrew Iredale** (or a service) |
-| Registered agent address | *Same KY street address* (must accept legal mail; usually not a P.O. box) |
-| Email | ai@smartrealty.us *and/or your personal email* |
-| Phone | *Your real phone* |
+| Principal office | **2611 Harmony Rd, Louisville, KY 40299** |
+| Registered agent name | **Andrew Iredale** (as on Articles) |
+| Registered agent address | 2611 Harmony Rd, Louisville, KY 40299 |
+| Email | ai@smartrealty.us (public) · andrewiredale@smartrealty.us (account requests) |
+| Phone | 1-800-762-7879 (public) · 502-539-1090 (owner) |
 | Website | https://smartrealty.us |
 
 ---
@@ -110,23 +124,13 @@ After LLC + address are set:
 
 1. Lookup: https://www.dnb.com/en-us/smb/duns/duns-lookup.html  
 2. Apply: https://www.dnb.com/en-us/smb/duns/get-a-duns.html → **U.S.-based business**  
-3. Legal name: **exact** `Smart Realty USA LLC`  
-4. Owner: **Andrew Iredale**  
+3. Legal name: **exact** `SMART REALTY.US LLC`  
+4. Owner: **Andrew Iredale Jr**  
 5. Skip paid packages unless you want them  
 
 ### 7) Put credentials on the site
 
-Send me:
-
-```text
-Legal name: Smart Realty USA LLC
-EIN: XX-XXXXXXX          (optional on public site)
-D-U-N-S: #########
-KY SOS org #: ...
-Address: ...
-```
-
-I’ll update `domain-config.js` and the demo footer.
+Legal name, SOS, address, and phones are already in `domain-config.js`. When D&B issues the 9-digit number, add `dunsNumber` there. **Do not** put the EIN in that public file.
 
 ---
 

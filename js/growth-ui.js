@@ -57,21 +57,27 @@
           <a href="/start/">Start</a>
           <a href="/buy/">Buy</a>
           <a href="/sell/">Sell</a>
+          <a href="/rent/">Rent</a>
+          <a href="/showing/">Showing</a>
           <a href="/list/">List a property</a>
           <a href="/services/">Services</a>
+          <a href="/copy/">Listing copy</a>
           <a href="/invest/">Investor calculator</a>
-          <a href="/direct-deposit/">Direct deposit</a>
         </div>
         <div>
           <h5>Learn</h5>
           <a href="/learn/">Guides</a>
           <a href="/goals/">Property goals</a>
+          <a href="/locations/">Locations</a>
           <a href="/pricing/">Plans</a>
+          <a href="/plus/">Plus</a>
           <a href="/security/">Trust center</a>
         </div>
         <div>
           <h5>Company</h5>
-          <a href="/agents/">For agents</a>
+          <a href="/#business">LLC facts</a>
+          <a href="/invoice/">Invoice</a>
+          <a href="/account.html">Request an account</a>
           <a href="/early-access/">Early access</a>
           <a href="/privacy.html">Privacy</a>
           <a href="mailto:ai@smartrealty.us">ai@smartrealty.us</a>

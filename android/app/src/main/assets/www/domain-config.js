@@ -30,12 +30,18 @@ window.SRU_CONFIG = {
    * D‑U‑N‑S is a free 9-digit ID from Dun & Bradstreet — not a RE license.
    * Guide: DUNS-AND-COMPANY-SETUP.md
    */
-  legalName: "Smart Realty USA LLC", // confirm after KY SOS filing
-  organizerName: "Andrew Iredale",
+  legalName: "SMART REALTY.US LLC",
+  tradeName: "Smart Realty USA",
+  organizerName: "Andrew Iredale Jr",
+  registeredAgent: "Andrew Iredale",
   formationState: "Kentucky",
+  entityType: "Kentucky limited liability company",
+  management: "member-managed",
+  sosNumber: "1614978.06",
+  formedOn: "2026-08-03",
   dunsNumber: "", // add when Dun & Bradstreet issues it
-  ein: "", // add after free IRS EIN
-  businessAddress: "", // KY street address from Articles
+  ein: "", // never publish
+  businessAddress: "2611 Harmony Rd, Louisville, KY 40299",
 
   /** Private demo flag — shows DEMO badges */
   isPrivateDemo: true,

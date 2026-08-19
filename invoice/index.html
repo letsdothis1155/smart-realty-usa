@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Invoice — SMART REALTY.US LLC</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="canonical" href="https://smartrealty.us/invoice/" />
+  <meta name="theme-color" content="#0a0c10" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" /><link rel="stylesheet" href="/growth.css" />
+  <script src="/domain-config.js"></script>
+  <style>
+    @media print {
+      .g-header, .g-footer, .no-print, .ambient { display: none !important; }
+      body { background: #fff; color: #111; }
+      .inv-sheet { border: 0; box-shadow: none; color: #111; }
+    }
+    .inv-sheet { max-width: 720px; padding: 1.5rem; }
+    .inv-sheet input, .inv-sheet textarea, .inv-sheet select { background: rgba(255,255,255,0.06); }
+    .inv-from { display: grid; gap: 0.15rem; margin-bottom: 1rem; font-size: 0.92rem; line-height: 1.45; }
+    .inv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    @media (max-width: 640px) { .inv-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body class="g-page" data-growth="learn">
+  <div id="gChrome"></div>
+  <main class="g-section">
+    <div class="container">
+      <p class="g-kicker no-print">Print → Save as PDF · no cards or bank numbers on this page</p>
+      <article class="g-card inv-sheet" id="inv">
+        <div class="inv-from">
+          <p><strong>SMART REALTY.US LLC</strong></p>
+          <p>Kentucky member-managed LLC · filed 3 Aug 2026 · SOS 1614978.06</p>
+          <p>2611 Harmony Rd, Louisville, KY 40299</p>
+          <p>1-800-762-7879 · ai@smartrealty.us</p>
+          <p>Owner: Andrew Iredale Jr · Not a licensed brokerage. Not a bank.</p>
+        </div>
+        <h1>Invoice</h1>
+        <form class="g-form" id="invForm">
+          <div class="inv-grid">
+            <label>Invoice # <input id="invNo" /></label>
+            <label>Date <input id="invDate" type="date" /></label>
+          </div>
+          <label>Bill to (name) <input id="invTo" autocomplete="name" /></label>
+          <label>Bill to (email) <input id="invEmail" type="email" autocomplete="email" /></label>
+          <label>Bill to (city / state) <input id="invWhere" placeholder="Louisville, KY" /></label>
+          <label>Line item
+            <select id="invItem">
+              <option value="Listing copy pack">Listing copy pack</option>
+              <option value="Property landing page">Property landing page</option>
+              <option value="SEO starter">SEO starter</option>
+              <option value="Other digital service">Other digital service</option>
+            </select>
+          </label>
+          <label>Amount USD <input id="invAmt" type="number" min="0" step="1" value="150" /></label>
+          <label>Notes <textarea id="invNotes" rows="3">Due on receipt. Payment instructions will be emailed to the address above. This site does not collect cards, routing numbers, or account numbers. Not a brokerage transaction. Revenue is $0 until this invoice is paid.</textarea></label>
+        </form>
+        <p id="invTotal" style="font-size:1.4rem;font-weight:800;margin-top:1rem"></p>
+        <p class="g-fine">Bill from SMART REALTY.US LLC. EIN is not printed here. D‑U‑N‑S® is pending. No guaranteed outcomes from the work.</p>
+      </article>
+      <div class="g-cta-row no-print" style="margin-top:1rem">
+        <button type="button" class="btn btn-primary" id="invPrint">Print / PDF</button>
+        <a class="btn btn-outline" href="/copy/">Write the copy</a>
+        <a class="btn btn-ghost" href="mailto:ai@smartrealty.us">Email ai@smartrealty.us</a>
+        <a class="btn btn-ghost" href="/account.html">Request an account</a>
+      </div>
+    </div>
+  </main>
+  <div id="gFoot"></div>
+  <script src="/js/growth-ui.js"></script>
+  <script>
+    (function () {
+      var n = document.getElementById("invNo");
+      var d = document.getElementById("invDate");
+      if (n && !n.value) n.value = "INV-" + new Date().toISOString().slice(0,10).replace(/-/g,"") + "-01";
+      if (d && !d.value) d.value = new Date().toISOString().slice(0,10);
+      function tot() {
+        var a = Number(document.getElementById("invAmt").value) || 0;
+        document.getElementById("invTotal").textContent = "Total due: $" + a.toFixed(2);
+      }
+      document.getElementById("invAmt").addEventListener("input", tot);
+      tot();
+      document.getElementById("invPrint").addEventListener("click", function () { window.print(); });
+    })();
+  </script>
+</body>
+</html>

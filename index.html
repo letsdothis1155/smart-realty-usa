@@ -23,10 +23,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet" />
   <!-- Live map tiles (OpenStreetMap via Leaflet) -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-  <link rel="stylesheet" href="styles.css?v=20260819b" />
+  <link rel="stylesheet" href="styles.css?v=20260819c" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏡</text></svg>" />
   <!-- Edit domain-config.js when going live on a custom domain -->
-  <script src="domain-config.js?v=20260819b"></script>
+  <script src="domain-config.js?v=20260819c"></script>
   <script>
     /* Early open-mode unlock — avoid password-gate flash before app.js boots */
     (function () {
@@ -40,10 +40,10 @@
       } catch (e) {}
     })();
   </script>
-  <script src="js/properties.js?v=20260819b"></script>
-  <script src="js/auth-client.js?v=20260819b"></script>
-  <script src="js/security-banner.js?v=20260819b"></script>
-  <script src="js/analytics.js?v=20260819b"></script>
+  <script src="js/properties.js?v=20260819c"></script>
+  <script src="js/auth-client.js?v=20260819c"></script>
+  <script src="js/security-banner.js?v=20260819c"></script>
+  <script src="js/analytics.js?v=20260819c"></script>
   <script type="application/ld+json" id="jsonLdOrg">
   {
     "@context": "https://schema.org",
@@ -53,6 +53,7 @@
     "url": "https://smartrealty.us",
     "email": "ai@smartrealty.us",
     "telephone": "+1-800-762-7879",
+    "foundingDate": "2026-08-03",
     "description": "Kentucky LLC. Public demo of transparent home pricing and Bitcoin-ready checkout. Not a licensed brokerage.",
     "areaServed": "US",
     "address": {
@@ -116,7 +117,7 @@
         <span class="open-landing-note">Not a live brokerage.</span>
       </p>
       <div class="open-landing-actions">
-        <a class="btn btn-primary btn-sm" href="account.html">Create free account</a>
+        <a class="btn btn-primary btn-sm" href="account.html">Request an account</a>
         <a class="btn btn-ghost btn-sm" href="auth.html?tab=signin&next=index.html">Sign in</a>
         <button type="button" class="btn btn-ghost btn-sm" id="dismissOpenBanner" aria-label="Dismiss notice">Dismiss</button>
       </div>
@@ -275,7 +276,7 @@
       </div>
     </section>
 
-    <!-- Business identity / DUNS prep strip -->
+    <!-- Business identity / accounting facts -->
     <section class="biz-strip" id="business">
       <div class="container biz-strip-inner">
         <div class="biz-copy">
@@ -284,7 +285,7 @@
           <p class="section-sub">
             Member-managed LLC filed 3 Aug 2026 (KY SOS 1614978.06). Owner
             Andrew Iredale Jr, Louisville. This website is a public demo — not a
-            licensed brokerage. A free <strong>D‑U‑N‑S® Number</strong> is still pending.
+            licensed brokerage and not a bank. Revenue is $0 until an invoice is paid.
           </p>
         </div>
         <div class="biz-cards">
@@ -295,21 +296,21 @@
           </div>
           <div class="biz-card glass">
             <span class="biz-step">02</span>
-            <strong>Free D‑U‑N‑S®</strong>
-            <p>Apply at dnb.com — never pay for the number itself. Not issued yet.</p>
+            <strong>Accounting / billing</strong>
+            <p>Invoices bill from the LLC. Pay by emailed instructions. This site does not collect cards or bank numbers.</p>
           </div>
           <div class="biz-card glass">
             <span class="biz-step">03</span>
-            <strong>Public surfaces</strong>
-            <p>Homes demo · Bitcoin node at mempool.smartrealty.us</p>
+            <strong>Customer accounts</strong>
+            <p>Request with name, email, and what you need. No password on this host. Requests go to andrewiredale@smartrealty.us.</p>
           </div>
         </div>
         <div class="biz-actions">
-          <a class="btn btn-primary" href="https://www.dnb.com/en-us/smb/duns/get-a-duns.html" target="_blank" rel="noopener">Start D‑U‑N‑S application ↗</a>
-          <a class="btn btn-outline" href="https://www.dnb.com/en-us/smb/duns/duns-lookup.html" target="_blank" rel="noopener">Lookup existing D‑U‑N‑S ↗</a>
-          <button type="button" class="btn btn-ghost" id="openDunsGuide">Open setup checklist</button>
+          <a class="btn btn-primary" href="account.html">Request an account</a>
+          <a class="btn btn-outline" href="invoice/">Print an invoice</a>
+          <button type="button" class="btn btn-ghost" id="openDunsGuide">Owner D‑U‑N‑S® checklist</button>
         </div>
-        <p class="biz-note">D‑U‑N‑S is a <em>business identifier</em>, not a real-estate license. Brokerage licensing is separate by state.</p>
+        <p class="biz-note">D‑U‑N‑S® is still pending. It is a <em>business identifier</em>, not a real-estate license. EIN is not published here.</p>
       </div>
     </section>
 
@@ -747,13 +748,8 @@
             <a class="btn btn-primary" href="https://mempool.smartrealty.us" target="_blank" rel="noopener">Open mempool.smartrealty.us ↗</a>
             <a class="btn btn-ghost btn-sm" href="https://mempool.smartrealty.us/mempools" target="_blank" rel="noopener">Mempools · goggles</a>
             <a class="btn btn-ghost btn-sm" href="blockchain-live.html">3D blockchain</a>
-            <a class="btn btn-primary" href="https://mempool.smartrealty.us/earn/" target="_blank" rel="noopener" style="background:linear-gradient(135deg,#1a8f3c,#2f9e44)">Earn sats · node services</a>
-            <a class="btn btn-ghost btn-sm" href="https://mempool.smartrealty.us/fund/" target="_blank" rel="noopener">My Node Fund · live timeline</a>
             <a class="btn btn-ghost btn-sm" href="https://mempool.smartrealty.us/status" target="_blank" rel="noopener">Live status board</a>
             <a class="btn btn-ghost btn-sm" href="https://mempool.smartrealty.us/about" target="_blank" rel="noopener">About the node</a>
-            <a href="https://mempool.smartrealty.us/fund/" target="_blank" rel="noopener" title="My Node Fund">
-              <img src="https://mempool.smartrealty.us/fund/badge-fund.svg" alt="Support My Node Fund" width="220" height="44" style="max-width:100%;height:auto;border-radius:8px;margin-right:8px" loading="lazy" />
-            </a>
             <img src="https://mempool.smartrealty.us/badge.svg" alt="SmartRealtyNode live status" width="280" height="48" style="max-width:100%;height:auto;border-radius:8px" loading="lazy" />
           </div>
         </div>
@@ -973,6 +969,7 @@
         <a href="goals/">Property goals</a>
         <a href="services/">Services</a>
         <a href="learn/">Learn</a>
+        <a href="locations/">Louisville</a>
         <a href="apps/">Apps</a>
         <a href="https://mempool.smartrealty.us" target="_blank" rel="noopener">Node explorer</a>
         <a href="https://mempool.smartrealty.us/mempools" target="_blank" rel="noopener">Mempools</a>
@@ -987,19 +984,34 @@
         <a href="#support">Contact</a>
         <a href="tel:+18007627879">Call</a>
         <a href="https://mempool.smartrealty.us/about" target="_blank" rel="noopener">About our node</a>
-        <a href="https://mempool.smartrealty.us/fund/" target="_blank" rel="noopener">Fund the node</a>
+        <a href="https://mempool.smartrealty.us/status" target="_blank" rel="noopener">Node status</a>
       </div>
       <div>
         <h5>Contact</h5>
         <p>1-800-762-7879</p>
         <p><a href="mailto:ai@smartrealty.us">ai@smartrealty.us</a></p>
         <p>Louisville, KY · owner-operated</p>
-        <p><a href="account.html">Account</a></p>
+        <p><a href="account.html">Request an account</a></p>
+        <p><a href="invoice/">Invoice</a></p>
         <p><a href="https://mempool.smartrealty.us" target="_blank" rel="noopener">mempool.smartrealty.us</a></p>
       </div>
     </div>
 
     <!-- Growth: waitlist / lead capture -->
+    <div class="container waitlist-band" id="hire">
+      <div class="waitlist-card glass">
+        <div>
+          <p class="eyebrow">First dollar · not a brokerage deal</p>
+          <h3>Hire listing copy — $150</h3>
+          <p class="waitlist-sub">SMART REALTY.US LLC writes headlines and a description you can edit. Pay by invoice. No cards on this site. Not a sale, appraisal, or guaranteed listing result.</p>
+        </div>
+        <div class="g-cta-row">
+          <a class="btn btn-primary" href="mailto:ai@smartrealty.us?subject=Listing%20copy%20%24150&amp;body=Name%3A%0AProperty%20address%3A%0ACity%3A%0ABeds%2Fbaths%2Fsqft%3A%0AFacts%20I%20confirm%3A%0A">Email the $150 job</a>
+          <a class="btn btn-outline" href="copy/">Write a draft</a>
+          <a class="btn btn-ghost" href="invoice/">Invoice</a>
+        </div>
+      </div>
+    </div>
     <div class="container waitlist-band" id="startPaths" style="margin-bottom:1rem">
       <div class="waitlist-card glass">
         <div>
@@ -1012,6 +1024,7 @@
           <a class="btn btn-outline" href="value/">Get my home value</a>
           <a class="btn btn-ghost" href="sell/">List / sell</a>
           <a class="btn btn-ghost" href="rent/">Rent</a>
+          <a class="btn btn-ghost" href="showing/">Showing</a>
           <a class="btn btn-ghost" href="services/">Services</a>
         </div>
       </div>
@@ -1043,7 +1056,7 @@
     <div class="container footer-bottom">
       <p>© 2026 SMART REALTY.US LLC · Louisville, KY · <strong>Public demo</strong> · All Rights Reserved.</p>
       <p>House Blue Book™ · Official contact: <a href="mailto:ai@smartrealty.us" data-contact-email>ai@smartrealty.us</a></p>
-      <p>Public node: <a href="https://mempool.smartrealty.us" target="_blank" rel="noopener">explorer</a> · <a href="https://mempool.smartrealty.us/fund/" target="_blank" rel="noopener">fund</a> · <a href="https://mempool.smartrealty.us/earn/" target="_blank" rel="noopener">earn sats</a> · <a href="https://mempool.smartrealty.us/status" target="_blank" rel="noopener">status</a> · independent SmartRealtyNode</p>
+      <p>Public node: <a href="https://mempool.smartrealty.us" target="_blank" rel="noopener">explorer</a> · <a href="https://mempool.smartrealty.us/status" target="_blank" rel="noopener">status</a> · <a href="https://mempool.smartrealty.us/about" target="_blank" rel="noopener">about</a> · independent SmartRealtyNode</p>
       <p class="live-on hidden" id="liveOnLine">Live on <a href="#" id="liveOnLink" rel="noopener">—</a></p>
     </div>
     <div class="container demo-banner">
@@ -1124,22 +1137,22 @@
     <div class="modal duns-modal">
       <button class="modal-close" id="closeDunsModal" type="button" aria-label="Close">×</button>
       <div class="modal-body domain-panel-body">
-        <p class="eyebrow">Company setup</p>
+        <p class="eyebrow">Owner setup · not a customer form</p>
         <h2 id="dunsTitle">Get a free D‑U‑N‑S® Number</h2>
         <p class="domain-lead">
           A D‑U‑N‑S Number is a free 9-digit business ID from Dun &amp; Bradstreet.
-          It is <strong>not</strong> a real-estate brokerage license — it’s how banks,
-          vendors, Apple, Google, and partners verify your company exists.
+          It is <strong>not</strong> a real-estate brokerage license. Use the filed
+          Kentucky name exactly. Do not file a second LLC.
         </p>
-        <h3 style="font-size:1rem;margin:0.5rem 0">Before you apply — gather:</h3>
+        <h3 style="font-size:1rem;margin:0.5rem 0">Copy these fields into D&amp;B</h3>
         <ul class="duns-checklist" id="dunsChecklist">
-          <li><input type="checkbox" id="duns1" /><label for="duns1"><strong>Legal business name</strong> — exactly as on formation papers (e.g. Smart Realty USA LLC)</label></li>
-          <li><input type="checkbox" id="duns2" /><label for="duns2"><strong>Physical business address</strong> — no P.O. box for many D&amp;B uses</label></li>
-          <li><input type="checkbox" id="duns3" /><label for="duns3"><strong>Mailing address</strong> (if different)</label></li>
-          <li><input type="checkbox" id="duns4" /><label for="duns4"><strong>Owner / officer name &amp; title</strong> + phone + email</label></li>
-          <li><input type="checkbox" id="duns5" /><label for="duns5"><strong>Year started</strong> + entity type (LLC, Corp, Sole prop)</label></li>
-          <li><input type="checkbox" id="duns6" /><label for="duns6"><strong>Employee count</strong> (can be 1) + brief line of business</label></li>
-          <li><input type="checkbox" id="duns7" /><label for="duns7"><strong>EIN</strong> (optional for DUNS, but get one from IRS free)</label></li>
+          <li><input type="checkbox" id="duns1" checked disabled /><label for="duns1"><strong>Legal name</strong> — SMART REALTY.US LLC</label></li>
+          <li><input type="checkbox" id="duns2" checked disabled /><label for="duns2"><strong>Address</strong> — 2611 Harmony Rd, Louisville, KY 40299</label></li>
+          <li><input type="checkbox" id="duns3" checked disabled /><label for="duns3"><strong>Mailing</strong> — same as physical</label></li>
+          <li><input type="checkbox" id="duns4" checked disabled /><label for="duns4"><strong>Owner</strong> — Andrew Iredale Jr, managing member · 1-800-762-7879 · 502-539-1090 · ai@smartrealty.us</label></li>
+          <li><input type="checkbox" id="duns5" checked disabled /><label for="duns5"><strong>Entity</strong> — Kentucky member-managed LLC, started 2026, SOS 1614978.06, 1 employee</label></li>
+          <li><input type="checkbox" id="duns6" checked disabled /><label for="duns6"><strong>Line of business</strong> — Software / digital technology; public real-estate demo; not a licensed brokerage</label></li>
+          <li><input type="checkbox" id="duns7" /><label for="duns7"><strong>EIN</strong> — retrieve from IRS if already assigned; do not apply twice; do not publish on this site</label></li>
         </ul>
         <h3 style="font-size:1rem;margin:0.75rem 0 0.35rem">Apply (free path)</h3>
         <ol style="margin:0 0 0.75rem 1.1rem;color:var(--text-muted);font-size:0.9rem;line-height:1.55">
@@ -1216,7 +1229,7 @@
         Create a free account or sign in to save progress. You can also continue as a guest for this demo.
       </p>
       <div class="soft-auth-actions">
-        <a class="btn btn-primary btn-block" id="softAuthSignup" href="account.html">Create free account</a>
+        <a class="btn btn-primary btn-block" id="softAuthSignup" href="account.html">Request an account</a>
         <a class="btn btn-ghost btn-block" id="softAuthSignin" href="auth.html?tab=signin&next=index.html">Sign in</a>
         <button type="button" class="btn btn-outline btn-block" id="softAuthGuest">Continue as guest</button>
       </div>

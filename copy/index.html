@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Listing copy workshop — SmartRealty</title>
+  <meta name="description" content="Draft headlines and a property description. You edit every fact. Not an appraisal. Starting quote $150 from SMART REALTY.US LLC." />
+  <link rel="canonical" href="https://smartrealty.us/copy/" />
+  <meta name="robots" content="index, follow" />
+  <meta name="theme-color" content="#0a0c10" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" /><link rel="stylesheet" href="/growth.css" />
+  <script src="/domain-config.js"></script><script src="/js/auth-client.js"></script><script src="/js/analytics.js"></script><script src="/js/growth.js"></script>
+</head>
+<body class="g-page" data-growth="learn">
+  <div id="gChrome"></div>
+  <main class="g-section">
+    <div class="container">
+      <p class="g-kicker">$150 listing copy pack · you still edit</p>
+      <h1>Write the listing, then invoice it</h1>
+      <p class="g-lead">This is how SMART REALTY.US LLC can take a first dollar without pretending to be a brokerage or a bank. Draft copy here. Email the client. Send an invoice. No cards on this site. Revenue stays $0 until someone actually pays.</p>
+      <div class="g-grid-2">
+        <form id="copyForm" class="g-form g-card">
+          <label>Address or nickname <input id="cAddr" placeholder="2611 Harmony Rd" /></label>
+          <label>City <input id="cCity" value="Louisville" /></label>
+          <label>Type <input id="cType" value="house" /></label>
+          <label>Beds <input id="cBeds" type="number" min="0" value="3" /></label>
+          <label>Baths <input id="cBaths" type="number" min="0" step="0.5" value="2" /></label>
+          <label>Sqft <input id="cSqft" type="number" min="0" value="1800" /></label>
+          <label>Facts the owner confirmed <textarea id="cFeats" rows="3" placeholder="Updated kitchen, fenced yard…"></textarea></label>
+          <button type="submit" class="btn btn-outline">Refresh draft</button>
+        </form>
+        <div>
+          <textarea id="copyOut" rows="16" class="g-form" style="width:100%"></textarea>
+          <div class="g-cta-row" style="margin-top:0.75rem">
+            <button type="button" class="btn btn-primary" id="copyBtn">Copy draft</button>
+            <a class="btn btn-outline" href="/invoice/">Make an invoice</a>
+          </div>
+          <p class="g-msg" id="copyMsg"></p>
+        </div>
+      </div>
+      <p class="g-disclaimer">Not an appraisal or guaranteed sale. Do not invent square footage, schools, or flood status. If the owner did not confirm it, leave it out.</p>
+    </div>
+  </main>
+  <div id="gFoot"></div>
+  <script src="/js/growth-ui.js"></script>
+  <script src="/js/copy-tool.js"></script>
+</body>
+</html>
