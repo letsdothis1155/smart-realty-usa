@@ -36,3 +36,14 @@ test("previously published demo password is rejected", () => {
   });
   assert.ok(config.issues.includes("demo_password_weak"));
 });
+
+test("billing production stays off even if env asks for stripe", () => {
+  const config = readConfig({
+    JWT_SECRET: "9f8e7d6c5b4a32109f8e7d6c5b4a3210",
+    BILLING_MODE: "stripe",
+    STRIPE_SECRET_KEY: "sk_test_not_used",
+  });
+  assert.equal(config.billing.mode, "stripe");
+  assert.equal(config.billing.productionApproved, false);
+  assert.equal(config.billing.liveCharging, false);
+});

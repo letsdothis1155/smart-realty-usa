@@ -5,6 +5,12 @@ Same-origin member accounts for the website:
 | Method | Path | Purpose |
 |--------|------|---------|
 | GET | `/api/health` or `/api/health.php` | Health + data folder check |
+| POST | `/api/events` | Product analytics (sensitive keys stripped) |
+| POST | `/api/referrals` | Referral tracking only — no cash rewards |
+| POST | `/api/growth-stats` | Admin growth rollup (password) |
+| POST | `/api/campaigns` | Admin campaign records (password) |
+| GET | `/api/profit-catalog` | Public plan catalog (no secrets, live charging off) |
+| POST | `/api/profit-stats` | Admin profit rollup (password). $0 stays $0. |
 | POST | `/api/auth/register` | Create account |
 | POST | `/api/auth/login` | Sign in |
 | POST | `/api/auth/demo` | Shared demo password |

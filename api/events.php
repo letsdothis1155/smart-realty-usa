@@ -11,6 +11,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     sru_json(['ok' => false, 'error' => 'Method not allowed'], 405);
 }
 
+require_once __DIR__ . '/growth-lib.php';
+
 $body = sru_body();
 $event = substr(trim((string)($body['event'] ?? '')), 0, 64);
 if ($event === '') {
@@ -19,14 +21,7 @@ if ($event === '') {
 
 $props = $body['props'] ?? [];
 if (!is_array($props)) $props = [];
-// strip oversized props
-$clean = [];
-foreach ($props as $k => $v) {
-    $key = substr((string)$k, 0, 40);
-    if (is_scalar($v) || $v === null) {
-        $clean[$key] = is_string($v) ? substr($v, 0, 200) : $v;
-    }
-}
+$clean = sru_growth_sanitize_props($props);
 
 sru_ensure_data();
 $file = SRU_DATA_DIR . '/events.jsonl';

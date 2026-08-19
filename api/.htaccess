@@ -20,6 +20,10 @@
   RewriteRule ^leads-list$ leads-list.php [L,QSA]
   RewriteRule ^security-status$ security-status.php [L,QSA]
   RewriteRule ^events$ events.php [L,QSA]
+  RewriteRule ^referrals$ referrals.php [L,QSA]
+  RewriteRule ^growth-stats$ growth-stats.php [L,QSA]
+  RewriteRule ^campaigns$ campaigns.php [L,QSA]
+  RewriteRule ^leads-update$ leads-update.php [L,QSA]
 </IfModule>
 
 # Pass Authorization header through on some Apache/CGI setups

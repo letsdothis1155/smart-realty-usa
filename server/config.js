@@ -25,6 +25,50 @@ function readConfig(env = process.env) {
     demoPassword,
     corsOrigin: env.CORS_ORIGIN || true,
     issues,
+    serveStatic: env.SERVE_STATIC === "1",
+    adminPassword: String(env.ADMIN_PASSWORD || env.SRU_ADMIN_PASSWORD || ""),
+    directDeposit: readDirectDepositConfig(env),
+    billing: readBillingConfig(env),
+  };
+}
+
+function readDirectDepositConfig(env = process.env) {
+  const requested = String(env.DIRECT_DEPOSIT_MODE || "mock").toLowerCase();
+  return {
+    mode: requested === "provider" ? "provider" : "mock",
+    webhookSecret: String(env.DIRECT_DEPOSIT_WEBHOOK_SECRET || ""),
+    pinwheelApiSecret: String(env.PINWHEEL_API_SECRET || ""),
+    pinwheelApiUrl: String(env.PINWHEEL_API_URL || "https://sandbox.getpinwheel.com"),
+    sandboxAccountDetails: env.DIRECT_DEPOSIT_SANDBOX_ACCOUNT_DETAILS === "1",
+    productionApproved: false,
+    productionFinancialActivity: false,
+  };
+}
+
+function readBillingConfig(env = process.env) {
+  const requested = String(env.BILLING_MODE || "mock").toLowerCase();
+  const port = Number(env.AUTH_PORT || env.PORT || 8787);
+  return {
+    mode: requested === "stripe" ? "stripe" : "mock",
+    stripeSecretKey: String(env.STRIPE_SECRET_KEY || ""),
+    stripeWebhookSecret: String(env.STRIPE_WEBHOOK_SECRET || ""),
+    stripePublishableKey: String(env.STRIPE_PUBLISHABLE_KEY || ""),
+    appBaseUrl: String(env.APP_BASE_URL || `http://127.0.0.1:${port}`),
+    // Price IDs from the admin's Stripe dashboard (test or live mode, matching
+    // whichever STRIPE_SECRET_KEY is set). Checkout fails clearly if a plan
+    // has no price configured rather than silently falling back.
+    priceIds: {
+      plus: {
+        monthly: String(env.STRIPE_PRICE_PLUS_MONTHLY || ""),
+        annual: String(env.STRIPE_PRICE_PLUS_ANNUAL || ""),
+      },
+      pro: {
+        monthly: String(env.STRIPE_PRICE_PRO_MONTHLY || ""),
+        annual: String(env.STRIPE_PRICE_PRO_ANNUAL || ""),
+      },
+    },
+    productionApproved: false,
+    liveCharging: false,
   };
 }
 
@@ -34,4 +78,4 @@ function assertRequiredConfig(config) {
   }
 }
 
-module.exports = { readConfig, assertRequiredConfig };
+module.exports = { readConfig, readDirectDepositConfig, readBillingConfig, assertRequiredConfig };
