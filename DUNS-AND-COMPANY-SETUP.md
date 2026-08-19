@@ -6,7 +6,11 @@
 > It is a free **9-digit business identifier** issued by **Dun & Bradstreet (D&B)**.  
 > Real-estate **brokerage licenses** are separate and regulated by each U.S. state.
 
-Official contact email (demo): **ai@smartrealty.us**
+Official contact email (demo): **ai@smartrealty.us**  
+Account requests: **andrewiredale@smartrealty.us**
+
+**Filed facts (do not invent a second LLC):**  
+SMART REALTY.US LLC · Kentucky member-managed LLC · filed 3 Aug 2026 · SOS **1614978.06** · owner **Andrew Iredale Jr** (100%) · registered agent on Articles **Andrew Iredale** · **2611 Harmony Rd, Louisville, KY 40299**. D‑U‑N‑S is **not issued yet**. Do not put the EIN on this site.
 
 ---
 
@@ -62,18 +66,18 @@ D&B sometimes creates numbers when others inquire about your company.
 
 ### Information to have ready
 
-- [ ] Legal business name  
-- [ ] Trade name / DBA (if any)  
-- [ ] Physical street address (many flows reject P.O. boxes)  
-- [ ] Mailing address  
-- [ ] Phone + business email  
-- [ ] Owner / officer full name + title  
-- [ ] Business structure (LLC, Corp, Sole prop, etc.)  
-- [ ] Year started  
-- [ ] Number of employees (1 is fine)  
-- [ ] Line of business description (e.g. “Real estate technology and brokerage services”)  
-- [ ] EIN (helpful; not always required on every form)  
-- [ ] Website URL (e.g. https://smartrealty.us)
+- [x] Legal business name — **SMART REALTY.US LLC**
+- [x] Trade name / DBA — **Smart Realty USA**
+- [x] Physical street address — **2611 Harmony Rd, Louisville, KY 40299** (no P.O. box)
+- [x] Mailing address — same
+- [x] Phone + business email — **1-800-762-7879** / **502-539-1090** · **ai@smartrealty.us**
+- [x] Owner / officer — **Andrew Iredale Jr**, Owner / Managing Member
+- [x] Business structure — Kentucky member-managed LLC
+- [x] Year started — **2026** (filed 3 Aug 2026, SOS 1614978.06)
+- [x] Employees — **1**
+- [x] Line of business — Software and digital technology; public real-estate demo; **not** a licensed brokerage
+- [ ] EIN — retrieve from IRS if already assigned; do not apply twice; do not publish
+- [x] Website URL — https://smartrealty.us
 
 ### Avoid common mistakes
 
@@ -94,9 +98,9 @@ D&B sometimes creates numbers when others inquire about your company.
 // domain-config.js
 window.SRU_CONFIG = {
   // ...
-  legalName: "Smart Realty USA LLC", // example — use your real filing
+  legalName: "SMART REALTY.US LLC",
   dunsNumber: "XXXXXXXXX",           // 9 digits, no spaces
-  ein: "XX-XXXXXXX",                 // optional display; keep private if needed
+  // ein stays empty on the public site
 };
 ```
 

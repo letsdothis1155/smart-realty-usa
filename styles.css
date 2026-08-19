@@ -4647,6 +4647,8 @@ html.auth-open-boot #demoGate {
 .auth-form input[type="email"],
 .auth-form input[type="password"],
 .auth-form input[type="text"],
+.auth-form input[type="tel"],
+.auth-form select,
 .auth-form textarea {
   width: 100%;
   background: rgba(0, 0, 0, 0.3);
@@ -4657,12 +4659,33 @@ html.auth-open-boot #demoGate {
   outline: none;
 }
 
+.auth-form select {
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position: calc(100% - 18px) calc(50% - 3px), calc(100% - 12px) calc(50% - 3px);
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+}
+
+.auth-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+@media (max-width: 520px) {
+  .auth-row {
+    grid-template-columns: 1fr;
+  }
+}
+
 .auth-form textarea {
   min-height: 4.5rem;
   resize: vertical;
 }
 
 .auth-form input:focus,
+.auth-form select:focus,
 .auth-form textarea:focus {
   border-color: rgba(91, 140, 255, 0.55);
   box-shadow: 0 0 0 3px var(--primary-soft);

@@ -195,19 +195,34 @@
     }
   }
 
-  async function deliverViaFormSubmit({ name, email, note }) {
+  function formatAccountRequest(fields) {
+    const f = fields || {};
+    return [
+      `Name: ${f.name || ""}`,
+      `Email: ${f.email || ""}`,
+      `Phone: ${f.phone || "(none)"}`,
+      `City: ${f.city || "(none)"}`,
+      `State: ${f.state || "(none)"}`,
+      `Intent: ${f.intent || "(none)"}`,
+      `Note: ${f.note || "(none)"}`,
+      "",
+      "From the smartrealty.us account request page. No password was collected.",
+    ].join("\n");
+  }
+
+  async function deliverViaFormSubmit(fields) {
     const to = authCfg().signupEmail || "andrewiredale@smartrealty.us";
     const res = await fetch(`https://formsubmit.co/ajax/${encodeURIComponent(to)}`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Accept: "application/json" },
       body: JSON.stringify({
-        name,
-        email,
-        _subject: `Account request: ${name}`,
+        name: fields.name,
+        email: fields.email,
+        _subject: `Account request: ${fields.name}`,
         _template: "box",
         _captcha: "false",
-        _replyto: email,
-        message: `Name: ${name}\nEmail: ${email}\nNote: ${note || "(none)"}\n\nFrom the smartrealty.us account request page. No password was collected.`,
+        _replyto: fields.email,
+        message: formatAccountRequest(fields),
       }),
     });
     const data = await res.json().catch(() => ({}));
@@ -223,16 +238,24 @@
     return data;
   }
 
-  async function requestAccount({ name, email, note, website }) {
+  async function requestAccount({ name, email, note, website, phone, city, state, intent }) {
     const payload = {
       name: String(name || "").trim(),
       email: String(email || "").trim(),
       note: String(note || "").trim(),
       website: String(website || ""),
+      phone: String(phone || "").trim(),
+      city: String(city || "").trim(),
+      state: String(state || "").trim().toUpperCase(),
+      intent: String(intent || "").trim(),
     };
     saveLocalAccountRequest({
       name: payload.name,
       email: payload.email,
+      phone: payload.phone,
+      city: payload.city,
+      state: payload.state,
+      intent: payload.intent,
       note: payload.note,
       at: new Date().toISOString(),
     });

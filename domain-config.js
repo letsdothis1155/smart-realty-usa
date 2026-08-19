@@ -26,17 +26,25 @@ window.SRU_CONFIG = {
   phoneTel: "+18007627879",
 
   /**
-   * Company identity
+   * Company identity — match KY Articles exactly.
    * D‑U‑N‑S is a free 9-digit ID from Dun & Bradstreet — not a RE license.
+   * Do not put the EIN on this public file.
    */
   legalName: "SMART REALTY.US LLC",
+  tradeName: "Smart Realty USA",
   organizerName: "Andrew Iredale Jr",
+  registeredAgent: "Andrew Iredale",
   formationState: "Kentucky",
+  entityType: "Kentucky limited liability company",
+  management: "member-managed",
   sosNumber: "1614978.06",
   formedOn: "2026-08-03",
+  employees: 1,
+  lineOfBusiness: "Software and digital technology; public real-estate product demo (not a licensed brokerage)",
   dunsNumber: "", // add when Dun & Bradstreet issues it
-  ein: "", // add after free IRS EIN
+  ein: "", // never publish; retrieve from IRS if needed
   businessAddress: "2611 Harmony Rd, Louisville, KY 40299",
+  billingEmail: "ai@smartrealty.us",
 
   /** Private-demo chrome (badges, presenter panel). Public site stays an honest demo. */
   isPrivateDemo: false,
