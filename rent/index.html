@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rent — renter request | SmartRealty</title>
+  <meta name="description" content="Tell SmartRealty you need a rental. Inquiry only. Not a lease and not a guaranteed unit." />
+  <link rel="canonical" href="https://smartrealty.us/rent/" />
+  <meta property="og:title" content="Rent — SmartRealty" />
+  <meta property="og:url" content="https://smartrealty.us/rent/" />
+  <meta name="robots" content="index, follow" />
+  <meta name="theme-color" content="#0a0c10" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" /><link rel="stylesheet" href="/growth.css" />
+  <script src="/domain-config.js"></script><script src="/js/auth-client.js"></script><script src="/js/analytics.js"></script><script src="/js/growth.js"></script><script src="/js/revenue.js"></script>
+</head>
+<body class="g-page" data-growth="learn">
+  <div id="gChrome"></div>
+  <main class="g-section">
+    <div class="container">
+      <p class="g-kicker">Renter lead</p>
+      <h1>Looking to rent</h1>
+      <p class="g-lead">We store the request so we can follow up. This is not a rental application and not a guaranteed unit.</p>
+      <form class="g-form g-card" data-lead-form data-intent="rent" data-source="rent_page">
+        <label>Name <input name="name" autocomplete="name" /></label>
+        <label>Email <input name="email" type="email" required autocomplete="email" /></label>
+        <label>Phone <input name="phone" type="tel" /></label>
+        <label>City <input name="city" /></label>
+        <label>State <input name="state" maxlength="2" placeholder="KY" /></label>
+        <label>Monthly rent range <input name="budget" placeholder="e.g. 1200-1800" /></label>
+        <label>Move timing <textarea name="message" rows="3" placeholder="When, beds, pets…"></textarea></label>
+        <label class="auth-check"><input type="checkbox" name="consent" required /> <span>You may contact me about this rental request.</span></label>
+        <button type="submit" class="btn btn-primary">Send rental request</button>
+        <p class="g-msg hidden" data-lead-msg></p>
+      </form>
+      <p><a href="/#rentals">Try-before-buy stays</a> · <a href="/goals/">Rent goal</a></p>
+    </div>
+  </main>
+  <div id="gFoot"></div>
+  <script src="/js/growth-ui.js"></script>
+  <script src="/js/revenue-ui.js"></script>
+</body>
+</html>

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Buy a home — buyer request | SmartRealty</title>
+  <meta name="description" content="Tell SmartRealty you want to buy. We store the request so we can follow up. Not a licensed brokerage. No guaranteed purchase or approval." />
+  <link rel="canonical" href="https://smartrealty.us/buy/" />
+  <meta property="og:title" content="Buy a home — SmartRealty" />
+  <meta property="og:url" content="https://smartrealty.us/buy/" />
+  <meta name="robots" content="index, follow" />
+  <meta name="theme-color" content="#0a0c10" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" /><link rel="stylesheet" href="/growth.css" />
+  <script src="/domain-config.js"></script><script src="/js/auth-client.js"></script><script src="/js/analytics.js"></script><script src="/js/growth.js"></script><script src="/js/revenue.js"></script>
+</head>
+<body class="g-page" data-growth="learn">
+  <div id="gChrome"></div>
+  <main class="g-section">
+    <div class="container">
+      <p class="g-kicker">Buyer lead</p>
+      <h1>Looking to buy</h1>
+      <p class="g-lead">This is an inquiry, not an offer and not pre-approval. SmartRealty is not a licensed brokerage.</p>
+      <form class="g-form g-card" data-lead-form data-intent="buy" data-source="buy_page">
+        <label>Name <input name="name" autocomplete="name" /></label>
+        <label>Email <input name="email" type="email" required autocomplete="email" /></label>
+        <label>Phone <input name="phone" type="tel" /></label>
+        <label>City <input name="city" /></label>
+        <label>State <input name="state" maxlength="2" placeholder="KY" /></label>
+        <label>Budget range <input name="budget" placeholder="e.g. 250000-400000" /></label>
+        <label>Notes <textarea name="message" rows="3"></textarea></label>
+        <label class="auth-check"><input type="checkbox" name="consent" required /> <span>You may contact me about this buyer request. Do not sell this as a paid lead from this form.</span></label>
+        <button type="submit" class="btn btn-primary">Send buyer request</button>
+        <p class="g-msg hidden" data-lead-msg></p>
+      </form>
+      <p><a href="/#listings">Browse demo listings</a> · <a href="/invest/">Run investment numbers</a></p>
+    </div>
+  </main>
+  <div id="gFoot"></div>
+  <script src="/js/growth-ui.js"></script>
+  <script src="/js/revenue-ui.js"></script>
+</body>
+</html>
