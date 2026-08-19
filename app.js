@@ -13,14 +13,14 @@ if (!PROPERTIES.length) {
 
 const RECENT_KEY = "sru_recent_searches";
 const POPULAR_MARKETS = [
+  "Louisville",
+  "Lexington",
   "Las Vegas",
   "Austin",
   "Miami",
-  "Seattle",
-  "Denver",
   "Nashville",
-  "Beverly Hills",
   "Chicago",
+  "Denver",
 ];
 
 // Enrich inventory with demo amenities / facts (does not rewrite base objects)
@@ -183,6 +183,37 @@ function btcForOffer(offer) {
   return offer / btcRate;
 }
 
+function listingMarketName(p) {
+  const parts = String(p.location || "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  if (parts.length >= 3) return parts[parts.length - 2];
+  if (parts.length === 2 && /^[A-Z]{2}(\s+\d{5})?$/i.test(parts[1])) return parts[0];
+  return parts[0] || "";
+}
+
+function listingSearchText(p) {
+  const loc = p.location || "";
+  const extra = [];
+  if (/\bKY\b|Louisville|Lexington/i.test(loc)) {
+    extra.push("Kentucky", "Kentuckiana", "KY");
+  }
+  if (/Louisville/i.test(loc)) extra.push("Louisville metro");
+  return `${p.title} ${loc} ${p.desc || ""} ${(p.tags || []).join(" ")} ${extra.join(" ")}`.toLowerCase();
+}
+
+function queryMatchesListing(p, q) {
+  const t = String(q || "").trim().toLowerCase();
+  if (!t) return true;
+  const hay = listingSearchText(p);
+  if (t.length <= 2) {
+    const escaped = t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    return new RegExp("\\b" + escaped + "\\b", "i").test(hay);
+  }
+  return hay.includes(t);
+}
+
 function getFilteredProperties() {
   const q = searchState.query.trim().toLowerCase();
   let list = PROPERTIES.filter((p) => {
@@ -195,10 +226,7 @@ function getFilteredProperties() {
     if (searchState.beds && p.beds < searchState.beds) return false;
     if (searchState.priceMin && p.offer < searchState.priceMin) return false;
     if (searchState.priceMax && p.offer > searchState.priceMax) return false;
-    if (q) {
-      const hay = `${p.title} ${p.location} ${p.desc} ${p.tags.join(" ")}`.toLowerCase();
-      if (!hay.includes(q)) return false;
-    }
+    if (q && !queryMatchesListing(p, q)) return false;
     return true;
   });
 
@@ -501,14 +529,14 @@ function initGrowthMarkets() {
   const kpis = $("#growthKpis");
   if (!chips || !kpis) return;
 
-  const cities = [
-    ...new Set(
-      PROPERTIES.map((p) => {
-        const parts = (p.location || "").split(",");
-        return (parts[parts.length - 2] || parts[0] || "").trim().replace(/\d+/g, "").trim();
-      }).filter(Boolean)
-    ),
-  ].slice(0, 14);
+  const featured = ["Louisville", "Lexington", "Las Vegas", "Austin"];
+  const rest = [
+    ...new Set(PROPERTIES.map(listingMarketName).filter(Boolean)),
+  ].filter((c) => !featured.includes(c));
+  const cities = [...featured.filter((c) => PROPERTIES.some((p) => listingMarketName(p) === c)), ...rest].slice(
+    0,
+    14
+  );
 
   chips.innerHTML = cities
     .map(
@@ -774,7 +802,7 @@ function renderListings() {
     grid.innerHTML = `
       <div class="empty-results glass">
         <h3>No homes match</h3>
-        <p>Try <strong>Las Vegas</strong>, <strong>Austin</strong>, or <strong>Miami</strong> — or clear filters for all ${PROPERTIES.length} homes.</p>
+        <p>Try <strong>Louisville</strong>, <strong>Las Vegas</strong>, or <strong>Austin</strong> — or clear filters for all ${PROPERTIES.length} homes.</p>
         <div class="empty-actions">
           <button type="button" class="btn btn-primary" id="clearFiltersBtn">Clear filters</button>
           <button type="button" class="btn btn-ghost" data-search="Las Vegas">Try Las Vegas</button>
@@ -1800,9 +1828,17 @@ function initContactLeadForm() {
     const note = $("#contactMsg")?.value?.trim() || "";
     if (!email) return;
     btn.disabled = true;
+    const interestLabel = note ? `${interest}: ${note.slice(0, 100)}` : interest;
+    const saveLocal = () => {
+      const key = "sru_contact_local";
+      const list = JSON.parse(localStorage.getItem(key) || "[]");
+      list.push({ email, name, interest: interestLabel, at: new Date().toISOString() });
+      localStorage.setItem(key, JSON.stringify(list.slice(-40)));
+      msg.textContent = "Saved on this device. We will follow up at this email.";
+    };
     try {
-      const interestLabel = note ? `${interest}: ${note.slice(0, 100)}` : interest;
-      if (window.SRU_AUTH?.submitLead && window.SRU_AUTH.apiBase()) {
+      const live = window.SRU_AUTH?.hasLiveApi ? await window.SRU_AUTH.hasLiveApi() : false;
+      if (live && window.SRU_AUTH.submitLead) {
         const data = await window.SRU_AUTH.submitLead({
           email,
           name,
@@ -1811,21 +1847,26 @@ function initContactLeadForm() {
         });
         msg.textContent = data.message || "Sent — we’ll be in touch.";
       } else {
-        const key = "sru_contact_local";
-        const list = JSON.parse(localStorage.getItem(key) || "[]");
-        list.push({ email, name, interest: interestLabel, at: new Date().toISOString() });
-        localStorage.setItem(key, JSON.stringify(list));
-        msg.textContent = "Saved on this device (API offline). On GoDaddy this emails + stores the lead.";
+        saveLocal();
       }
       msg.classList.remove("hidden");
       msg.classList.add("ok");
       form.reset();
-      toast("Concierge request sent.");
+      toast("Request saved.");
       track("contact_submit", { interest });
     } catch (err) {
-      msg.textContent = err.message || "Could not send.";
-      msg.classList.remove("hidden");
-      msg.classList.remove("ok");
+      if (err && (err.code === "NO_API" || err.status === 405 || err.status === 503)) {
+        saveLocal();
+        msg.classList.remove("hidden");
+        msg.classList.add("ok");
+        form.reset();
+        toast("Request saved.");
+        track("contact_submit", { interest, fallback: true });
+      } else {
+        msg.textContent = err.message || "Could not send.";
+        msg.classList.remove("hidden");
+        msg.classList.remove("ok");
+      }
     } finally {
       btn.disabled = false;
     }
