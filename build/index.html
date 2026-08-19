@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>3D Home Builder — design your dream exterior | SmartRealty USA</title>
+  <meta name="description" content="Customize a home in real-time 3D — siding, roofing, windows, and doors from real brands (James Hardie, GAF, Andersen, Therma-Tru). Illustrative pricing only, then request a build quote." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://smartrealty.us/build/" />
+  <meta property="og:title" content="SmartRealty 3D Home Builder" />
+  <meta property="og:url" content="https://smartrealty.us/build/" />
+  <meta property="og:image" content="https://smartrealty.us/images/og/goals.svg" />
+  <meta name="theme-color" content="#0a0c10" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+  <link rel="stylesheet" href="/growth.css" />
+  <script src="/domain-config.js"></script>
+  <script src="/js/auth-client.js"></script>
+  <script src="/js/analytics.js"></script>
+  <script src="/js/growth.js"></script>
+  <style>
+    .hb-layout { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(280px, 1fr); gap: 1.25rem; align-items: start; }
+    @media (max-width: 900px) { .hb-layout { grid-template-columns: 1fr; } }
+    .hb-canvas-wrap { position: relative; aspect-ratio: 16 / 10; width: 100%; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); background: var(--bg-elevated); }
+    .hb-canvas-wrap canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+    .hb-hint { position: absolute; left: 12px; bottom: 12px; font-size: 0.75rem; color: var(--text-muted); background: rgba(10, 12, 16, 0.55); padding: 0.35rem 0.6rem; border-radius: 999px; }
+    .hb-price { margin-top: 0.9rem; }
+    .hb-price strong { font-size: 1.6rem; font-family: var(--serif); color: var(--text); }
+    .hb-price small { display: block; color: var(--text-dim); margin-top: 0.15rem; }
+    .hb-group { margin-bottom: 1.1rem; }
+    .hb-group h4 { margin: 0 0 0.5rem; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); }
+    .hb-swatches { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .hb-swatch { display: flex; align-items: center; gap: 0.45rem; padding: 0.4rem 0.6rem; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--bg-card); color: var(--text); font-size: 0.8rem; cursor: pointer; }
+    .hb-swatch.is-active { border-color: var(--primary); box-shadow: 0 0 0 1px var(--primary); }
+    .hb-swatch .dot { width: 16px; height: 16px; border-radius: 50%; border: 1px solid var(--border-strong); flex: none; }
+    .hb-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.75rem; }
+    .hb-summary { white-space: pre-line; font-size: 0.85rem; color: var(--text-muted); background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.75rem; margin-top: 0.75rem; }
+  </style>
+</head>
+<body class="g-page" data-growth="build">
+  <div id="gChrome"></div>
+  <main class="g-section">
+    <div class="container">
+      <p class="g-kicker">3D Home Builder <span class="g-soon">Beta</span></p>
+      <h1>Design your dream exterior in 3D</h1>
+      <p class="g-lead">Rotate a live 3D model and pick real finish options from James Hardie, GAF, Andersen, and Therma-Tru. Pricing shown is an illustrative estimate only — not a quote, appraisal, or guaranteed build cost. Submit your design and Andrew will follow up personally.</p>
+
+      <div class="hb-layout">
+        <div>
+          <div class="hb-canvas-wrap">
+            <canvas id="hbCanvas"></canvas>
+            <span class="hb-hint">Drag to rotate · scroll to zoom</span>
+          </div>
+          <div class="hb-price">
+            <strong id="hbPrice">—</strong>
+            <small>Illustrative estimate only. Not a quote, appraisal, or contract.</small>
+          </div>
+          <div class="hb-actions">
+            <button type="button" class="btn btn-outline btn-sm" id="hbSave">Save design image</button>
+            <a class="btn btn-ghost btn-sm" href="#hbQuote">Get a build quote →</a>
+          </div>
+        </div>
+
+        <aside class="g-card" id="hbOptions" aria-label="Customize your home">
+          <p style="margin-top:0;color:var(--text-muted);font-size:0.85rem;">Options update the model instantly.</p>
+        </aside>
+      </div>
+
+      <div class="g-card" style="margin-top:1.5rem;max-width:640px;" id="hbQuote">
+        <h2 style="margin-top:0;">Get a build quote for this design</h2>
+        <p class="g-lead" style="font-size:0.9rem;">This is an inquiry Andrew reviews personally. It does not guarantee a build, a builder match, or the illustrative price shown above.</p>
+        <form class="g-form" data-lead-form data-intent="custom_build" data-source="3d_home_builder">
+          <label>Name <input name="name" autocomplete="name" /></label>
+          <label>Email <input name="email" type="email" required autocomplete="email" /></label>
+          <label>Phone <input name="phone" type="tel" autocomplete="tel" /></label>
+          <label>City <input name="city" autocomplete="address-level2" /></label>
+          <label>State <input name="state" autocomplete="address-level1" maxlength="2" placeholder="KY" /></label>
+          <label>Rough budget <input name="budget" placeholder="e.g. 400000" /></label>
+          <label>Your design <textarea name="message" id="hbNotes" rows="6" readonly></textarea></label>
+          <label class="auth-check"><input type="checkbox" name="consent" required /> <span>I agree SmartRealty may contact me about this custom-build inquiry. Do not share my info with a third party from this form.</span></label>
+          <button type="submit" class="btn btn-primary">Send my design for a quote</button>
+          <p class="g-msg hidden" data-lead-msg></p>
+        </form>
+      </div>
+    </div>
+  </main>
+  <div id="gFoot"></div>
+  <script src="/js/growth-ui.js"></script>
+  <script src="/js/leads-ui.js"></script>
+  <script type="module">
+    import { initHomeBuilder } from "/js/home-builder.js";
+
+    const canvas = document.getElementById("hbCanvas");
+    const builder = initHomeBuilder(canvas);
+    const optionsEl = document.getElementById("hbOptions");
+    const priceEl = document.getElementById("hbPrice");
+    const notesEl = document.getElementById("hbNotes");
+
+    function refresh() {
+      priceEl.textContent = builder.money(builder.estimate());
+      notesEl.value = builder.summary();
+    }
+
+    Object.keys(builder.LABELS).forEach((category) => {
+      const group = document.createElement("div");
+      group.className = "hb-group";
+      const heading = document.createElement("h4");
+      heading.textContent = builder.LABELS[category];
+      group.appendChild(heading);
+
+      const row = document.createElement("div");
+      row.className = "hb-swatches";
+      builder.OPTIONS[category].forEach((opt) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "hb-swatch" + (opt.id === builder.selected[category] ? " is-active" : "");
+        btn.innerHTML = `<span class="dot" style="background:${opt.color || opt.ground}"></span>${opt.brand} — ${opt.name}`;
+        btn.addEventListener("click", () => {
+          builder.applySelection(category, opt.id);
+          row.querySelectorAll(".hb-swatch").forEach((b) => b.classList.remove("is-active"));
+          btn.classList.add("is-active");
+          refresh();
+        });
+        row.appendChild(btn);
+      });
+      group.appendChild(row);
+      optionsEl.appendChild(group);
+    });
+
+    document.getElementById("hbSave").addEventListener("click", () => {
+      const url = builder.screenshot();
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "smartrealty-3d-home-design.png";
+      a.click();
+      window.SRU_GROWTH?.track("home_builder_save_image", {});
+    });
+
+    refresh();
+  </script>
+</body>
+</html>

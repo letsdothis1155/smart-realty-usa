@@ -63,6 +63,7 @@
           <a href="/services/">Services</a>
           <a href="/copy/">Listing copy</a>
           <a href="/invest/">Investor calculator</a>
+          <a href="/build/">3D Home Builder</a>
         </div>
         <div>
           <h5>Learn</h5>
@@ -600,6 +601,10 @@
     },
     intel: () => bootProductPage("intel", "pricing"),
     owner: () => bootProductPage("owner", "pricing"),
+    build: () => {
+      G()?.track("home_builder_view", {});
+      bootProductPage("build", "build");
+    },
   };
   if (page && boots[page]) {
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boots[page]);
