@@ -22,23 +22,24 @@ window.SRU_CONFIG = {
   canonicalHost: "smartrealty.us",
 
   contactEmail: "ai@smartrealty.us",
-  phoneDisplay: "1-800-SMART-USA",
+  phoneDisplay: "1-800-762-7879",
   phoneTel: "+18007627879",
 
   /**
-   * Company identity (fill after formation + D‑U‑N‑S)
+   * Company identity
    * D‑U‑N‑S is a free 9-digit ID from Dun & Bradstreet — not a RE license.
-   * Guide: DUNS-AND-COMPANY-SETUP.md
    */
-  legalName: "Smart Realty USA LLC", // confirm after KY SOS filing
-  organizerName: "Andrew Iredale",
+  legalName: "SMART REALTY.US LLC",
+  organizerName: "Andrew Iredale Jr",
   formationState: "Kentucky",
+  sosNumber: "1614978.06",
+  formedOn: "2026-08-03",
   dunsNumber: "", // add when Dun & Bradstreet issues it
   ein: "", // add after free IRS EIN
-  businessAddress: "", // KY street address from Articles
+  businessAddress: "2611 Harmony Rd, Louisville, KY 40299",
 
-  /** Private demo flag — shows DEMO badges on UI */
-  isPrivateDemo: true,
+  /** Private-demo chrome (badges, presenter panel). Public site stays an honest demo. */
+  isPrivateDemo: false,
 
   /**
    * Public SEO flip
@@ -55,7 +56,7 @@ window.SRU_CONFIG = {
    * When true, shows the "Domain Deploy" presenter panel in the footer.
    * Set to false after clients are using the live link unsupervised.
    */
-  presenterMode: true,
+  presenterMode: false,
 
   /** Never put a real password in this browser-delivered file. */
   demoPasswordHint: false,
@@ -113,5 +114,43 @@ window.SRU_CONFIG = {
 
   social: {
     // Optional future: x, linkedin, instagram
+  },
+
+  /**
+   * Referral / affiliate partners — the actual revenue lever for a site
+   * that is explicitly NOT a licensed brokerage (see IMPROVEMENTS.md).
+   * Smart Realty USA doesn't transact real estate itself; it refers
+   * visitors to licensed third parties (mortgage brokers, movers,
+   * insurers) and may earn a referral/affiliate fee for the introduction.
+   *
+   * Each card only renders when `enabled: true` AND `url` is a real,
+   * signed-up affiliate/referral link — leave both as-is (false/"") until
+   * you've actually joined a partner program. Never fabricate a link.
+   *
+   * `disclosure` must stay truthful and visible next to the CTA — this is
+   * an FTC requirement for compensated referrals, not optional styling.
+   */
+  referralPartners: {
+    mortgage: {
+      enabled: false,
+      name: "",
+      blurb: "Get pre-approved and compare real mortgage rates before you close.",
+      url: "",
+      disclosure: "Smart Realty USA may be compensated if you use this partner.",
+    },
+    moving: {
+      enabled: false,
+      name: "",
+      blurb: "Get moving quotes from vetted movers in your new city.",
+      url: "",
+      disclosure: "Smart Realty USA may be compensated if you use this partner.",
+    },
+    insurance: {
+      enabled: false,
+      name: "",
+      blurb: "Compare homeowners insurance quotes before you close.",
+      url: "",
+      disclosure: "Smart Realty USA may be compensated if you use this partner.",
+    },
   },
 };

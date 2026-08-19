@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Smart Realty USA — Exclusive Homes. Transparent Prices. Bitcoin Ready.</title>
-  <meta name="description" content="Smart Realty USA — exclusive real estate with transparent Blue Book pricing, Bitcoin checkout, and try-before-you-buy rentals. 24/7 human support." />
+  <meta name="description" content="SMART REALTY.US LLC — Louisville public demo of transparent Blue Book pricing, Bitcoin checkout quotes, and try-before-you-buy stays. Not a licensed brokerage." />
   <meta name="theme-color" content="#0a0c10" />
   <meta name="robots" content="index, follow" id="metaRobots" />
   <link rel="canonical" href="https://smartrealty.us/" id="canonicalLink" />
@@ -16,7 +16,7 @@
   <meta property="og:image" content="https://smartrealty.us/images/hero-bg.jpg" id="ogImage" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Smart Realty USA" />
-  <meta name="twitter:description" content="Transparent prices. Bitcoin ready. 24/7 human support." />
+  <meta name="twitter:description" content="Transparent prices. Bitcoin ready. Louisville LLC. Public demo." />
   <meta name="twitter:image" content="https://smartrealty.us/images/hero-bg.jpg" id="twImage" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -47,14 +47,22 @@
   <script type="application/ld+json" id="jsonLdOrg">
   {
     "@context": "https://schema.org",
-    "@type": "RealEstateAgent",
-    "name": "Smart Realty USA",
+    "@type": "Organization",
+    "name": "SMART REALTY.US LLC",
+    "alternateName": "Smart Realty USA",
     "url": "https://smartrealty.us",
     "email": "ai@smartrealty.us",
     "telephone": "+1-800-762-7879",
-    "description": "Transparent residential real estate with House Blue Book pricing and Bitcoin-ready checkout.",
+    "description": "Kentucky LLC. Public demo of transparent home pricing and Bitcoin-ready checkout. Not a licensed brokerage.",
     "areaServed": "US",
-    "sameAs": []
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "2611 Harmony Rd",
+      "addressLocality": "Louisville",
+      "addressRegion": "KY",
+      "postalCode": "40299",
+      "addressCountry": "US"
+    }
   }
   </script>
 </head>
@@ -118,16 +126,14 @@
   <!-- Top bar -->
   <div class="top-bar">
     <div class="container top-bar-inner">
-      <span class="top-pill"><span class="pulse-dot"></span> 24/7 Live Human Support</span>
-      <a href="tel:+18007627879" class="top-link">📞 1-800-SMART-USA</a>
+      <span class="top-pill"><span class="pulse-dot"></span> Louisville · Kentuckiana</span>
+      <a href="tel:+18007627879" class="top-link">📞 1-800-762-7879</a>
       <span class="top-sep">·</span>
-      <span class="top-link">₿ Bitcoin Accepted</span>
-      <span class="top-sep">·</span>
-      <span class="top-link">🔒 Enterprise Security</span>
+      <span class="top-link">₿ Bitcoin accepted</span>
       <span class="top-sep">·</span>
       <a href="mailto:ai@smartrealty.us" class="top-link">ai@smartrealty.us</a>
       <span class="top-sep">·</span>
-      <span class="top-pill demo-pill">DEMO VERSION</span>
+      <span class="top-pill demo-pill">PUBLIC DEMO</span>
     </div>
   </div>
 
@@ -174,14 +180,11 @@
       <nav class="nav" id="nav">
         <a href="#listings" class="nav-link">Listings</a>
         <a href="#bluebook" class="nav-link">Blue Book</a>
-        <a href="#bitcoin" class="nav-link">Pay with BTC</a>
-        <a href="https://mempool.smartrealty.us" class="nav-link" target="_blank" rel="noopener">Node Explorer</a>
-        <a href="blockchain-live.html" class="nav-link">3D Blockchain</a>
-        <a href="https://mempool.smartrealty.us/earn/" class="nav-link" target="_blank" rel="noopener">Earn sats</a>
-        <a href="https://mempool.smartrealty.us/fund/" class="nav-link" target="_blank" rel="noopener">Fund</a>
-        <a href="#rentals" class="nav-link">Try Before Buy</a>
-        <a href="#security" class="nav-link">Security</a>
-        <a href="#support" class="nav-link">Support</a>
+        <a href="#bitcoin" class="nav-link">Bitcoin</a>
+        <a href="#rentals" class="nav-link">Stay &amp; buy</a>
+        <a href="apps/" class="nav-link">Apps</a>
+        <a href="https://mempool.smartrealty.us" class="nav-link" target="_blank" rel="noopener">Node</a>
+        <a href="#support" class="nav-link">Contact</a>
       </nav>
 
       <div class="header-actions">
@@ -195,7 +198,7 @@
         <button class="btn btn-icon" id="openFavDrawer" type="button" aria-label="Saved homes" title="Saved homes">
           ♥ <span class="count-badge hidden" id="favCount">0</span>
         </button>
-        <button class="btn btn-ghost" id="openChatBtn" type="button">Live Chat</button>
+        <button class="btn btn-ghost" id="openChatBtn" type="button">Demo help</button>
         <button class="btn btn-primary" id="openBlueBookBtn" type="button">Free Blue Book</button>
         <button class="menu-toggle" id="menuToggle" type="button" aria-label="Open menu">
           <span></span><span></span><span></span>
@@ -208,7 +211,7 @@
     <!-- Hero -->
     <section class="hero" id="home">
       <div class="hero-bg">
-        <img src="images/hero-bg.jpg" alt="" class="hero-img" />
+        <img src="images/hero-bg.jpg" alt="Evening view over a glass estate" class="hero-img" />
         <div class="hero-overlay"></div>
       </div>
       <div class="container">
@@ -219,9 +222,9 @@
             <span class="gradient-text">transparent lowest offers</span>
           </h1>
           <p class="hero-sub fade-up delay-2">
-            Browse free — House Blue Book valuations, live Bitcoin checkout quotes, and
-            try-before-you-buy stays with 24/7 human-style support. Public demo for
-            <strong>smartrealty.us</strong>.
+            Browse free — House Blue Book valuations, live Bitcoin quotes, and
+            try-before-you-buy stays. Public demo from
+            <strong>SMART REALTY.US LLC</strong> in Louisville. Not a licensed brokerage.
           </p>
           <div class="hero-cta fade-up delay-3">
             <a href="#listings" class="btn btn-primary btn-lg">Browse exclusive homes</a>
@@ -240,8 +243,8 @@
               <span>Hidden Fees</span>
             </div>
             <div class="stat">
-              <strong>24/7</strong>
-              <span>Human Support</span>
+              <strong>KY</strong>
+              <span>Louisville LLC</span>
             </div>
             <div class="stat">
               <strong>₿</strong>
@@ -276,29 +279,29 @@
     <section class="biz-strip" id="business">
       <div class="container biz-strip-inner">
         <div class="biz-copy">
-          <p class="eyebrow">Company · Trust stack</p>
-          <h2>Building a real U.S. business identity</h2>
+          <p class="eyebrow">Company · Kentucky LLC</p>
+          <h2>SMART REALTY.US LLC is a filed Kentucky company</h2>
           <p class="section-sub">
-            Smart Realty USA is preparing formal credentials — including a free
-            <strong>D‑U‑N‑S® Number</strong> from Dun &amp; Bradstreet — so banking,
-            app stores, vendors, and partners can verify the company.
+            Member-managed LLC filed 3 Aug 2026 (KY SOS 1614978.06). Owner
+            Andrew Iredale Jr, Louisville. This website is a public demo — not a
+            licensed brokerage. A free <strong>D‑U‑N‑S® Number</strong> is still pending.
           </p>
         </div>
         <div class="biz-cards">
           <div class="biz-card glass">
             <span class="biz-step">01</span>
             <strong>Legal name &amp; address</strong>
-            <p>Match formation docs exactly on every form.</p>
+            <p>SMART REALTY.US LLC · 2611 Harmony Rd, Louisville, KY 40299</p>
           </div>
           <div class="biz-card glass">
             <span class="biz-step">02</span>
             <strong>Free D‑U‑N‑S®</strong>
-            <p>Apply at dnb.com — never pay for the number itself.</p>
+            <p>Apply at dnb.com — never pay for the number itself. Not issued yet.</p>
           </div>
           <div class="biz-card glass">
             <span class="biz-step">03</span>
-            <strong>EIN · banking · domain</strong>
-            <p>Stack credentials for credit and vendor approval.</p>
+            <strong>Public surfaces</strong>
+            <p>Homes demo · Daily Cache Wiper · Bitcoin node at mempool.smartrealty.us</p>
           </div>
         </div>
         <div class="biz-actions">
@@ -587,6 +590,22 @@
       </div>
     </section>
 
+    <!-- Partner offers: referral revenue, not a brokerage transaction -->
+    <section class="section section-alt hidden" id="partners">
+      <div class="container">
+        <div class="section-head center">
+          <p class="eyebrow">Trusted Partners</p>
+          <h2>Everything else you need to close</h2>
+          <p class="section-sub">
+            Smart Realty USA isn't a lender, mover, or insurer — these are
+            licensed partners we refer you to, and we disclose it whenever
+            we're compensated for the introduction.
+          </p>
+        </div>
+        <div class="biz-cards" id="partnerCards"></div>
+      </div>
+    </section>
+
     <!-- Bitcoin -->
     <section class="section" id="bitcoin">
       <div class="container">
@@ -614,7 +633,7 @@
             <div class="btc-step">
               <div class="step-num">03</div>
               <h4>Send to secure escrow</h4>
-              <p>Funds hold in multi-sig escrow until title clears. 24/7 settlement engineers on watch.</p>
+              <p>On this demo the quote is live market data. The deposit address does not take real funds.</p>
             </div>
             <div class="btc-step">
               <div class="step-num">04</div>
@@ -712,7 +731,7 @@
         </div>
 
         <!-- SmartRealtyNode public explorer promo -->
-        <div class="node-explorer-band glass" id="nodeExplorer" style="margin-top:2.5rem;padding:1.5rem 1.75rem;display:grid;gap:1rem;grid-template-columns:1.4fr 1fr;align-items:center">
+        <div class="node-explorer-band glass" id="nodeExplorer">
           <div>
             <p class="eyebrow" style="margin:0 0 0.35rem">Our rails · SmartRealtyNode</p>
             <h3 style="margin:0 0 0.5rem;font-size:1.35rem">We run our own Bitcoin explorer</h3>
@@ -726,7 +745,8 @@
           </div>
           <div style="display:flex;flex-direction:column;gap:0.65rem;align-items:flex-start">
             <a class="btn btn-primary" href="https://mempool.smartrealty.us" target="_blank" rel="noopener">Open mempool.smartrealty.us ↗</a>
-            <a class="btn btn-ghost btn-sm" href="blockchain-live.html">Explore the 3D blockchain simulation</a>
+            <a class="btn btn-ghost btn-sm" href="https://mempool.smartrealty.us/mempools" target="_blank" rel="noopener">Mempools · goggles</a>
+            <a class="btn btn-ghost btn-sm" href="blockchain-live.html">3D blockchain</a>
             <a class="btn btn-primary" href="https://mempool.smartrealty.us/earn/" target="_blank" rel="noopener" style="background:linear-gradient(135deg,#1a8f3c,#2f9e44)">Earn sats · node services</a>
             <a class="btn btn-ghost btn-sm" href="https://mempool.smartrealty.us/fund/" target="_blank" rel="noopener">My Node Fund · live timeline</a>
             <a class="btn btn-ghost btn-sm" href="https://mempool.smartrealty.us/status" target="_blank" rel="noopener">Live status board</a>
@@ -786,43 +806,43 @@
     <section class="section" id="security">
       <div class="container">
         <div class="section-head center">
-          <p class="eyebrow">Always On</p>
-          <h2>24/7 security by world-class engineers</h2>
+          <p class="eyebrow">How this site is hosted</p>
+          <h2>Public demo, honest boundary</h2>
           <p class="section-sub">
-            Your data, payments, and title documents are protected around the clock
-            by elite security developers and continuous monitoring.
+            This is a static site on GitHub Pages with Cloudflare in front.
+            It is not a licensed brokerage and does not store member passwords here.
           </p>
         </div>
         <div class="security-grid">
           <div class="sec-card glass">
             <div class="sec-icon">🛡️</div>
-            <h4>Zero-Trust Architecture</h4>
-            <p>Every request authenticated. Least-privilege access across escrow, chat, and docs.</p>
+            <h4>HTTPS on Cloudflare</h4>
+            <p>The public pages ride HTTPS. No Bitcoin RPC or wallet keys are published.</p>
           </div>
           <div class="sec-card glass">
             <div class="sec-icon">🔐</div>
-            <h4>Multi-Sig Crypto Escrow</h4>
-            <p>Bitcoin holds require multi-party signatures before release — no single point of failure.</p>
+            <h4>No password store on this host</h4>
+            <p>GitHub Pages cannot keep member logins. Account requests email Andrew.</p>
           </div>
           <div class="sec-card glass">
-            <div class="sec-icon">👁️</div>
-            <h4>24/7 SOC Watch</h4>
-            <p>Human security engineers monitoring fraud, phishing, and platform health nonstop.</p>
+            <div class="sec-icon">₿</div>
+            <h4>Own Bitcoin node</h4>
+            <p>mempool.smartrealty.us reads our Bitcoin Core node in Louisville. Read-only.</p>
           </div>
           <div class="sec-card glass">
             <div class="sec-icon">📜</div>
-            <h4>Encrypted Title Vault</h4>
-            <p>Closing packages encrypted at rest and in transit with audited key management.</p>
+            <h4>Demo checkout only</h4>
+            <p>BTC quotes are live market data. The deposit address and pay button do not move real funds.</p>
           </div>
           <div class="sec-card glass">
-            <div class="sec-icon">🧪</div>
-            <h4>Continuous Penetration Tests</h4>
-            <p>World-class red teams probe our stack so attackers never get the first shot.</p>
+            <div class="sec-icon">🏢</div>
+            <h4>Kentucky LLC</h4>
+            <p>SMART REALTY.US LLC, filed 2026. Owner Andrew Iredale Jr. Revenue $0.</p>
           </div>
           <div class="sec-card glass">
             <div class="sec-icon">✅</div>
-            <h4>Compliance Ready</h4>
-            <p>Built for modern KYC/AML workflows and transparent audit trails on every deal.</p>
+            <h4>Not a brokerage (yet)</h4>
+            <p>Listings are a product demo. Real closings need state licensing we do not claim.</p>
           </div>
         </div>
       </div>
@@ -832,25 +852,25 @@
     <section class="section section-alt" id="support">
       <div class="container support-grid">
         <div>
-          <p class="eyebrow">Real Humans. Always.</p>
-          <h2>24/7 customer support — phone or live chat</h2>
+          <p class="eyebrow">Owner-operated</p>
+          <h2>Talk to Andrew — email, phone, or the demo assistant</h2>
           <p class="section-sub">
-            No bots pretending to care. Every conversation is with a trained Smart Realty specialist —
-            midnight closings, weekend viewings, Bitcoin settlement questions included.
+            SMART REALTY.US LLC is one person in Louisville. Email is the real inbox.
+            The on-site chat is a demo helper, not a 24/7 concierge desk.
           </p>
           <div class="support-channels">
             <a href="tel:+18007627879" class="support-card glass">
               <span class="sc-icon">📞</span>
               <div>
-                <strong>Phone — always answered</strong>
-                <p>1-800-SMART-USA (1-800-762-7887)</p>
+                <strong>Phone</strong>
+                <p>1-800-762-7879</p>
               </div>
             </a>
             <button type="button" class="support-card glass" id="openChatBtn2">
               <span class="sc-icon">💬</span>
               <div>
-                <strong>Live Chat with a human</strong>
-                <p>Average response under 30 seconds</p>
+                <strong>Demo assistant</strong>
+                <p>Answers about Blue Book, BTC quotes, and this demo</p>
               </div>
             </button>
             <a href="mailto:ai@smartrealty.us" class="support-card glass">
@@ -879,6 +899,8 @@
                 <option value="bluebook">Blue Book help</option>
                 <option value="bitcoin">Bitcoin checkout</option>
                 <option value="rental">Try-before-buy stay</option>
+                <option value="financing">Mortgage / financing</option>
+                <option value="moving">Moving / relocation</option>
                 <option value="general">General question</option>
               </select>
             </label>
@@ -891,19 +913,19 @@
         </div>
         <div class="support-visual glass">
           <div class="agent-card">
-            <div class="agent-avatar">MR</div>
+            <div class="agent-avatar">AI</div>
             <div>
-              <strong>Maya R.</strong>
-              <p>Senior Concierge · Online now</p>
+              <strong>Andrew Iredale Jr</strong>
+              <p>Owner · Louisville, KY</p>
             </div>
-            <span class="online-badge">Live</span>
+            <span class="online-badge">Demo</span>
           </div>
           <div class="chat-preview">
-            <div class="bubble them">Hi! I’m Maya — a real person on the Smart Realty team. How can I help you tonight?</div>
-            <div class="bubble me">Can I pay for the Vegas villa with Bitcoin and book a 5-night stay first?</div>
-            <div class="bubble them">Absolutely. I can lock a BTC quote and open a Try-Before-Buy stay with purchase credit. Want me to walk you through it?</div>
+            <div class="bubble them">This chat is a demo assistant for the public site. For a real reply, email ai@smartrealty.us.</div>
+            <div class="bubble me">Can I pay for a listing with Bitcoin?</div>
+            <div class="bubble them">Quotes use live market data. The pay button on this demo does not move real funds.</div>
           </div>
-          <button type="button" class="btn btn-primary btn-block" id="openChatBtn3">Start Live Chat</button>
+          <button type="button" class="btn btn-primary btn-block" id="openChatBtn3">Open demo assistant</button>
         </div>
       </div>
     </section>
@@ -915,7 +937,7 @@
         <p>Browse exclusive estates, pull a free Blue Book, or talk to a human right now.</p>
         <div class="hero-cta">
           <a href="#listings" class="btn btn-primary btn-lg">View Listings</a>
-          <button type="button" class="btn btn-outline btn-lg" id="openChatBtn4">Talk to a Human</button>
+          <a href="mailto:ai@smartrealty.us" class="btn btn-outline btn-lg">Email Andrew</a>
         </div>
       </div>
     </section>
@@ -938,30 +960,30 @@
         <h5>Explore</h5>
         <a href="#listings">Listings</a>
         <a href="#bluebook">Blue Book</a>
-        <a href="#bitcoin">Bitcoin Pay</a>
-        <a href="https://mempool.smartrealty.us" target="_blank" rel="noopener">Node Explorer</a>
-        <a href="blockchain-live.html">3D Blockchain</a>
-        <a href="https://mempool.smartrealty.us/fund/" target="_blank" rel="noopener">My Node Fund</a>
-        <a href="https://mempool.smartrealty.us/earn/" target="_blank" rel="noopener">Earn sats</a>
-        <a href="#rentals">Try Before Buy</a>
-        <a href="#business">Company / D‑U‑N‑S</a>
+        <a href="#bitcoin">Bitcoin</a>
+        <a href="apps/">Apps</a>
+        <a href="https://mempool.smartrealty.us" target="_blank" rel="noopener">Node explorer</a>
+        <a href="https://mempool.smartrealty.us/mempools" target="_blank" rel="noopener">Mempools</a>
+        <a href="blockchain-live.html">3D blockchain</a>
+        <a href="#rentals">Stay &amp; buy</a>
+        <a href="#business">Company</a>
       </div>
       <div>
         <h5>Trust</h5>
-        <a href="#security">Security</a>
-        <a href="#support">24/7 Support</a>
-        <a href="tel:+18007627879">Call Us</a>
+        <a href="#security">How this is hosted</a>
+        <a href="#support">Contact</a>
+        <a href="tel:+18007627879">Call</a>
         <a href="https://mempool.smartrealty.us/about" target="_blank" rel="noopener">About our node</a>
         <a href="https://mempool.smartrealty.us/fund/" target="_blank" rel="noopener">Fund the node</a>
       </div>
       <div>
         <h5>Contact</h5>
-        <p>1-800-SMART-USA</p>
+        <p>1-800-762-7879</p>
         <p><a href="mailto:ai@smartrealty.us">ai@smartrealty.us</a></p>
-        <p>Available 24 hours · 7 days</p>
-        <p><a href="account.html">Member account</a></p>
+        <p>Louisville, KY · owner-operated</p>
+        <p><a href="account.html">Account</a></p>
         <p><a href="https://mempool.smartrealty.us" target="_blank" rel="noopener">mempool.smartrealty.us</a></p>
-        <p><a href="https://mempool.smartrealty.us/earn/" target="_blank" rel="noopener">Earn sats services</a></p>
+        <p><a href="apps/">Daily Cache Wiper</a></p>
       </div>
     </div>
 
@@ -989,13 +1011,13 @@
       <a href="auth.html">Sign in</a>
     </div>
     <div class="container footer-bottom">
-      <p>© 2026 Smart Realty USA · <strong>Demo Version</strong> · All Rights Reserved.</p>
+      <p>© 2026 SMART REALTY.US LLC · Louisville, KY · <strong>Public demo</strong> · All Rights Reserved.</p>
       <p>House Blue Book™ · Official contact: <a href="mailto:ai@smartrealty.us" data-contact-email>ai@smartrealty.us</a></p>
       <p>Public node: <a href="https://mempool.smartrealty.us" target="_blank" rel="noopener">explorer</a> · <a href="https://mempool.smartrealty.us/fund/" target="_blank" rel="noopener">fund</a> · <a href="https://mempool.smartrealty.us/earn/" target="_blank" rel="noopener">earn sats</a> · <a href="https://mempool.smartrealty.us/status" target="_blank" rel="noopener">status</a> · independent SmartRealtyNode</p>
       <p class="live-on hidden" id="liveOnLine">Live on <a href="#" id="liveOnLink" rel="noopener">—</a></p>
     </div>
     <div class="container demo-banner">
-      <p>DEMO VERSION — All Rights Reserved. Not a live brokerage transaction platform. For demonstration &amp; presentation only. See <a href="terms.html">Terms</a> &amp; <a href="privacy.html">Privacy</a>.</p>
+      <p>PUBLIC DEMO — All Rights Reserved. Not a live brokerage. Revenue $0. See <a href="terms.html">Terms</a> &amp; <a href="privacy.html">Privacy</a>.</p>
       <p class="presenter-launch">
         <button type="button" class="btn btn-ghost btn-sm hidden" id="openDomainPanel">Domain Deploy · Presenter</button>
       </p>
@@ -1126,29 +1148,30 @@
 
   <!-- Live Chat Widget -->
   <div class="chat-widget" id="chatWidget">
-    <button class="chat-fab" id="chatFab" type="button" aria-label="Open live chat">
+    <button class="chat-fab" id="chatFab" type="button" aria-label="Open demo assistant">
       <span class="fab-pulse"></span>
       <span class="fab-icon">💬</span>
-      <span class="fab-label">Live Human</span>
+      <span class="fab-label">Demo help</span>
     </button>
     <div class="chat-panel hidden" id="chatPanel">
       <div class="chat-panel-head">
         <div class="agent-mini">
-          <div class="agent-avatar sm">MR</div>
+          <div class="agent-avatar sm">SR</div>
           <div>
-            <strong>Maya R. · Human Concierge</strong>
-            <p><span class="pulse-dot"></span> Online · Avg reply &lt; 30s</p>
+            <strong>Demo assistant</strong>
+            <p><span class="pulse-dot"></span> Not a live concierge</p>
           </div>
         </div>
         <button type="button" class="chat-close" id="closeChat" aria-label="Close chat">×</button>
       </div>
       <div class="chat-messages" id="chatMessages"></div>
       <form class="chat-input-row" id="chatForm">
-        <input type="text" id="chatInput" placeholder="Message a real human…" autocomplete="off" required />
+        <input type="text" id="chatInput" placeholder="Ask about this demo…" autocomplete="off" required />
         <button type="submit" class="btn btn-primary btn-sm">Send</button>
       </form>
       <div class="chat-phone-bar">
-        Prefer phone? <a href="tel:+18007627879">1-800-SMART-USA</a>
+        Real inbox: <a href="mailto:ai@smartrealty.us">ai@smartrealty.us</a>
+        · <a href="tel:+18007627879">1-800-762-7879</a>
       </div>
     </div>
   </div>
