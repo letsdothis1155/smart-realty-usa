@@ -36,16 +36,6 @@
     <priority>0.3</priority>
   </url>
   <url>
-    <loc>https://smartrealty.us/apps/</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://smartrealty.us/apps/daily-cache-wiper/</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
     <loc>https://smartrealty.us/blockchain-live.html</loc>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
@@ -204,6 +194,26 @@
     <loc>https://smartrealty.us/property-owner/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://smartrealty.us/buy/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://smartrealty.us/sell/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://smartrealty.us/rent/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://smartrealty.us/value/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
   </url>
   <url>
     <loc>https://smartrealty.us/start/</loc>

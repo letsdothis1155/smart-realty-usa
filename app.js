@@ -1843,7 +1843,10 @@ function initContactLeadForm() {
           email,
           name,
           source: "support_contact",
-          interest: interestLabel,
+          interest,
+          intent: interest,
+          message: note,
+          consent: true,
         });
         msg.textContent = data.message || "Sent — we’ll be in touch.";
       } else {
@@ -1870,6 +1873,42 @@ function initContactLeadForm() {
     } finally {
       btn.disabled = false;
     }
+  });
+}
+
+// ---------- Partner offers (referral revenue) ----------
+function renderPartnerOffers() {
+  const section = $("#partners");
+  const box = $("#partnerCards");
+  if (!section || !box) return;
+
+  const partners = (window.SRU_CONFIG && window.SRU_CONFIG.referralPartners) || {};
+  const cards = Object.keys(partners)
+    .map((key) => partners[key])
+    .filter((p) => p && p.enabled && p.url);
+
+  if (!cards.length) {
+    section.classList.add("hidden");
+    box.innerHTML = "";
+    return;
+  }
+
+  box.innerHTML = cards
+    .map(
+      (p) => `
+    <div class="biz-card glass">
+      <strong>${escapeHtml(p.name || "Partner")}</strong>
+      <p>${escapeHtml(p.blurb || "")}</p>
+      <a class="btn btn-outline btn-sm partner-card-cta" href="${escapeHtml(p.url)}" target="_blank" rel="noopener sponsored" data-partner="${escapeHtml(p.name || "")}">Get started</a>
+      <p class="partner-disclosure">${escapeHtml(p.disclosure || "Smart Realty USA may be compensated if you use this partner.")}</p>
+    </div>`
+    )
+    .join("");
+
+  section.classList.remove("hidden");
+
+  box.querySelectorAll("[data-partner]").forEach((a) => {
+    a.addEventListener("click", () => track("partner_click", { partner: a.dataset.partner }));
   });
 }
 
@@ -2299,6 +2338,8 @@ async function fetchLiveBtcRates({ silent = false, geckoOnly = false } = {}) {
 }
 
 let btcSocketBinance = null;
+let btcBinanceRetries = 0;
+const BTC_BINANCE_MAX_RETRIES = 6; // Binance.com blocks some regions (e.g. US, HTTP 451) — give up and lean on Coinbase + REST poll rather than reconnect forever
 
 function connectCoinbaseWs() {
   if (btcSocket && (btcSocket.readyState === WebSocket.OPEN || btcSocket.readyState === WebSocket.CONNECTING)) {
@@ -2374,6 +2415,7 @@ function connectBinanceWs() {
 
   btcSocketBinance.addEventListener("open", () => {
     btcWsRetries = 0;
+    btcBinanceRetries = 0;
     const note = $("#btcSourceNote");
     if (note) note.textContent = "Binance trade stream live — prices tick per trade.";
     if (btcStreamMode !== "live") {
@@ -2402,7 +2444,10 @@ function connectBinanceWs() {
   });
 
   btcSocketBinance.addEventListener("close", () => {
-    setTimeout(connectBinanceWs, 2000);
+    btcBinanceRetries++;
+    if (btcBinanceRetries > BTC_BINANCE_MAX_RETRIES) return; // Coinbase WS + REST poll still keep the price live
+    const delay = Math.min(30000, 2000 * Math.pow(1.6, btcBinanceRetries));
+    setTimeout(connectBinanceWs, delay);
   });
 
   btcSocketBinance.addEventListener("error", () => {
@@ -3416,6 +3461,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initGrowthMarkets();
   initWaitlist();
   initContactLeadForm();
+  renderPartnerOffers();
   renderRecentViews();
   $("#clearRecentViews")?.addEventListener("click", () => {
     localStorage.removeItem(RECENT_VIEWS_KEY);

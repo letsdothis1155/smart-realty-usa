@@ -12,8 +12,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="growth.css" />
   <script src="domain-config.js?v=accounts2"></script>
   <script src="js/auth-client.js?v=accounts2"></script>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏡</text></svg>" />
 </head>
 <body class="auth-page account-page">
   <div class="ambient ambient-1" aria-hidden="true"></div>
@@ -125,10 +127,14 @@
       </div>
 
       <div class="account-stats" id="accStats"></div>
+      <div id="gSuggest"></div>
 
       <section class="account-section" id="toolsSection">
         <h3>On this site</h3>
         <div class="account-links">
+          <a href="goals/">Property goals</a>
+          <a href="direct-deposit/">Direct deposit preview</a>
+          <a href="notifications/">Notification preferences</a>
           <a href="index.html#listings">Browse homes</a>
           <a href="https://mempool.smartrealty.us" target="_blank" rel="noopener">Node explorer</a>
           <a href="https://mempool.smartrealty.us/mempools" target="_blank" rel="noopener">Mempools</a>
@@ -139,6 +145,19 @@
       </section>
     </main>
   </div>
+  <script src="js/analytics.js"></script>
+  <script src="js/growth.js"></script>
+  <script src="js/growth-ui.js"></script>
   <script src="js/account-page.js?v=accounts2"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      if (window.SRU_GROWTH) {
+        SRU_GROWTH.touchSession();
+        SRU_GROWTH.evaluateLifecycle("account_created");
+      }
+      var el = document.getElementById("gSuggest");
+      if (el && window.SRU_GROWTH_UI) el.innerHTML = SRU_GROWTH_UI.suggestionsHtml();
+    });
+  </script>
 </body>
 </html>

@@ -139,6 +139,11 @@ window.SRU_CONFIG = {
     seoStarter: 25000,
     socialPack: 20000,
   },
+  serviceSkus: {
+    listing_copy: { cents: 15000 },
+    property_site: { cents: 90000 },
+    seo_starter: { cents: 25000 },
+  },
 
   /**
    * Direct Deposit Switching — paycheck routing to a SmartRealty-linked

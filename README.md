@@ -17,6 +17,19 @@ python3 -m http.server 8766
 
 **Focus right now:** website + GoDaddy hosting + accounts (not the Android shell).
 
+### Direct Deposit (sandbox)
+
+Mobile-first paycheck switching UI at [`direct-deposit/app/`](./direct-deposit/app/) (marketing landing at [`direct-deposit/`](./direct-deposit/)). Production ACH/payroll is **disabled**. Local preview:
+
+```bash
+cd ~/Projects/smart-realty-usa/server
+# copy env.example → .env, set JWT_SECRET and SERVE_STATIC=1
+DIRECT_DEPOSIT_MODE=mock SERVE_STATIC=1 JWT_SECRET=replace-with-32-plus-character-secret npm start
+# open http://127.0.0.1:8787/direct-deposit/app/
+```
+
+See [COMPLIANCE-DIRECT-DEPOSIT.md](./COMPLIANCE-DIRECT-DEPOSIT.md).
+
 | Item | Value |
 |------|--------|
 | **Demo password** | Server-only; configure in `api/config.local.php` |
