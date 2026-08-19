@@ -4,8 +4,9 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Daily Cache Wiper — SMART REALTY.US LLC</title>
-  <meta name="description" content="Daily Cache Wiper is an Android cache-only cleaner from SMART REALTY.US LLC, a Kentucky software company." />
+  <meta name="description" content="Daily Cache Wiper is an Android cache-only cleaner from SMART REALTY.US LLC. Premium is $2/month after a 7-day trial once Google publishes the listing. Not live on Play yet." />
   <meta name="robots" content="index,follow" />
+  <link rel="canonical" href="https://smartrealty.us/apps/daily-cache-wiper/" />
   <style>
     body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; max-width: 720px; margin: 40px auto; padding: 0 20px; line-height: 1.55; color: #111; background: #fafafa; }
     h1 { font-size: 1.75rem; margin-bottom: 0.25rem; }
@@ -16,6 +17,14 @@
     .note { background: #fff; border: 1px solid #ddd; padding: 12px 14px; }
     .brand-line { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; }
     .place { white-space: nowrap; }
+    form.notify { display: grid; gap: 0.65rem; margin-top: 0.75rem; }
+    form.notify label { display: grid; gap: 0.25rem; font-size: 0.85rem; color: #444; }
+    form.notify input { padding: 0.65rem 0.75rem; border: 1px solid #ccc; border-radius: 8px; font: inherit; }
+    form.notify button { justify-self: start; padding: 0.65rem 1rem; border: 0; border-radius: 8px; background: #111; color: #fff; font: inherit; cursor: pointer; }
+    form.notify button:disabled { opacity: 0.6; cursor: wait; }
+    .hp { position: absolute; left: -9999px; }
+    .ok { color: #0a6; }
+    .err { color: #b00; }
   </style>
 </head>
 <body>
@@ -24,7 +33,7 @@
     <span class="place">Louisville · Kentuckiana</span>
   </p>
   <h1>Daily Cache Wiper</h1>
-  <p class="muted">Android · <code>com.dailycachewiper.app</code></p>
+  <p class="muted">Android · <code>com.dailycachewiper.app</code> · Premium $2/month after a 7-day trial (Play listing copy, 19 Aug 2026)</p>
 
   <p>
     Daily Cache Wiper is a cache-only cleaner. You pick one app.
@@ -38,19 +47,34 @@
   <h2>How it makes money</h2>
   <ul>
     <li>Google Play subscription: Daily Cache Wiper Premium</li>
-    <li>Monthly plan with a 7-day trial</li>
-    <li>U.S. price is set in Play Console (confirm there before quoting it)</li>
+    <li>7-day trial, then <strong>$2.00 / month</strong> U.S. (listing copy as of 19 Aug 2026)</li>
+    <li>Billed by Google Play. Revenue received so far: <strong>$0</strong></li>
   </ul>
 
   <h2>Store status</h2>
   <p class="note">
-    Google Play rejected the 18 Aug 2026 production update because the
-    public listing did not document AccessibilityService API. Listing copy
-    was rewritten and sent back for review on 19 Aug 2026. The public Play
-    page is still HTTP 404. Do not treat
+    Production <strong>1.5.1</strong> and the AccessibilityService listing are
+    <strong>in Google review</strong> (started 19 Aug 2026). The public Play page is
+    still HTTP 404. Do not treat
     <code>play.google.com/store/apps/details?id=com.dailycachewiper.app</code>
-    as a live install link until Google publishes it. Revenue is $0.
+    as a live install link until Google publishes it. We are not restarting that review.
   </p>
+
+  <h2>Email me when it is on Play</h2>
+  <p class="muted">Name and email only. No password. No bank numbers. We write you when the public store page is a 200.</p>
+  <form class="notify" id="dcwNotify">
+    <label>Name
+      <input type="text" id="dcwName" name="name" required minlength="2" maxlength="80" autocomplete="name" />
+    </label>
+    <label>Email
+      <input type="email" id="dcwEmail" name="email" required autocomplete="email" />
+    </label>
+    <div class="hp" aria-hidden="true">
+      <label>Company website <input type="text" id="dcwSite" name="website" tabindex="-1" autocomplete="off" /></label>
+    </div>
+    <button type="submit" id="dcwBtn">Notify me</button>
+    <p class="muted" id="dcwMsg" role="status"></p>
+  </form>
 
   <h2>Company</h2>
   <p>
@@ -63,8 +87,54 @@
   <h2>Links</h2>
   <ul>
     <li><a href="privacy.html">Privacy policy</a></li>
+    <li><a href="/copy/">$150 listing copy pack</a> · <a href="/invoice/">Invoice</a></li>
     <li><a href="mailto:andrewiredalejr@gmail.com">andrewiredalejr@gmail.com</a></li>
     <li>502-539-1090 · 2611 Harmony Rd, Louisville, KY 40299</li>
   </ul>
+  <script>
+    (function () {
+      var form = document.getElementById("dcwNotify");
+      if (!form) return;
+      form.addEventListener("submit", async function (e) {
+        e.preventDefault();
+        var btn = document.getElementById("dcwBtn");
+        var msg = document.getElementById("dcwMsg");
+        var name = document.getElementById("dcwName").value.trim();
+        var email = document.getElementById("dcwEmail").value.trim();
+        var website = document.getElementById("dcwSite").value;
+        msg.textContent = "";
+        msg.className = "muted";
+        btn.disabled = true;
+        try {
+          var res = await fetch("https://smartrealty.us/api/signup", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Accept: "application/json" },
+            body: JSON.stringify({
+              name: name,
+              email: email,
+              intent: "dcw",
+              note: "Notify when Daily Cache Wiper is public on Play",
+              website: website || ""
+            })
+          });
+          var data = {};
+          try { data = await res.json(); } catch (err) { data = {}; }
+          if (!res.ok) throw new Error(data.error || "Could not save that request.");
+          msg.className = "ok";
+          msg.textContent = data.message || "Saved. We will email you when the Play page is live.";
+          form.reset();
+        } catch (err) {
+          var body = encodeURIComponent("Name: " + name + "\nEmail: " + email + "\nPlease email me when Daily Cache Wiper is public on Play.");
+          msg.className = "err";
+          msg.innerHTML = (err.message || "Could not send.") +
+            ' You can also <a href="mailto:andrewiredale@smartrealty.us?subject=' +
+            encodeURIComponent("Notify me: Daily Cache Wiper on Play") +
+            "&body=" + body + '">email Andrew</a>.';
+        } finally {
+          btn.disabled = false;
+        }
+      });
+    })();
+  </script>
 </body>
 </html>
