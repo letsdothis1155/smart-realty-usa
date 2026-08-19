@@ -557,8 +557,17 @@ function initWaitlist() {
     btn.disabled = true;
     const prev = btn.textContent;
     btn.textContent = "Joining…";
+    const saveLocal = () => {
+      const key = "sru_waitlist_local";
+      const list = JSON.parse(localStorage.getItem(key) || "[]");
+      if (!list.includes(email)) list.push(email);
+      localStorage.setItem(key, JSON.stringify(list));
+      msg.textContent = "You're on the list on this device.";
+    };
     try {
-      if (window.SRU_AUTH?.submitLead && window.SRU_AUTH.apiBase()) {
+      const live =
+        window.SRU_AUTH?.hasLiveApi ? await window.SRU_AUTH.hasLiveApi() : false;
+      if (live && window.SRU_AUTH.submitLead) {
         const data = await window.SRU_AUTH.submitLead({
           email,
           name,
@@ -567,12 +576,7 @@ function initWaitlist() {
         });
         msg.textContent = data.message || "You're on the list.";
       } else {
-        // Offline / static preview — store locally
-        const key = "sru_waitlist_local";
-        const list = JSON.parse(localStorage.getItem(key) || "[]");
-        if (!list.includes(email)) list.push(email);
-        localStorage.setItem(key, JSON.stringify(list));
-        msg.textContent = "Saved on this device (API offline). On GoDaddy, leads hit api/leads.php.";
+        saveLocal();
       }
       msg.classList.remove("hidden");
       msg.classList.add("ok");
@@ -580,10 +584,19 @@ function initWaitlist() {
       toast("Waitlist joined.");
       track("waitlist_join", { email_domain: (email.split("@")[1] || "").slice(0, 40) });
     } catch (err) {
-      msg.textContent = err.message || "Could not join — try again.";
-      msg.classList.remove("hidden");
-      msg.classList.remove("ok");
-      track("waitlist_error");
+      if (err && (err.code === "NO_API" || err.status === 405 || err.status === 503)) {
+        saveLocal();
+        msg.classList.remove("hidden");
+        msg.classList.add("ok");
+        form.reset();
+        toast("Waitlist joined.");
+        track("waitlist_join", { email_domain: (email.split("@")[1] || "").slice(0, 40) });
+      } else {
+        msg.textContent = err.message || "Could not join — try again.";
+        msg.classList.remove("hidden");
+        msg.classList.remove("ok");
+        track("waitlist_error");
+      }
     } finally {
       btn.disabled = false;
       btn.textContent = prev;

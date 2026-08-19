@@ -69,25 +69,16 @@
   // If already signed in, bounce to site
   (async function boot() {
     const base = window.SRU_AUTH.apiBase();
-    if (base) {
-      try {
-        const healthPath = window.SRU_AUTH.ep
-          ? window.SRU_AUTH.ep("health")
-          : "/api/health.php";
-        const h = await fetch(`${base}${healthPath}`, { method: "GET" });
-        if (h.ok) {
-          apiHint.textContent = "Accounts service online · passwords hashed on the server";
-          apiHint.classList.add("ok");
-        } else {
-          apiHint.textContent =
-            "Accounts API error — use Demo access, or check api/ on GoDaddy hosting";
-          apiHint.classList.add("warn");
-        }
-      } catch {
-        apiHint.textContent =
-          "Accounts API offline (normal on local static preview) · Demo password still works · On GoDaddy, upload api/ folder";
-        apiHint.classList.add("warn");
-      }
+    const live = window.SRU_AUTH.hasLiveApi
+      ? await window.SRU_AUTH.hasLiveApi()
+      : false;
+    if (live) {
+      apiHint.textContent = "Accounts service online · passwords hashed on the server";
+      apiHint.classList.add("ok");
+    } else if (base) {
+      apiHint.textContent =
+        "Browse is open. Member accounts need the PHP API (not on GitHub Pages). Use Demo access or keep browsing.";
+      apiHint.classList.add("warn");
     } else {
       apiHint.textContent =
         "No API base — open via http:// (not file://) or set auth.apiUrl · Demo password still works";

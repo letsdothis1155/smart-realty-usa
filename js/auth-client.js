@@ -28,6 +28,37 @@
     return String(raw).replace(/\/$/, "");
   }
 
+  /** GitHub Pages serves PHP as files and rejects POST (405). Probe once. */
+  let liveApiCache = null;
+  let liveApiProbe = null;
+
+  async function hasLiveApi() {
+    if (liveApiCache != null) return liveApiCache;
+    if (liveApiProbe) return liveApiProbe;
+    liveApiProbe = (async () => {
+      const base = apiBase();
+      if (!base) {
+        liveApiCache = false;
+        return false;
+      }
+      try {
+        const res = await fetch(`${base}${ep("health")}`, { method: "GET", cache: "no-store" });
+        const ct = (res.headers.get("content-type") || "").toLowerCase();
+        if (!res.ok || !ct.includes("json")) {
+          liveApiCache = false;
+          return false;
+        }
+        const data = await res.json();
+        liveApiCache = !!(data && data.ok === true);
+        return liveApiCache;
+      } catch {
+        liveApiCache = false;
+        return false;
+      }
+    })();
+    return liveApiProbe;
+  }
+
   /** GoDaddy PHP uses .php files; local Node API does not */
   function usePhp() {
     if (typeof authCfg().usePhp === "boolean") return authCfg().usePhp;
@@ -222,6 +253,12 @@
   }
 
   async function submitLead({ email, name, source, interest }) {
+    if (!(await hasLiveApi())) {
+      const err = new Error("API offline");
+      err.code = "NO_API";
+      err.status = 503;
+      throw err;
+    }
     return api(ep("leads"), {
       method: "POST",
       body: { email, name, source, interest },
@@ -245,6 +282,7 @@
     TOKEN_KEY,
     USER_KEY,
     apiBase,
+    hasLiveApi,
     usePhp,
     ep,
     getToken,
