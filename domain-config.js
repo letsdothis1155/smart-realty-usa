@@ -133,6 +133,22 @@ window.SRU_CONFIG = {
     notABank: true,
   },
 
+  /**
+   * Third-party ad JS stays off until a real publisher ID exists.
+   * Direct sponsors: email. Networks: apply on their sites.
+   */
+  advertising: {
+    thirdPartyScripts: false,
+    contact: "ai@smartrealty.us",
+    networks: [
+      { id: "direct", name: "Direct sponsor", apply: "mailto:ai@smartrealty.us?subject=Sponsor%20SmartRealty" },
+      { id: "ethicalads", name: "EthicalAds", apply: "https://www.ethicalads.io/publishers/" },
+      { id: "adsense", name: "Google AdSense", apply: "https://www.google.com/adsense/start/" },
+      { id: "coinzilla", name: "Coinzilla", apply: "https://coinzilla.com/publishers/" },
+      { id: "bitmedia", name: "Bitmedia", apply: "https://bitmedia.io/" },
+    ],
+  },
+
   /** Catalog defaults — not live billed. Change here or via admin profit config. */
   listingTiers: {
     free: { label: "Free", monthlyCents: 0 },

@@ -241,6 +241,11 @@
     <priority>0.9</priority>
   </url>
   <url>
+    <loc>https://smartrealty.us/advertise/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://smartrealty.us/copy/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>

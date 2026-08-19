@@ -76,6 +76,7 @@
         <div>
           <h5>Company</h5>
           <a href="/#business">LLC facts</a>
+          <a href="/advertise/">Advertise</a>
           <a href="/invoice/">Invoice</a>
           <a href="/account.html">Request an account</a>
           <a href="/early-access/">Early access</a>
