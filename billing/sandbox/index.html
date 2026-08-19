@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sandbox checkout — SmartRealty</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="theme-color" content="#0a0c10" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+  <link rel="stylesheet" href="/growth.css" />
+  <script src="/domain-config.js"></script>
+  <script src="/js/auth-client.js"></script>
+</head>
+<body class="g-page">
+  <main class="g-section">
+    <div class="container">
+      <p class="g-kicker">Sandbox billing</p>
+      <h1>No card is collected</h1>
+      <p class="g-lead">Live charging is disabled. Confirming only activates a sandbox entitlement on this API. It does not count as production revenue and does not move money.</p>
+      <p id="msg" class="g-msg">Open this page from a checkout session while signed in on the local API.</p>
+      <p><a class="btn btn-outline" href="/pricing/">Back to plans</a></p>
+    </div>
+  </main>
+  <script>
+    (async function () {
+      const params = new URLSearchParams(location.search);
+      const session = params.get("session");
+      const msg = document.getElementById("msg");
+      const token = window.SRU_AUTH?.getToken?.();
+      if (!session || !token) return;
+      try {
+        const base = window.SRU_AUTH.apiBase() || location.origin;
+        const res = await fetch(base + "/api/billing/sandbox/confirm", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+          body: JSON.stringify({ sessionId: session }),
+        });
+        const data = await res.json();
+        msg.textContent = data.message || data.error || "Done.";
+      } catch {
+        msg.textContent = "Could not reach the billing API.";
+      }
+    })();
+  </script>
+</body>
+</html>
