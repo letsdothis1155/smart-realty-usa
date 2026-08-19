@@ -8,6 +8,7 @@ const { createStore } = require("../profit/store");
 const { createProfitService } = require("../profit/service");
 const { createBillingProvider } = require("../profit/billing");
 const { createStripeBillingProvider } = require("../profit/billing/stripe");
+const { createBillingWebhookHandler } = require("../profit/webhooks");
 const { canUse, checkLimit } = require("../profit/entitlements");
 const { annualSavingsPercent, publicCatalog, defaultCatalog } = require("../profit/catalog");
 const { breakEven } = require("../profit/breakeven");
@@ -384,6 +385,144 @@ test("Stripe adapter refuses live charging", async () => {
   const forced = createBillingProvider({ mode: "stripe", stripeSecretKey: "sk_live_example", productionApproved: false }, { store });
   assert.equal(forced.name, "mock");
   assert.equal(forced.forcedFromProvider, true);
+});
+
+function fakeStripeClient() {
+  return {
+    checkout: {
+      sessions: {
+        async create(input) {
+          return { id: "cs_test_123", url: "https://checkout.stripe.com/test-session", ...input };
+        },
+      },
+    },
+    subscriptions: {
+      async retrieve(id) {
+        return {
+          id,
+          status: "active",
+          customer: "cus_test_123",
+          currency: "usd",
+          current_period_start: Math.floor(Date.now() / 1000),
+          current_period_end: Math.floor(Date.now() / 1000) + 30 * 24 * 3600,
+          items: { data: [{ price: { unit_amount: 999 } }] },
+        };
+      },
+      async cancel(id) {
+        return { id, status: "canceled" };
+      },
+      async list() {
+        return { data: [] };
+      },
+    },
+    billingPortal: {
+      sessions: {
+        async create(input) {
+          return { url: `https://billing.stripe.com/session/${input.customer}` };
+        },
+      },
+    },
+    webhooks: {
+      constructEvent(rawBody, signature) {
+        if (signature !== "valid-sig") {
+          const err = new Error("Invalid signature");
+          err.status = 400;
+          throw err;
+        }
+        return JSON.parse(rawBody);
+      },
+    },
+  };
+}
+
+test("Stripe checkout creates a real session once live and a price is configured", async () => {
+  const store = createStore({ memory: true });
+  const stripe = createStripeBillingProvider(
+    {
+      stripeSecretKey: "sk_test_1234567890abcdef1234",
+      productionApproved: true,
+      priceIds: { plus: { monthly: "price_plus_month" } },
+      appBaseUrl: "https://smartrealty.us",
+    },
+    { store, stripeClient: fakeStripeClient() }
+  );
+  assert.equal(stripe.live, true);
+  const session = await stripe.createCheckoutSession({ userId: "user_1", planId: "plus", billingPeriod: "monthly" });
+  assert.equal(session.url, "https://checkout.stripe.com/test-session");
+  assert.equal(session.liveCharging, true);
+  assert.equal(session.sandbox, false);
+});
+
+test("Stripe checkout fails clearly when a plan has no price configured", async () => {
+  const store = createStore({ memory: true });
+  const stripe = createStripeBillingProvider(
+    { stripeSecretKey: "sk_test_1234567890abcdef1234", productionApproved: true, priceIds: {} },
+    { store, stripeClient: fakeStripeClient() }
+  );
+  await assert.rejects(
+    () => stripe.createCheckoutSession({ userId: "u1", planId: "plus", billingPeriod: "monthly" }),
+    /No Stripe price configured/
+  );
+});
+
+test("Stripe webhook grants entitlement and records real (non-sandbox) revenue once", async () => {
+  const store = createStore({ memory: true });
+  const client = fakeStripeClient();
+  const billingProvider = createStripeBillingProvider(
+    {
+      stripeSecretKey: "sk_test_1234567890abcdef1234",
+      productionApproved: true,
+      priceIds: { plus: { monthly: "price_plus_month" } },
+    },
+    { store, stripeClient: client }
+  );
+  const handler = createBillingWebhookHandler({
+    store,
+    billingProvider,
+    webhookSecret: "whsec_test",
+    stripeClient: client,
+    getCatalog: () => defaultCatalog(),
+  });
+
+  const rawEvent = JSON.stringify({
+    id: "evt_test_1",
+    type: "checkout.session.completed",
+    data: {
+      object: {
+        mode: "subscription",
+        client_reference_id: "user_1",
+        customer: "cus_test_123",
+        subscription: "sub_test_123",
+        metadata: { smartrealty_user_id: "user_1", plan_id: "plus", billing_period: "monthly" },
+      },
+    },
+  });
+  const fakeReq = { rawBody: rawEvent, get: (h) => (h === "stripe-signature" ? "valid-sig" : undefined) };
+  const event = handler.verifyAndParse(fakeReq);
+  const result = await handler.apply(event);
+  assert.equal(result.handled, true);
+
+  const db = store.read();
+  assert.ok(db.entitlements.some((e) => e.userId === "user_1" && e.plan === "plus" && e.status === "active"));
+  assert.ok(db.subscriptions.some((s) => s.provider_subscription_id === "sub_test_123" && s.sandbox === false));
+  assert.ok(db.revenueEvents.some((r) => r.user_id === "user_1" && r.sandbox === false && r.gross_amount === 999));
+
+  const dup = await handler.apply(event);
+  assert.equal(dup.duplicate, true);
+});
+
+test("Stripe webhook rejects a bad signature", () => {
+  const store = createStore({ memory: true });
+  const client = fakeStripeClient();
+  const handler = createBillingWebhookHandler({
+    store,
+    billingProvider: null,
+    webhookSecret: "whsec_test",
+    stripeClient: client,
+    getCatalog: () => defaultCatalog(),
+  });
+  const fakeReq = { rawBody: "{}", get: () => "wrong-sig" };
+  assert.throws(() => handler.verifyAndParse(fakeReq), /Invalid signature/);
 });
 
 test("founder dashboard stays at actual zero without sandbox bleed", async () => {

@@ -332,6 +332,7 @@ function createApp(options = {}) {
       store: profitStore,
       service: profitService,
       adminPassword: options.adminPassword || runtimeConfig.adminPassword || "",
+      stripeWebhookSecret: billingCfg.stripeWebhookSecret || "",
     })
   );
 

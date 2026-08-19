@@ -3,6 +3,7 @@
 const express = require("express");
 const { createRateLimiter } = require("../lib/rate-limit");
 const { createProfitService } = require("./service");
+const { createBillingWebhookHandler } = require("./webhooks");
 const { CHURN_REASONS } = require("./constants");
 
 function sendError(res, err) {
@@ -22,6 +23,14 @@ function createProfitRouter(deps) {
   const service = deps.service || createProfitService(deps);
   const auth = deps.authMiddleware;
   const adminPassword = String(deps.adminPassword || "");
+  const webhookHandler =
+    deps.webhookHandler ||
+    createBillingWebhookHandler({
+      store: deps.store,
+      billingProvider: service.provider,
+      webhookSecret: deps.stripeWebhookSecret || "",
+      getCatalog: () => service.catalog(),
+    });
 
   function rate(key, max, windowMs) {
     return (req, res, next) => {
@@ -121,6 +130,23 @@ function createProfitRouter(deps) {
       return res.json({ ok: true, churnReasons: CHURN_REASONS, ...data });
     } catch (err) {
       return sendError(res, err);
+    }
+  });
+
+  router.post("/api/webhooks/stripe", async (req, res) => {
+    let event;
+    try {
+      event = webhookHandler.verifyAndParse(req);
+    } catch (err) {
+      return res.status(err.status || 400).json({ ok: false, error: "Invalid webhook signature." });
+    }
+    try {
+      const result = await webhookHandler.apply(event);
+      return res.json({ ok: true, ...result });
+    } catch (err) {
+      // Stripe retries on non-2xx, so log-and-500 here rather than swallowing
+      // failures the way user-facing routes do.
+      return res.status(500).json({ ok: false, error: "Webhook processing failed." });
     }
   });
 

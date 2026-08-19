@@ -66,6 +66,22 @@ function readBillingConfig(env = process.env) {
         monthly: String(env.STRIPE_PRICE_PRO_MONTHLY || ""),
         annual: String(env.STRIPE_PRICE_PRO_ANNUAL || ""),
       },
+      business: {
+        monthly: String(env.STRIPE_PRICE_BUSINESS_MONTHLY || ""),
+        annual: String(env.STRIPE_PRICE_BUSINESS_ANNUAL || ""),
+      },
+      agent_starter: {
+        monthly: String(env.STRIPE_PRICE_AGENT_STARTER_MONTHLY || ""),
+        annual: String(env.STRIPE_PRICE_AGENT_STARTER_ANNUAL || ""),
+      },
+      agent_pro: {
+        monthly: String(env.STRIPE_PRICE_AGENT_PRO_MONTHLY || ""),
+        annual: String(env.STRIPE_PRICE_AGENT_PRO_ANNUAL || ""),
+      },
+      brokerage: {
+        monthly: String(env.STRIPE_PRICE_BROKERAGE_MONTHLY || ""),
+        annual: String(env.STRIPE_PRICE_BROKERAGE_ANNUAL || ""),
+      },
     },
     productionApproved: false,
     liveCharging: false,
