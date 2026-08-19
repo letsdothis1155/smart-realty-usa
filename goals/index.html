@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Property goals — SmartRealty</title>
+  <meta name="description" content="Create housing and property goals and track progress you record. Not a guarantee of savings or home ownership." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://smartrealty.us/goals/" />
+  <meta property="og:title" content="Property goals — SmartRealty" />
+  <meta property="og:description" content="Name a housing goal and watch progress you record. No guaranteed outcomes." />
+  <meta property="og:url" content="https://smartrealty.us/goals/" />
+  <meta property="og:image" content="https://smartrealty.us/images/og/goals.svg" />
+  <meta name="theme-color" content="#0a0c10" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+  <link rel="stylesheet" href="/growth.css" />
+  <script src="/domain-config.js"></script>
+  <script src="/js/auth-client.js"></script>
+  <script src="/js/analytics.js"></script>
+  <script src="/js/growth.js"></script>
+  <script src="/js/profit.js"></script>
+</head>
+<body class="g-page" data-growth="goals">
+  <div id="gChrome"></div>
+  <main class="g-section">
+    <div class="container">
+      <p class="g-kicker">Property goal engine</p>
+      <h1>Give payday a destination</h1>
+      <p class="g-lead">Create a goal such as First Home, Rent, or a name you choose. Progress is what you record. It is not a promised financial outcome.</p>
+      <div id="gSuggest"></div>
+
+      <form id="goalForm" class="g-form g-card" style="margin:1.5rem 0">
+        <label>Template
+          <select id="goalTemplate"></select>
+        </label>
+        <label>Custom name (optional)
+          <input type="text" id="goalName" maxlength="80" placeholder="First Home Fund" />
+        </label>
+        <label>Target amount (USD)
+          <input type="number" id="goalTarget" min="0" step="1" value="10000" />
+        </label>
+        <button type="submit" class="btn btn-primary">Create goal</button>
+        <p class="g-fine">Free includes one property goal. Direct deposit stays free. Live charging is off.</p>
+      </form>
+      <div id="gUpgrade"></div>
+
+      <div id="goalList" class="g-grid-2"></div>
+
+      <section class="g-section" style="padding-left:0;padding-right:0">
+        <h2>SmartRealty Agent Connect <span class="g-soon">Future</span></h2>
+        <p class="g-lead">If you approach a target and want help, you may request an introduction. We will not send financial details unless you separately authorize that later.</p>
+        <form id="agentConsentForm" class="g-form g-card">
+          <label class="auth-check">
+            <input type="checkbox" id="agentConsent" />
+            <span>I request optional help finding real-estate resources. Do not share my account, routing, or deposit amounts with anyone from this click.</span>
+          </label>
+          <button type="submit" class="btn btn-outline">Request help (consent required)</button>
+          <p class="g-msg" id="agentMsg"></p>
+        </form>
+      </section>
+    </div>
+  </main>
+  <div id="gFoot"></div>
+  <script src="/js/growth-ui.js"></script>
+</body>
+</html>

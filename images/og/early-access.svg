@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#0a0c10"/>
+  <circle cx="1000" cy="500" r="240" fill="#e8c87a" opacity="0.12"/>
+  <text x="80" y="160" fill="#e8c87a" font-family="Inter, Helvetica, sans-serif" font-size="22" font-weight="700" letter-spacing="4">EARLY ACCESS</text>
+  <text x="80" y="260" fill="#f3f5f9" font-family="Georgia, serif" font-size="56">Get early access</text>
+  <text x="80" y="330" fill="#f3f5f9" font-family="Georgia, serif" font-size="56">to SmartRealty.</text>
+  <text x="80" y="420" fill="#9aa3b5" font-family="Inter, Helvetica, sans-serif" font-size="26">Private alpha waitlist. Not live banking.</text>
+  <text x="80" y="540" fill="#6b7385" font-family="Inter, Helvetica, sans-serif" font-size="20">smartrealty.us/early-access</text>
+</svg>

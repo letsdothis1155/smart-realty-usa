@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#0a0c10"/>
+  <rect x="80" y="430" width="520" height="22" rx="11" fill="#1c2230"/>
+  <rect x="80" y="430" width="180" height="22" rx="11" fill="#3dd6c6"/>
+  <text x="80" y="160" fill="#3dd6c6" font-family="Inter, Helvetica, sans-serif" font-size="22" font-weight="700" letter-spacing="4">PROPERTY GOALS</text>
+  <text x="80" y="260" fill="#f3f5f9" font-family="Georgia, serif" font-size="56">Give payday</text>
+  <text x="80" y="330" fill="#f3f5f9" font-family="Georgia, serif" font-size="56">a destination.</text>
+  <text x="80" y="400" fill="#9aa3b5" font-family="Inter, Helvetica, sans-serif" font-size="26">Progress you record. Not a promised outcome.</text>
+  <text x="80" y="540" fill="#6b7385" font-family="Inter, Helvetica, sans-serif" font-size="20">smartrealty.us/goals</text>
+</svg>

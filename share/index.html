@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Share progress — SmartRealty</title>
+  <meta name="robots" content="noindex, follow" />
+  <link rel="canonical" href="https://smartrealty.us/share/" />
+  <meta name="theme-color" content="#0a0c10" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+  <link rel="stylesheet" href="/growth.css" />
+  <script src="/domain-config.js"></script>
+  <script src="/js/auth-client.js"></script>
+  <script src="/js/analytics.js"></script>
+  <script src="/js/growth.js"></script>
+</head>
+<body class="g-page" data-growth="share">
+  <div id="gChrome"></div>
+  <main class="g-section">
+    <div class="container">
+      <p class="g-kicker">Optional share · privacy default</p>
+      <h1>Share a milestone, not your bank activity</h1>
+      <p class="g-lead">Nothing posts automatically. Amounts stay off the card unless you turn them on.</p>
+      <div class="g-form">
+        <label>Goal
+          <select id="shareGoal"></select>
+        </label>
+        <label class="auth-check">
+          <input type="checkbox" id="shareAmt" />
+          <span>Include dollar amounts (off by default)</span>
+        </label>
+        <article class="g-share-card">
+          <p class="g-kicker">SmartRealty</p>
+          <p id="sharePreview">I'm building my Home Fund with SmartRealty 🏠</p>
+        </article>
+        <p id="shareText" class="hidden"></p>
+        <button type="button" class="btn btn-primary" id="shareBtn">Share or copy</button>
+        <p class="g-msg" id="shareMsg"></p>
+      </div>
+    </div>
+  </main>
+  <div id="gFoot"></div>
+  <script src="/js/growth-ui.js"></script>
+</body>
+</html>

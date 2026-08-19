@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Early access — SmartRealty waitlist</title>
+  <meta name="description" content="Get early access to SmartRealty. Tell us whether you care about a home goal, rent, moving, direct deposit, or SmartSplit." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://smartrealty.us/early-access/" />
+  <meta property="og:title" content="Get early access to SmartRealty" />
+  <meta property="og:description" content="Join the waitlist for payday-to-property tools. Private alpha — not live banking." />
+  <meta property="og:url" content="https://smartrealty.us/early-access/" />
+  <meta property="og:image" content="https://smartrealty.us/images/og/early-access.svg" />
+  <meta name="theme-color" content="#0a0c10" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+  <link rel="stylesheet" href="/growth.css" />
+  <script src="/domain-config.js"></script>
+  <script src="/js/auth-client.js"></script>
+  <script src="/js/analytics.js"></script>
+  <script src="/js/growth.js"></script>
+</head>
+<body class="g-page" data-growth="early">
+  <div id="gChrome"></div>
+  <main class="g-section">
+    <div class="container">
+      <p class="g-kicker">Phase 3 waitlist · now open</p>
+      <h1>Get early access to SmartRealty</h1>
+      <p class="g-lead">We are in private alpha. The waitlist collects email, an optional first name, and what you care about — not bank or payroll credentials.</p>
+      <form id="eaForm" class="g-form g-card">
+        <label>Email
+          <input type="email" id="eaEmail" required autocomplete="email" placeholder="you@email.com" />
+        </label>
+        <label>First name (optional)
+          <input type="text" id="eaName" maxlength="80" autocomplete="given-name" />
+        </label>
+        <label>Primary interest
+          <select id="eaInterest">
+            <option value="home">Saving for a home</option>
+            <option value="rent">Managing rent</option>
+            <option value="moving">Moving</option>
+            <option value="ownership">Property ownership</option>
+            <option value="direct_deposit">Direct deposit</option>
+            <option value="smartsplit">SmartSplit</option>
+          </select>
+        </label>
+        <button type="submit" class="btn btn-primary" id="eaBtn">Request early access</button>
+        <p class="g-fine">You can opt out of marketing later. Transactional notices stay separate. No cash referral rewards.</p>
+      </form>
+      <p class="g-msg hidden" id="eaMsg" role="status"></p>
+    </div>
+  </main>
+  <div id="gFoot"></div>
+  <script src="/js/growth-ui.js"></script>
+</body>
+</html>

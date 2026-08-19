@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Security &amp; Trust Center — SmartRealty</title>
+  <meta name="description" content="How SmartRealty connections will work, what we store, what we do not store, and how to report fraud. We do not claim to be 100% secure." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://smartrealty.us/security/" />
+  <meta property="og:title" content="SmartRealty Trust Center" />
+  <meta property="og:description" content="How connections work, what we store, and how to reach support. Not a bank. No 100% secure claim." />
+  <meta property="og:url" content="https://smartrealty.us/security/" />
+  <meta property="og:image" content="https://smartrealty.us/images/og/security.svg" />
+  <meta name="theme-color" content="#0a0c10" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+  <link rel="stylesheet" href="/growth.css" />
+  <script src="/domain-config.js"></script>
+  <script src="/js/auth-client.js"></script>
+  <script src="/js/analytics.js"></script>
+  <script src="/js/growth.js"></script>
+</head>
+<body class="g-page" data-growth="security">
+  <div id="gChrome"></div>
+  <main class="g-section">
+    <div class="container g-article">
+      <p class="g-kicker">Trust center</p>
+      <h1>How SmartRealty handles money connections</h1>
+      <p class="g-lead">Financial integrations require accurate language. We do not say this product is 100% secure or impossible to hack.</p>
+      <dl class="g-trust">
+        <dt>How connections work</dt>
+        <dd>When live, payroll switching and deposit accounts will run through regulated partners. The browser talks to SmartRealty; SmartRealty talks to the partner. You should never type an employer password into a SmartRealty form.</dd>
+        <dt>What SmartRealty stores</dt>
+        <dd>Account identity (name, email, password hash when login is live), waitlist fields, referral codes, goal names and amounts you enter, analytics events, and partner tokens or IDs — not raw payroll passwords.</dd>
+        <dt>What SmartRealty does not store</dt>
+        <dd>Employer or payroll passwords. We prefer partner tokens over raw account and routing numbers. Marketing analytics strip account numbers, routing numbers, SSNs, and credentials.</dd>
+        <dt>Encryption overview</dt>
+        <dd>The public site should be served on HTTPS. Passwords, when collected on a live auth host, are hashed with bcrypt. Tokens belong in environment or a secret manager — not in browser config files.</dd>
+        <dt>Partner disclosures</dt>
+        <dd>SmartRealty is not a bank. FDIC insurance applies only if a specific partner account structure legally supports that statement. We do not claim FDIC insurance on this demo.</dd>
+        <dt>Privacy controls</dt>
+        <dd>Share cards default to no dollar amounts. Marketing email is opt-in. You can turn off promotional messages at <a href="/notifications/">notification preferences</a>.</dd>
+        <dt>Account protection</dt>
+        <dd>Use a unique password when member login is live. We will never ask for your password by email.</dd>
+        <dt>Fraud reporting</dt>
+        <dd>If something looks wrong, write <a href="mailto:ai@smartrealty.us">ai@smartrealty.us</a> from the address on the account. Do not send full account numbers, SSNs, or payroll passwords in the first message — we will say what is needed.</dd>
+        <dt>Support</dt>
+        <dd>SMART REALTY.US LLC · Louisville, KY · <a href="mailto:ai@smartrealty.us">ai@smartrealty.us</a> · 1-800-762-7879. This site is a public demo, not a licensed brokerage transaction system.</dd>
+      </dl>
+      <p class="g-disclaimer">No system is 100% secure. This page describes intent and current demo practice, not a completed banking-security audit.</p>
+    </div>
+  </main>
+  <div id="gFoot"></div>
+  <script src="/js/growth-ui.js"></script>
+</body>
+</html>

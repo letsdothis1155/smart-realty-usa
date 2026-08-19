@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Notification preferences — SmartRealty</title>
+  <meta name="robots" content="noindex, follow" />
+  <link rel="canonical" href="https://smartrealty.us/notifications/" />
+  <meta name="theme-color" content="#0a0c10" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+  <link rel="stylesheet" href="/growth.css" />
+  <script src="/domain-config.js"></script>
+  <script src="/js/auth-client.js"></script>
+  <script src="/js/analytics.js"></script>
+  <script src="/js/growth.js"></script>
+</head>
+<body class="g-page" data-growth="notifications">
+  <div id="gChrome"></div>
+  <main class="g-section">
+    <div class="container">
+      <p class="g-kicker">Lifecycle · email · push</p>
+      <h1>What we may send — and what we will not</h1>
+      <p class="g-lead">Transactional notices stay separate from marketing. We do not send account numbers, routing numbers, or payroll credentials by email or push. Push is prepared here; it is not blasting your lock screen.</p>
+      <form class="g-form g-card">
+        <label class="auth-check"><input type="checkbox" id="nTx" /> Transactional email (setup status, security)</label>
+        <label class="auth-check"><input type="checkbox" id="nMkt" /> Promotional email</label>
+        <label class="auth-check"><input type="checkbox" id="nPushSetup" /> Push: setup next step</label>
+        <label class="auth-check"><input type="checkbox" id="nPushProg" /> Push: goal progress</label>
+        <label class="auth-check"><input type="checkbox" id="nPushConn" /> Push: connection needs attention</label>
+        <label class="auth-check"><input type="checkbox" id="nInApp" /> In-app suggestions</label>
+        <label class="auth-check"><input type="checkbox" id="nOptOut" /> Opt out of promotional marketing</label>
+      </form>
+      <p class="g-fine">Frequency caps apply. We will not use countdown-scarcity spam. Examples: “Your direct deposit setup is ready for the next step.” “You made progress toward your Home Fund.” “Your payroll connection needs attention.”</p>
+    </div>
+  </main>
+  <div id="gFoot"></div>
+  <script src="/js/growth-ui.js"></script>
+</body>
+</html>
