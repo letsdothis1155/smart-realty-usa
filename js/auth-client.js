@@ -209,8 +209,12 @@
       }),
     });
     const data = await res.json().catch(() => ({}));
+    const msg = String(data.message || "");
+    if (/activate/i.test(msg)) {
+      return { needsActivation: true, message: msg };
+    }
     if (!res.ok || data.success === "false" || data.success === false) {
-      const err = new Error(data.message || "Email fallback failed");
+      const err = new Error(msg || "Email fallback failed");
       err.status = res.status;
       throw err;
     }
@@ -249,10 +253,12 @@
     }
     if (data.emailed) return data;
     try {
-      await deliverViaFormSubmit(payload);
+      const fallback = await deliverViaFormSubmit(payload);
       data.emailed = true;
       data.via = "formsubmit";
-      data.message = "Request sent. We will email you when your account is ready.";
+      data.message = fallback.needsActivation
+        ? "Request sent. Click the activation email at andrewiredale@smartrealty.us once — after that, new requests land in that inbox."
+        : "Request sent. We will email you when your account is ready.";
     } catch {
       /* Worker already saved the request; page shows a mailto backup if needed. */
     }
