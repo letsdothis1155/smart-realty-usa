@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Founder dashboard — SmartRealty</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="theme-color" content="#0a0c10" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+  <link rel="stylesheet" href="/growth.css" />
+  <script src="/domain-config.js"></script>
+  <script src="/js/auth-client.js"></script>
+</head>
+<body class="auth-page admin-page" data-admin="founder">
+  <div class="admin-shell">
+    <header class="admin-top">
+      <a href="/admin.html" class="logo"><span class="logo-mark">SR</span><span class="logo-text"><strong>Founder</strong><small>Private</small></span></a>
+      <div class="admin-top-actions admin-nav-row" id="adminNav"></div>
+    </header>
+    <section class="admin-card glass" id="locked">
+      <h1>Founder mode</h1>
+      <p class="auth-lead">Authorized administrators only. Actual ledger values. Never invented performance.</p>
+      <form id="adminLogin" class="auth-form">
+        <label>Admin password <input type="password" id="adminPass" autocomplete="current-password" /></label>
+        <button type="submit" class="btn btn-primary">Unlock</button>
+      </form>
+      <button type="button" class="btn btn-ghost" id="useLocal">Use empty $0 snapshot</button>
+    </section>
+    <section class="admin-card glass hidden" id="dash">
+      <div id="dashBody"></div>
+      <p class="admin-foot" id="srvNote">Sandbox subscriptions do not count as production MRR.</p>
+    </section>
+  </div>
+  <script src="/js/admin-profit.js"></script>
+</body>
+</html>

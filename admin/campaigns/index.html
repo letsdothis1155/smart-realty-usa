@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Campaigns — SmartRealty admin</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="theme-color" content="#0a0c10" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+  <link rel="stylesheet" href="/growth.css" />
+  <script src="/domain-config.js"></script>
+  <script src="/js/auth-client.js"></script>
+  <script src="/js/analytics.js"></script>
+  <script src="/js/growth.js"></script>
+</head>
+<body class="auth-page admin-page">
+  <div class="admin-shell">
+    <header class="admin-top">
+      <a href="/admin/growth/" class="logo"><span class="logo-mark">SR</span><span class="logo-text"><strong>Campaigns</strong><small>Admin</small></span></a>
+      <a class="btn btn-ghost btn-sm" href="/admin/growth/">Growth</a>
+    </header>
+    <section class="admin-card glass" id="locked">
+      <h1>Campaign records</h1>
+      <p class="auth-lead">Paid advertising stays disabled until partners, compliance, and support are ready. These rows are architecture, not live spend.</p>
+      <form id="adminLogin" class="auth-form">
+        <label>Admin password <input type="password" id="adminPass" autocomplete="current-password" /></label>
+        <button type="submit" class="btn btn-primary">Unlock</button>
+      </form>
+      <button type="button" class="btn btn-ghost" id="useLocal">Use local records</button>
+    </section>
+    <section class="admin-card glass hidden" id="dash">
+      <form id="campForm" class="g-form" style="max-width:none;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));margin-bottom:1rem">
+        <label>Name <input id="cName" required /></label>
+        <label>Source <input id="cSource" placeholder="tiktok" /></label>
+        <label>Medium <input id="cMedium" placeholder="video" /></label>
+        <label>Landing <input id="cLand" value="/direct-deposit/" /></label>
+        <label>Status
+          <select id="cStatus"><option>planned</option><option>paused</option><option>testing</option><option>disabled</option></select>
+        </label>
+        <label>Spend (record only) <input id="cSpend" type="number" min="0" step="0.01" value="0" /></label>
+        <button type="submit" class="btn btn-primary">Save campaign</button>
+      </form>
+      <table class="admin-table">
+        <thead><tr><th>Name</th><th>Source/medium</th><th>Status</th><th>Landing</th><th>Spend</th><th>Signups</th><th>Activated</th><th>Link</th></tr></thead>
+        <tbody id="campBody"></tbody>
+      </table>
+      <p class="admin-foot">Do not optimize only for cheap clicks. Qualified users: signup → goal → (later) activated deposit. No customer banking fields here.</p>
+    </section>
+  </div>
+  <script src="/js/admin-campaigns.js"></script>
+</body>
+</html>

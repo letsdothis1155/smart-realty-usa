@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Growth dashboard — SmartRealty admin</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="theme-color" content="#0a0c10" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+  <link rel="stylesheet" href="/growth.css" />
+  <script src="/domain-config.js"></script>
+  <script src="/js/auth-client.js"></script>
+  <script src="/js/analytics.js"></script>
+  <script src="/js/growth.js"></script>
+</head>
+<body class="auth-page admin-page">
+  <div class="admin-shell">
+    <header class="admin-top">
+      <a href="/admin.html" class="logo"><span class="logo-mark">SR</span><span class="logo-text"><strong>Growth</strong><small>Admin</small></span></a>
+      <div class="admin-top-actions">
+        <a class="btn btn-ghost btn-sm" href="/admin/founder/">Founder</a>
+        <a class="btn btn-ghost btn-sm" href="/admin/revenue/">Revenue</a>
+        <a class="btn btn-ghost btn-sm" href="/admin/campaigns/">Campaigns</a>
+        <a class="btn btn-ghost btn-sm" href="/admin.html">Leads</a>
+      </div>
+    </header>
+    <section class="admin-card glass" id="locked">
+      <h1>Growth dashboard</h1>
+      <p class="auth-lead">North-star is users progressing toward a property goal — not page views. No private financial data is shown.</p>
+      <form id="adminLogin" class="auth-form">
+        <label>Admin password <input type="password" id="adminPass" autocomplete="current-password" /></label>
+        <button type="submit" class="btn btn-primary">Unlock server stats</button>
+      </form>
+      <button type="button" class="btn btn-ghost" id="useLocal">Use this-browser snapshot</button>
+    </section>
+    <section class="admin-card glass hidden" id="dash">
+      <p id="phase" class="auth-lead"></p>
+      <p id="nsLine"></p>
+      <h2>Acquisition</h2><div class="g-admin-grid" id="acq"></div>
+      <h2>Activation</h2><div class="g-admin-grid" id="act"></div>
+      <h2>Engagement</h2><div class="g-admin-grid" id="eng"></div>
+      <h2>Referral</h2><div class="g-admin-grid" id="ref"></div>
+      <h2>Retention (this device)</h2><div class="g-admin-grid" id="ret"></div>
+      <h2>Funnel</h2>
+      <table class="admin-table"><thead><tr><th>Stage</th><th>Count</th><th>Last</th></tr></thead><tbody id="funnel"></tbody></table>
+      <h2>Experiments</h2>
+      <pre id="exps" style="color:var(--text-muted);font-size:0.8rem"></pre>
+      <p class="admin-foot" id="srvNote">Local snapshot includes only this browser.</p>
+    </section>
+  </div>
+  <script src="/js/admin-growth.js"></script>
+</body>
+</html>
