@@ -182,6 +182,8 @@
         <a href="#bluebook" class="nav-link">Blue Book</a>
         <a href="#bitcoin" class="nav-link">Bitcoin</a>
         <a href="#rentals" class="nav-link">Stay &amp; buy</a>
+        <a href="start/" class="nav-link">Start</a>
+        <a href="direct-deposit/" class="nav-link">Direct deposit</a>
         <a href="apps/" class="nav-link">Apps</a>
         <a href="https://mempool.smartrealty.us" class="nav-link" target="_blank" rel="noopener">Node</a>
         <a href="#support" class="nav-link">Contact</a>
@@ -227,11 +229,9 @@
             <strong>SMART REALTY.US LLC</strong> in Louisville. Not a licensed brokerage.
           </p>
           <div class="hero-cta fade-up delay-3">
-            <a href="#listings" class="btn btn-primary btn-lg">Browse exclusive homes</a>
-            <a href="#bitcoin" class="btn btn-outline btn-lg">
-              <span class="btc-icon">₿</span> Buy with Bitcoin
-            </a>
-            <a href="#waitlist" class="btn btn-ghost btn-lg">Join the waitlist</a>
+            <a href="#listings" class="btn btn-primary btn-lg">Find a Home</a>
+            <a href="start/" class="btn btn-outline btn-lg">Get My Home Value</a>
+            <a href="list/" class="btn btn-ghost btn-lg">List Your Property</a>
           </div>
           <div class="hero-stats fade-up delay-4">
             <div class="stat">
@@ -895,12 +895,19 @@
             </div>
             <label>What do you need?
               <select id="contactInterest">
+                <option value="buy">Buy a home</option>
+                <option value="sell">Sell a home</option>
+                <option value="rent">Rent</option>
+                <option value="valuation">Home value</option>
+                <option value="showing">Request a showing</option>
+                <option value="agent">Find an agent</option>
+                <option value="finance">Financing information</option>
+                <option value="investor">Investment look</option>
+                <option value="service">Digital services</option>
+                <option value="list">List a property</option>
                 <option value="callback">Phone callback</option>
                 <option value="bluebook">Blue Book help</option>
                 <option value="bitcoin">Bitcoin checkout</option>
-                <option value="rental">Try-before-buy stay</option>
-                <option value="financing">Mortgage / financing</option>
-                <option value="moving">Moving / relocation</option>
                 <option value="general">General question</option>
               </select>
             </label>
@@ -961,6 +968,9 @@
         <a href="#listings">Listings</a>
         <a href="#bluebook">Blue Book</a>
         <a href="#bitcoin">Bitcoin</a>
+        <a href="direct-deposit/">Direct deposit</a>
+        <a href="goals/">Property goals</a>
+        <a href="learn/">Learn</a>
         <a href="apps/">Apps</a>
         <a href="https://mempool.smartrealty.us" target="_blank" rel="noopener">Node explorer</a>
         <a href="https://mempool.smartrealty.us/mempools" target="_blank" rel="noopener">Mempools</a>
@@ -970,6 +980,7 @@
       </div>
       <div>
         <h5>Trust</h5>
+        <a href="security/">Trust center</a>
         <a href="#security">How this is hosted</a>
         <a href="#support">Contact</a>
         <a href="tel:+18007627879">Call</a>
@@ -988,6 +999,20 @@
     </div>
 
     <!-- Growth: waitlist / lead capture -->
+    <div class="container waitlist-band" id="startPaths" style="margin-bottom:1rem">
+      <div class="waitlist-card glass">
+        <div>
+          <h3>What do you want to do?</h3>
+          <p class="waitlist-sub">Buy, sell, a home-value request, listing plans, or digital services. Not a licensed brokerage.</p>
+        </div>
+        <div class="g-cta-row">
+          <a class="btn btn-primary" href="start/">Start</a>
+          <a class="btn btn-outline" href="value/">Get my home value</a>
+          <a class="btn btn-ghost" href="sell/">List / sell</a>
+          <a class="btn btn-ghost" href="services/">Services</a>
+        </div>
+      </div>
+    </div>
     <div class="container waitlist-band" id="waitlist">
       <div class="waitlist-card glass">
         <div>
@@ -1007,6 +1032,8 @@
     <div class="container footer-legal-links">
       <a href="privacy.html">Privacy Policy</a>
       <a href="terms.html">Terms of Use</a>
+      <a href="security/">Security</a>
+      <a href="early-access/">Early access</a>
       <a href="account.html">Account</a>
       <a href="auth.html">Sign in</a>
     </div>

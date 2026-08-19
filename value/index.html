@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Get my home value — estimate request | SmartRealty</title>
+  <meta name="description" content="Request a SmartRealty home-value look. Estimates are informational, not an appraisal, CMA, or offer." />
+  <link rel="canonical" href="https://smartrealty.us/value/" />
+  <meta property="og:title" content="Get my home value" />
+  <meta property="og:url" content="https://smartrealty.us/value/" />
+  <meta name="robots" content="index, follow" />
+  <meta name="theme-color" content="#0a0c10" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" /><link rel="stylesheet" href="/growth.css" />
+  <script src="/domain-config.js"></script><script src="/js/auth-client.js"></script><script src="/js/analytics.js"></script><script src="/js/growth.js"></script><script src="/js/revenue.js"></script>
+</head>
+<body class="g-page" data-growth="learn">
+  <div id="gChrome"></div>
+  <main class="g-section">
+    <div class="container">
+      <p class="g-kicker">Valuation request</p>
+      <h1>Get my home value</h1>
+      <p class="g-lead">The House Blue Book on the homepage is a demo estimator. This form asks us to look at a specific address. It is not an appraisal and not a guaranteed sale price.</p>
+      <form class="g-form g-card" data-lead-form data-intent="value" data-source="value_page">
+        <label>Name <input name="name" autocomplete="name" /></label>
+        <label>Email <input name="email" type="email" required autocomplete="email" /></label>
+        <label>Phone <input name="phone" type="tel" /></label>
+        <label>City <input name="city" /></label>
+        <label>State <input name="state" maxlength="2" placeholder="KY" /></label>
+        <label>Property address <input name="property" required /></label>
+        <label>Anything we should know <textarea name="message" rows="3"></textarea></label>
+        <label class="auth-check"><input type="checkbox" name="consent" required /> <span>I agree to be contacted about this estimate request. This is not an appraisal.</span></label>
+        <button type="submit" class="btn btn-primary">Request an estimate</button>
+        <p class="g-msg hidden" data-lead-msg></p>
+      </form>
+      <p><a href="/#bluebook">Open the on-site Blue Book demo</a></p>
+    </div>
+  </main>
+  <div id="gFoot"></div>
+  <script src="/js/growth-ui.js"></script>
+  <script src="/js/revenue-ui.js"></script>
+</body>
+</html>

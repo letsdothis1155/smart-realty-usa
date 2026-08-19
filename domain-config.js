@@ -112,6 +112,45 @@ window.SRU_CONFIG = {
     enabled: true,
   },
 
+  /**
+   * Growth / marketing (product-led). Paid ads stay off until partners
+   * and compliance review are complete. Financial claims are not approved.
+   */
+  growth: {
+    launchPhase: "private_alpha",
+    paidAds: "disabled",
+    claimsReviewed: false,
+    northStar: "Users actively progressing toward a SmartRealty property goal",
+    positioning: "Turn every paycheck into progress toward where you live.",
+    notABank: true,
+  },
+
+  /** Catalog defaults — not live billed. Change here or via admin profit config. */
+  listingTiers: {
+    free: { label: "Free", monthlyCents: 0 },
+    featured: { label: "Featured", monthlyCents: 4900 },
+    premium: { label: "Premium", monthlyCents: 14900 },
+  },
+  serviceQuotes: {
+    listingCopy: 15000,
+    landingPage: 40000,
+    propertySite: 90000,
+    leadPage: 35000,
+    seoStarter: 25000,
+    socialPack: 20000,
+  },
+
+  /**
+   * Direct Deposit Switching — paycheck routing to a SmartRealty-linked
+   * receiving account via an approved payroll partner. SmartRealty is not a bank.
+   * Production money movement is disabled until partner + compliance approvals.
+   */
+  directDeposit: {
+    enabled: true,
+    apiUrl: "", // "" = same origin as auth.apiUrl. Local Node: "http://127.0.0.1:8787"
+    sandboxNotice: true,
+  },
+
   social: {
     // Optional future: x, linkedin, instagram
   },

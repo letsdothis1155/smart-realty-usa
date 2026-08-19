@@ -79,7 +79,15 @@
       forgotPassword: php ? "/api/auth/forgot-password.php" : "/api/auth/forgot-password",
       resetPassword: php ? "/api/auth/reset-password.php" : "/api/auth/reset-password",
       leads: php ? "/api/leads.php" : "/api/leads",
+      leadsUpdate: php ? "/api/leads-update.php" : "/api/leads-update",
       health: php ? "/api/health.php" : "/health",
+      events: php ? "/api/events.php" : "/api/events",
+      referrals: php ? "/api/referrals.php" : "/api/referrals",
+      growthStats: php ? "/api/growth-stats.php" : "/api/growth-stats",
+      campaigns: php ? "/api/campaigns.php" : "/api/campaigns",
+      billingCatalog: php ? "/api/profit-catalog.php" : "/api/billing/catalog",
+      billingMe: php ? "/api/profit-catalog.php" : "/api/billing/me",
+      profitStats: php ? "/api/profit-stats.php" : "/api/admin/profit",
     };
     return map[name] || name;
   }
@@ -347,7 +355,7 @@
     return data;
   }
 
-  async function submitLead({ email, name, source, interest }) {
+  async function submitLead({ email, name, source, interest, firstName, referralCode, partner, utm_source, utm_medium, utm_campaign, phone, city, state, intent, budget, property, message, consent }) {
     if (!(await hasLiveApi())) {
       const err = new Error("API offline");
       err.code = "NO_API";
@@ -356,7 +364,27 @@
     }
     return api(ep("leads"), {
       method: "POST",
-      body: { email, name, source, interest },
+      body: {
+        email,
+        name: name || firstName || "",
+        firstName: firstName || name || "",
+        source,
+        interest,
+        referralCode: referralCode || "",
+        partner: partner || "",
+        utm_source: utm_source || "",
+        utm_medium: utm_medium || "",
+        utm_campaign: utm_campaign || "",
+        phone: phone || "",
+        city: city || "",
+        state: state || "",
+        intent: intent || interest || "",
+        budget: budget || "",
+        property: property || "",
+        message: message || "",
+        notes: message || "",
+        consent: !!consent,
+      },
     });
   }
 

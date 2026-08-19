@@ -12,9 +12,22 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 $body = sru_body();
 $email = sru_valid_email($body['email'] ?? '');
-$name = trim((string)($body['name'] ?? ''));
+$name = trim((string)($body['name'] ?? $body['firstName'] ?? ''));
 $source = substr(trim((string)($body['source'] ?? 'website')), 0, 80);
 $interest = substr(trim((string)($body['interest'] ?? 'updates')), 0, 120);
+$referralCode = strtoupper(preg_replace('/[^A-Z0-9]/', '', (string)($body['referralCode'] ?? '')));
+$partner = substr(preg_replace('/[^a-z0-9_-]/i', '', (string)($body['partner'] ?? '')), 0, 64);
+$utmSource = substr(trim((string)($body['utm_source'] ?? '')), 0, 80);
+$utmMedium = substr(trim((string)($body['utm_medium'] ?? '')), 0, 80);
+$utmCampaign = substr(trim((string)($body['utm_campaign'] ?? '')), 0, 80);
+$phone = substr(preg_replace('/[^0-9+(). \-]/', '', (string)($body['phone'] ?? '')), 0, 32);
+$city = substr(trim((string)($body['city'] ?? '')), 0, 80);
+$region = substr(trim((string)($body['state'] ?? $body['region'] ?? '')), 0, 40);
+$intent = substr(trim((string)($body['intent'] ?? $interest)), 0, 40);
+$budget = substr(trim((string)($body['budget'] ?? '')), 0, 40);
+$property = substr(trim((string)($body['property'] ?? '')), 0, 160);
+$notes = substr(trim((string)($body['notes'] ?? $body['message'] ?? '')), 0, 500);
+$consent = !empty($body['consent']);
 
 if (!$email) {
     sru_json(['ok' => false, 'error' => 'Please enter a valid email.'], 400);
@@ -28,25 +41,67 @@ if (file_exists($file)) {
     $leads = is_array($raw['leads'] ?? null) ? $raw['leads'] : [];
 }
 
-foreach ($leads as $L) {
+$existingIdx = -1;
+foreach ($leads as $i => $L) {
     if (($L['email'] ?? '') === $email) {
-        sru_json([
-            'ok' => true,
-            'message' => 'You are already on the list. We will be in touch.',
-            'duplicate' => true,
-        ]);
+        $existingIdx = $i;
+        break;
     }
 }
 
-$lead = [
-    'id' => 'lead_' . bin2hex(random_bytes(6)),
-    'email' => $email,
-    'name' => substr($name, 0, 80),
-    'source' => $source,
-    'interest' => $interest,
-    'createdAt' => gmdate('c'),
-];
-$leads[] = $lead;
+$now = gmdate('c');
+if ($existingIdx >= 0) {
+    $prev = $leads[$existingIdx];
+    $leads[$existingIdx] = array_merge($prev, [
+        'name' => $name !== '' ? substr($name, 0, 80) : ($prev['name'] ?? ''),
+        'source' => $source,
+        'interest' => $intent !== '' ? $intent : $interest,
+        'intent' => $intent,
+        'phone' => $phone !== '' ? $phone : ($prev['phone'] ?? ''),
+        'city' => $city !== '' ? $city : ($prev['city'] ?? ''),
+        'state' => $region !== '' ? $region : ($prev['state'] ?? ''),
+        'budget' => $budget !== '' ? $budget : ($prev['budget'] ?? ''),
+        'property' => $property !== '' ? $property : ($prev['property'] ?? ''),
+        'notes' => $notes !== '' ? trim(($prev['notes'] ?? '') . "\n" . $notes) : ($prev['notes'] ?? ''),
+        'consent' => $consent || !empty($prev['consent']),
+        'consentAt' => (!empty($prev['consentAt']) ? $prev['consentAt'] : ($consent ? $now : '')),
+        'referralCode' => substr($referralCode, 0, 12) ?: ($prev['referralCode'] ?? ''),
+        'partner' => $partner !== '' ? $partner : ($prev['partner'] ?? ''),
+        'utm_source' => $utmSource !== '' ? $utmSource : ($prev['utm_source'] ?? ''),
+        'utm_medium' => $utmMedium !== '' ? $utmMedium : ($prev['utm_medium'] ?? ''),
+        'utm_campaign' => $utmCampaign !== '' ? $utmCampaign : ($prev['utm_campaign'] ?? ''),
+        'updatedAt' => $now,
+        'status' => $prev['status'] ?? 'new',
+    ]);
+    $lead = $leads[$existingIdx];
+} else {
+    $lead = [
+        'id' => 'lead_' . bin2hex(random_bytes(6)),
+        'email' => $email,
+        'name' => substr($name, 0, 80),
+        'phone' => $phone,
+        'city' => $city,
+        'state' => $region,
+        'source' => $source,
+        'interest' => $intent !== '' ? $intent : $interest,
+        'intent' => $intent,
+        'budget' => $budget,
+        'property' => $property,
+        'notes' => $notes,
+        'consent' => $consent,
+        'consentAt' => $consent ? $now : '',
+        'status' => 'new',
+        'assigned' => '',
+        'followUpDate' => '',
+        'referralCode' => substr($referralCode, 0, 12),
+        'partner' => $partner,
+        'utm_source' => $utmSource,
+        'utm_medium' => $utmMedium,
+        'utm_campaign' => $utmCampaign,
+        'createdAt' => $now,
+    ];
+    $leads[] = $lead;
+}
 
 $tmp = $file . '.tmp';
 file_put_contents($tmp, json_encode(['leads' => $leads, 'updatedAt' => gmdate('c')], JSON_PRETTY_PRINT));
@@ -89,9 +144,13 @@ if (defined('SRU_LEAD_AUTOREPLY') && SRU_LEAD_AUTOREPLY && function_exists('mail
     $mailed['autoreply'] = @mail($email, $subj2, $body2, $headersBase);
 }
 
+$duplicate = $existingIdx >= 0;
 sru_json([
     'ok' => true,
-    'message' => 'You are on the Smart Realty list. Watch your inbox.',
+    'message' => $duplicate
+        ? 'We updated your request. We will be in touch.'
+        : 'You are on the Smart Realty list. Watch your inbox.',
     'lead' => ['email' => $email, 'id' => $lead['id']],
+    'duplicate' => $duplicate,
     'email' => $mailed,
-], 201);
+], $duplicate ? 200 : 201);

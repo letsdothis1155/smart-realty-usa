@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Listing plans — Free, Featured, Premium | SmartRealty</title>
+  <meta name="description" content="Catalog listing tiers for SmartRealty. Prices are admin-configurable. Live charging is off. Not a licensed brokerage listing service." />
+  <link rel="canonical" href="https://smartrealty.us/list/" />
+  <meta property="og:title" content="SmartRealty listing plans" />
+  <meta property="og:url" content="https://smartrealty.us/list/" />
+  <meta name="robots" content="index, follow" />
+  <meta name="theme-color" content="#0a0c10" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" /><link rel="stylesheet" href="/growth.css" />
+  <script src="/domain-config.js"></script><script src="/js/auth-client.js"></script><script src="/js/analytics.js"></script><script src="/js/growth.js"></script><script src="/js/revenue.js"></script>
+</head>
+<body class="g-page" data-growth="learn">
+  <div id="gChrome"></div>
+  <main class="g-section">
+    <div class="container">
+      <p class="g-kicker">Listing products</p>
+      <h1>Placement you can pay for — when billing is live</h1>
+      <p class="g-lead">Free, Featured, and Premium are catalog products. Requesting a plan does not charge a card. SmartRealty is not a licensed brokerage.</p>
+      <div id="listingTiers" class="g-grid-3"></div>
+      <p class="g-msg hidden" id="orderMsg"></p>
+      <form class="g-form g-card" data-lead-form data-intent="list_upgrade" data-source="list_page" style="margin-top:1.5rem">
+        <label>Name <input name="name" /></label>
+        <label>Email <input name="email" type="email" required /></label>
+        <label>City <input name="city" /></label>
+        <label>Property <input name="property" /></label>
+        <label>Which tier? <select name="budget"><option>featured</option><option>premium</option><option>free</option></select></label>
+        <label class="auth-check"><input type="checkbox" name="consent" required /> <span>Contact me about this listing plan. No charge from this click.</span></label>
+        <button type="submit" class="btn btn-primary">Send listing request</button>
+        <p class="g-msg hidden" data-lead-msg></p>
+      </form>
+    </div>
+  </main>
+  <div id="gFoot"></div>
+  <script src="/js/growth-ui.js"></script>
+  <script src="/js/revenue-ui.js"></script>
+</body>
+</html>

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Investment property estimator | SmartRealty</title>
+  <meta name="description" content="Edit purchase price, rent, down payment, rate, tax, insurance, maintenance, and vacancy. Cap rate and cash flow are estimates, not advice." />
+  <link rel="canonical" href="https://smartrealty.us/invest/" />
+  <meta property="og:title" content="Investment property estimator" />
+  <meta property="og:url" content="https://smartrealty.us/invest/" />
+  <meta name="robots" content="index, follow" />
+  <meta name="theme-color" content="#0a0c10" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" /><link rel="stylesheet" href="/growth.css" />
+  <script src="/domain-config.js"></script><script src="/js/auth-client.js"></script><script src="/js/analytics.js"></script><script src="/js/growth.js"></script><script src="/js/revenue.js"></script>
+</head>
+<body class="g-page" data-growth="learn">
+  <div id="gChrome"></div>
+  <main class="g-section">
+    <div class="container">
+      <p class="g-kicker">Investor tool</p>
+      <h1>Run the numbers yourself</h1>
+      <p class="g-lead">Every output is an estimate from your assumptions. Not a loan offer, appraisal, or investment recommendation.</p>
+      <form id="investForm" class="g-form g-card">
+        <label>Purchase price <input name="price" type="number" min="0" value="250000" /></label>
+        <label>Monthly rent <input name="rent" type="number" min="0" value="1800" /></label>
+        <label>Down payment % <input name="down" type="number" min="0" max="100" value="20" /></label>
+        <label>Interest rate % <input name="rate" type="number" step="0.1" value="6.5" /></label>
+        <label>Taxes / year <input name="tax" type="number" min="0" value="3000" /></label>
+        <label>Insurance / year <input name="ins" type="number" min="0" value="1400" /></label>
+        <label>Maintenance / year <input name="maint" type="number" min="0" value="2500" /></label>
+        <label>Vacancy % <input name="vac" type="number" min="0" max="100" value="5" /></label>
+        <button type="submit" class="btn btn-outline">Recalculate</button>
+      </form>
+      <div id="investOut" class="g-card" style="margin-top:1rem"></div>
+      <form class="g-form g-card" data-lead-form data-intent="invest" data-source="invest_page" style="margin-top:1.5rem">
+        <label>Email for a follow-up <input name="email" type="email" required /></label>
+        <label>Name <input name="name" /></label>
+        <label>City <input name="city" /></label>
+        <label>Property <input name="property" /></label>
+        <label class="auth-check"><input type="checkbox" name="consent" required /> <span>You may email me about this estimate. Not advice.</span></label>
+        <button type="submit" class="btn btn-primary">Save this analysis request</button>
+        <p class="g-msg hidden" data-lead-msg></p>
+      </form>
+    </div>
+  </main>
+  <div id="gFoot"></div>
+  <script src="/js/growth-ui.js"></script>
+  <script src="/js/revenue-ui.js"></script>
+</body>
+</html>

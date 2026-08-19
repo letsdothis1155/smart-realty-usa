@@ -43,24 +43,64 @@
     return data;
   }
 
+  let ALL_LEADS = [];
+
+  function filterValue() {
+    return $("#leadsFilter")?.value || "";
+  }
+
+  function filteredLeads() {
+    const f = filterValue();
+    if (!f) return ALL_LEADS;
+    return ALL_LEADS.filter((L) =>
+      String(L.intent || L.interest || "")
+        .toLowerCase()
+        .startsWith(f)
+    );
+  }
+
   function renderLeads(leads) {
     const body = $("#leadsBody");
     $("#leadsCount").textContent = `${leads.length} lead${leads.length === 1 ? "" : "s"}`;
     if (!leads.length) {
-      body.innerHTML = `<tr><td colspan="5" class="admin-empty">No leads yet. Join the waitlist on the homepage.</td></tr>`;
+      body.innerHTML = `<tr><td colspan="8" class="admin-empty">No leads yet. Use /start/ or the homepage form.</td></tr>`;
       return;
     }
+    const statuses = ["new", "contacted", "qualified", "follow_up", "closed", "spam"];
     body.innerHTML = leads
-      .map(
-        (L) => `<tr>
+      .map((L) => {
+        const opts = statuses
+          .map((s) => `<option value="${s}"${(L.status || "new") === s ? " selected" : ""}>${s}</option>`)
+          .join("");
+        return `<tr>
         <td>${esc(formatWhen(L.createdAt))}</td>
         <td>${esc(L.name || "—")}</td>
         <td><a href="mailto:${esc(L.email)}">${esc(L.email)}</a></td>
+        <td>${esc(L.phone || "—")}</td>
+        <td>${esc(L.city || "—")}</td>
+        <td>${esc(L.intent || L.interest || "—")}</td>
+        <td><select data-lead-status="${esc(L.id)}">${opts}</select></td>
         <td>${esc(L.source || "—")}</td>
-        <td>${esc(L.interest || "—")}</td>
-      </tr>`
-      )
+      </tr>`;
+      })
       .join("");
+    body.querySelectorAll("[data-lead-status]").forEach((sel) => {
+      sel.addEventListener("change", async () => {
+        const pass = sessionStorage.getItem(KEY);
+        if (!pass) return;
+        const id = sel.getAttribute("data-lead-status");
+        const path = usePhp() ? "/api/leads-update.php" : "/api/leads-update";
+        try {
+          await fetch(apiBase() + path, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "X-Admin-Password": pass },
+            body: JSON.stringify({ password: pass, id, status: sel.value }),
+          });
+        } catch {
+          /* stay local */
+        }
+      });
+    });
   }
 
   function formatWhen(iso) {
@@ -85,8 +125,11 @@
     const data = await fetchLeads(password);
     sessionStorage.setItem(KEY, password);
     setUnlocked(true);
-    renderLeads(data.leads || []);
+    ALL_LEADS = data.leads || [];
+    renderLeads(filteredLeads());
   }
+
+  $("#leadsFilter")?.addEventListener("change", () => renderLeads(filteredLeads()));
 
   $("#adminLogin")?.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -104,7 +147,8 @@
     if (!pass) return setUnlocked(false);
     try {
       const data = await fetchLeads(pass);
-      renderLeads(data.leads || []);
+      ALL_LEADS = data.leads || [];
+      renderLeads(filteredLeads());
     } catch (err) {
       showErr(err.message);
       setUnlocked(false);
@@ -122,14 +166,20 @@
     if (!pass) return;
     try {
       const data = await fetchLeads(pass);
-      const rows = [["createdAt", "name", "email", "source", "interest", "id"]];
-      (data.leads || []).forEach((L) => {
+      ALL_LEADS = data.leads || [];
+      const rows = [["createdAt", "name", "email", "phone", "city", "state", "intent", "status", "source", "budget", "id"]];
+      filteredLeads().forEach((L) => {
         rows.push([
           L.createdAt || "",
           L.name || "",
           L.email || "",
+          L.phone || "",
+          L.city || "",
+          L.state || "",
+          L.intent || L.interest || "",
+          L.status || "",
           L.source || "",
-          L.interest || "",
+          L.budget || "",
           L.id || "",
         ]);
       });

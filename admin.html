@@ -13,6 +13,7 @@
   <script src="domain-config.js"></script>
   <script src="js/auth-client.js"></script>
   <script src="js/security-banner.js"></script>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏡</text></svg>" />
 </head>
 <body class="auth-page admin-page">
   <div class="ambient ambient-1" aria-hidden="true"></div>
@@ -24,6 +25,9 @@
       </a>
       <div class="admin-top-actions">
         <span class="admin-pill" id="adminStatus">Locked</span>
+        <a class="btn btn-ghost btn-sm" href="admin/founder/">Founder</a>
+        <a class="btn btn-ghost btn-sm" href="admin/revenue/">Revenue</a>
+        <a class="btn btn-ghost btn-sm" href="admin/growth/">Growth</a>
         <a class="btn btn-ghost btn-sm" href="index.html">Site</a>
       </div>
     </header>
@@ -43,10 +47,26 @@
     <section class="admin-card glass hidden" id="leadsCard">
       <div class="admin-leads-head">
         <div>
-          <h2>Waitlist leads</h2>
+          <h2>Lead pipeline</h2>
           <p class="auth-lead" id="leadsCount">0 leads</p>
         </div>
         <div class="admin-leads-actions">
+          <select id="leadsFilter" aria-label="Filter leads by intent">
+            <option value="">All intents</option>
+            <option value="buy">Buy</option>
+            <option value="sell">Sell</option>
+            <option value="rent">Rent</option>
+            <option value="valuation">Value</option>
+            <option value="agent">Agent</option>
+            <option value="finance">Finance</option>
+            <option value="investor">Invest</option>
+            <option value="service">Services</option>
+            <option value="list">List</option>
+            <option value="showing">Showing</option>
+            <option value="financing">Financing (legacy)</option>
+            <option value="callback">Callback</option>
+            <option value="general">General</option>
+          </select>
           <button type="button" class="btn btn-ghost btn-sm" id="refreshLeads">↻ Refresh</button>
           <button type="button" class="btn btn-outline btn-sm" id="exportCsv">Export CSV</button>
           <button type="button" class="btn btn-ghost btn-sm" id="lockAdmin">Lock</button>
@@ -59,8 +79,11 @@
               <th>When (UTC)</th>
               <th>Name</th>
               <th>Email</th>
+              <th>Phone</th>
+              <th>City</th>
+              <th>Intent</th>
+              <th>Status</th>
               <th>Source</th>
-              <th>Interest</th>
             </tr>
           </thead>
           <tbody id="leadsBody"></tbody>
