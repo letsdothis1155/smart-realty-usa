@@ -50,7 +50,7 @@
             <span class="logo-text"><strong>Smart Realty</strong><small>USA</small></span>
           </a>
           <p class="g-footer-tag">Get paid → organize → build a goal → prepare for property.</p>
-          <p class="g-fine">SmartRealty is not a bank. Not a licensed brokerage. No guaranteed savings, ownership, or returns.</p>
+          <p class="g-fine">SmartRealty is not a bank or licensed brokerage. No guaranteed savings, ownership, or returns.</p>
         </div>
         <div>
           <h5>Product</h5>
@@ -84,7 +84,7 @@
         </div>
       </div>
       <div class="container g-footer-bottom">
-        <p>© 2026 SMART REALTY.US LLC · Louisville, KY · Public demo · Revenue $0</p>
+        <p>© 2026 SMART REALTY.US LLC · Louisville, KY · Public demo ahead of full brokerage licensing</p>
       </div>
     </footer>`;
   }

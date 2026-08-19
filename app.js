@@ -2900,7 +2900,7 @@ const AGENT_REPLIES = [
   "Bitcoin quotes use live Coinbase/CoinGecko prices. The pay button does not move real funds.",
   "Try-Before-Buy is a product idea on this demo: stay first, then apply eligible nights toward a purchase.",
   "SMART REALTY.US LLC is owner-operated in Louisville. Phone 1-800-762-7879 · ai@smartrealty.us.",
-  "This site is a static public demo on GitHub Pages. Account requests email Andrew. It is not a licensed brokerage.",
+  "This site runs on GitHub Pages, built solo by Andrew in Louisville. Account requests come straight to his inbox — we're in public demo now, ahead of full brokerage licensing.",
   "Want a Blue Book, a BTC quote, or a waitlist invite? I can point you to those sections — or email Andrew.",
 ];
 
@@ -3294,7 +3294,7 @@ function applyDomainConfig() {
       url: siteUrl || "https://smartrealty.us",
       email,
       telephone: cfg.phoneTel || "+1-800-762-7879",
-      description: "Kentucky LLC. Public demo of transparent home pricing and Bitcoin-ready checkout. Not a licensed brokerage.",
+      description: "Kentucky LLC building a transparent home-pricing and Bitcoin-ready checkout platform. Public demo ahead of full brokerage licensing.",
       areaServed: "US",
       numberOfEmployees: 1,
       address: cfg.businessAddress
