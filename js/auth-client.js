@@ -176,7 +176,9 @@
     const raw = authCfg().signupUrl;
     if (raw && /^https?:\/\//i.test(String(raw))) return String(raw).replace(/\/$/, "");
     const path = raw && String(raw).startsWith("/") ? String(raw) : "/api/signup";
-    if (typeof location !== "undefined" && /^https?:$/i.test(location.protocol)) {
+    const host = typeof location !== "undefined" ? location.hostname : "";
+    const local = host === "localhost" || host === "127.0.0.1";
+    if (typeof location !== "undefined" && /^https?:$/i.test(location.protocol) && !local) {
       return `${location.origin}${path}`;
     }
     return `https://smartrealty.us${path}`;

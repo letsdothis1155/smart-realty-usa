@@ -4897,6 +4897,29 @@ html.auth-open-boot #demoGate {
 .account-links a, .account-links .linkish {
   color: var(--primary);
 }
+.account-aside-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  margin-top: 1rem;
+}
+.account-pending {
+  display: grid;
+  gap: 0.45rem;
+}
+.account-pending-row {
+  display: grid;
+  gap: 0.1rem;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: rgba(0, 0, 0, 0.22);
+  font-size: 0.82rem;
+}
+.account-pending-row .muted {
+  color: var(--text-dim);
+  font-size: 0.72rem;
+}
 .p-meta {
   font-size: 0.75rem;
   color: var(--text-dim);
