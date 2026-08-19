@@ -301,6 +301,7 @@ function listingCardHtml(p) {
           </div>
           <div class="listing-actions">
             <button class="btn btn-ghost" type="button" data-view="${p.id}">View Details</button>
+            <a class="btn btn-outline" href="/room-builder/?listing=${encodeURIComponent(p.id)}&photo=${encodeURIComponent(p.image || "")}">View in 3D</a>
             <button class="btn btn-btc" type="button" data-btc="${p.id}">₿ Buy with BTC</button>
           </div>
         </div>
@@ -483,7 +484,7 @@ function openCompareModal() {
 async function shareListing(p, channel) {
   const cfg = getConfig();
   const base = (cfg.siteUrl || window.location.href.split("#")[0]).replace(/\/$/, "");
-  const url = `${base}/?home=${encodeURIComponent(p.id)}#listings`;
+  const url = p.slug ? `${base}/property/${p.id}-${p.slug}/` : `${base}/?home=${encodeURIComponent(p.id)}#listings`;
   const btc = btcRate ? ` · ${formatBTC(p.offer / btcRate)}` : "";
   const text = `${p.title} — ${formatUSD(p.offer)}${btc}\n${p.location}\nBlue Book ${formatUSD(p.blueBook)} · Save ${savingsPct(p)}%\n${url}`;
   const intent = channel || "auto";
@@ -1709,6 +1710,7 @@ function openProperty(id) {
             ? `<button class="btn btn-outline" type="button" data-rent="${p.id}">Book Try-Before-Buy Stay</button>`
             : ""
         }
+        ${p.slug ? `<a class="btn btn-ghost" href="property/${p.id}-${p.slug}/">View full page</a>` : ""}
         <button class="btn btn-ghost" type="button" id="shareProperty">Share</button>
         <button class="btn btn-ghost" type="button" id="sharePropertyX" title="Share on X">Share 𝕏</button>
         <button class="btn btn-ghost" type="button" id="sharePropertyLink" title="Copy link">Copy link</button>
@@ -3033,8 +3035,22 @@ function initUI() {
     $("#nav")?.classList.toggle("open");
   });
 
-  $$(".nav-link").forEach((link) => {
+  $$("#nav a").forEach((link) => {
     link.addEventListener("click", () => $("#nav")?.classList.remove("open"));
+  });
+
+  const toolsBtn = $("#navToolsBtn");
+  const toolsMenu = $("#navToolsMenu");
+  toolsBtn?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const open = toolsBtn.getAttribute("aria-expanded") === "true";
+    toolsBtn.setAttribute("aria-expanded", open ? "false" : "true");
+    if (toolsMenu) toolsMenu.hidden = open;
+  });
+  document.addEventListener("click", () => {
+    if (!toolsBtn || !toolsMenu) return;
+    toolsBtn.setAttribute("aria-expanded", "false");
+    toolsMenu.hidden = true;
   });
 
   $$("#styleFilters .filter-btn").forEach((btn) => {

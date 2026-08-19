@@ -2,6 +2,7 @@
 window.SRU_PROPERTIES = [
   {
     id: "sr-001",
+    slug: "palm-crest-glass-estate",
     title: "Palm Crest Glass Estate",
     location: "Summerlin, Las Vegas, NV",
     image: "images/mansion-1.jpg",
@@ -20,6 +21,7 @@ window.SRU_PROPERTIES = [
   },
   {
     id: "sr-002",
+    slug: "horizon-ridge-mega-mansion",
     title: "Horizon Ridge Mega Mansion",
     location: "Henderson Hills, NV",
     image: "images/mansion-2.jpg",
@@ -38,6 +40,7 @@ window.SRU_PROPERTIES = [
   },
   {
     id: "sr-003",
+    slug: "mediterranean-hillside-villa",
     title: "Mediterranean Hillside Villa",
     location: "Beverly Hills Adjacent, CA",
     image: "images/mansion-3.jpg",
@@ -56,6 +59,7 @@ window.SRU_PROPERTIES = [
   },
   {
     id: "sr-004",
+    slug: "obsidian-cube-residence",
     title: "Obsidian Cube Residence",
     location: "Paradise Valley, AZ",
     image: "images/mansion-4.jpg",
@@ -74,6 +78,7 @@ window.SRU_PROPERTIES = [
   },
   {
     id: "sr-005",
+    slug: "white-column-palace",
     title: "White Column Palace",
     location: "Atherton, CA",
     image: "images/mansion-5.jpg",
@@ -92,6 +97,7 @@ window.SRU_PROPERTIES = [
   },
   {
     id: "sr-006",
+    slug: "neon-skyline-villa",
     title: "Neon Skyline Villa",
     location: "Las Vegas Strip View, NV",
     image: "images/mansion-6.jpg",
@@ -110,6 +116,7 @@ window.SRU_PROPERTIES = [
   },
   {
     id: "sr-007",
+    slug: "desert-modern-sanctuary",
     title: "Desert Modern Sanctuary",
     location: "Scottsdale, AZ",
     image: "images/mansion-7.jpg",
@@ -128,6 +135,7 @@ window.SRU_PROPERTIES = [
   },
   {
     id: "sr-008",
+    slug: "emerald-lake-manor",
     title: "Emerald Lake Manor",
     location: "Lake Tahoe, CA",
     image: "images/mansion-8.jpg",
@@ -147,6 +155,7 @@ window.SRU_PROPERTIES = [
   // Everyday / mid-market inventory — universal Homes.com / Zillow feel
   {
     id: "sr-009",
+    slug: "sunnyvale-family-craftsman",
     title: "Sunnyvale Family Craftsman",
     location: "Sunnyvale, CA 94087",
     image: "images/listing-09.jpg",
@@ -167,6 +176,7 @@ window.SRU_PROPERTIES = [
   },
   {
     id: "sr-010",
+    slug: "henderson-ranch-rambler",
     title: "Henderson Ranch Rambler",
     location: "Henderson, NV 89052",
     image: "images/listing-10.jpg",
@@ -187,6 +197,7 @@ window.SRU_PROPERTIES = [
   },
   {
     id: "sr-011",
+    slug: "austin-hill-country-cottage",
     title: "Austin Hill Country Cottage",
     location: "Austin, TX 78738",
     image: "images/listing-11.jpg",
@@ -207,6 +218,7 @@ window.SRU_PROPERTIES = [
   },
   {
     id: "sr-012",
+    slug: "miami-edge-condo-loft",
     title: "Miami Edge Condo Loft",
     location: "Miami, FL 33131",
     image: "images/listing-12.jpg",
@@ -227,6 +239,7 @@ window.SRU_PROPERTIES = [
   },
   {
     id: "sr-013",
+    slug: "seattle-soundview-townhome",
     title: "Seattle Soundview Townhome",
     location: "Seattle, WA 98109",
     image: "images/listing-13.jpg",
@@ -247,6 +260,7 @@ window.SRU_PROPERTIES = [
   },
   {
     id: "sr-014",
+    slug: "nashville-music-row-bungalow",
     title: "Nashville Music Row Bungalow",
     location: "Nashville, TN 37203",
     image: "images/listing-14.jpg",
@@ -267,6 +281,7 @@ window.SRU_PROPERTIES = [
   },
   {
     id: "sr-015",
+    slug: "denver-highlands-duplex",
     title: "Denver Highlands Duplex",
     location: "Denver, CO 80211",
     image: "images/listing-15.jpg",
@@ -287,6 +302,7 @@ window.SRU_PROPERTIES = [
   },
   {
     id: "sr-016",
+    slug: "charleston-harbor-carriage-house",
     title: "Charleston Harbor Carriage House",
     location: "Charleston, SC 29401",
     image: "images/listing-16.jpg",
@@ -307,6 +323,7 @@ window.SRU_PROPERTIES = [
   },
   {
     id: "sr-017",
+    slug: "boise-foothills-ranch",
     title: "Boise Foothills Ranch",
     location: "Boise, ID 83702",
     image: "images/listing-17.jpg",
@@ -327,6 +344,7 @@ window.SRU_PROPERTIES = [
   },
   {
     id: "sr-018",
+    slug: "chicago-river-north-penthouse",
     title: "Chicago River North Penthouse",
     location: "Chicago, IL 60654",
     image: "images/listing-18.jpg",
@@ -347,6 +365,7 @@ window.SRU_PROPERTIES = [
   },
   {
     id: "sr-019",
+    slug: "louisville-highlands-brownstone",
     title: "Louisville Highlands Brownstone",
     location: "Louisville, KY 40204",
     image: "images/listing-19.jpg",
@@ -367,6 +386,7 @@ window.SRU_PROPERTIES = [
   },
   {
     id: "sr-020",
+    slug: "portland-alberta-arts-bungalow",
     title: "Portland Alberta Arts Bungalow",
     location: "Portland, OR 97211",
     image: "images/listing-20.jpg",
@@ -387,6 +407,7 @@ window.SRU_PROPERTIES = [
   },
   {
     id: "sr-021",
+    slug: "charlotte-noda-loft",
     title: "Charlotte NoDa Loft",
     location: "Charlotte, NC 28205",
     image: "images/listing-21.jpg",
@@ -407,6 +428,7 @@ window.SRU_PROPERTIES = [
   },
   {
     id: "sr-022",
+    slug: "phoenix-arcadia-pool-home",
     title: "Phoenix Arcadia Pool Home",
     location: "Phoenix, AZ 85018",
     image: "images/listing-22.jpg",
@@ -427,6 +449,7 @@ window.SRU_PROPERTIES = [
   },
   {
     id: "sr-023",
+    slug: "brooklyn-brownstone-duplex",
     title: "Brooklyn Brownstone Duplex",
     location: "Brooklyn, NY 11217",
     image: "images/listing-23.jpg",
@@ -447,6 +470,7 @@ window.SRU_PROPERTIES = [
   },
   {
     id: "sr-024",
+    slug: "lexington-horse-country-estate",
     title: "Lexington Horse-Country Estate",
     location: "Lexington, KY 40502",
     image: "images/listing-24.jpg",
