@@ -27,10 +27,17 @@
  *   POST /api/billing/cancel
  *   POST /api/admin/profit
  *
+ * Listings (mock sample data by default; live MLS data DISABLED until an
+ * IDX/MLS data-license agreement is signed — see server/listings):
+ *   GET  /api/listings
+ *   GET  /api/listings/:id
+ *   POST /api/admin/listings/sync
+ *
  * Run:  cd server && npm install && npm start
  * Port: AUTH_PORT or 8787
  */
 const path = require("node:path");
+const fs = require("node:fs");
 const express = require("express");
 const cors = require("cors");
 const bcrypt = require("bcryptjs");
@@ -46,6 +53,10 @@ const { createStore: createProfitStore } = require("./profit/store");
 const { createProfitRouter } = require("./profit/routes");
 const { createBillingProvider } = require("./profit/billing");
 const { createProfitService } = require("./profit/service");
+const { createStore: createListingsStore } = require("./listings/store");
+const { createListingsProvider } = require("./listings/providers");
+const { createListingsService } = require("./listings/service");
+const { createListingsRouter } = require("./listings/routes");
 
 const BCRYPT_ROUNDS = 12;
 
@@ -140,6 +151,10 @@ function createApp(options = {}) {
       billing: {
         mode: (runtimeConfig.billing && runtimeConfig.billing.mode) || "mock",
         liveCharging: false,
+      },
+      listings: {
+        mode: (runtimeConfig.listings && runtimeConfig.listings.mode) || "mock",
+        liveMlsData: false,
       },
     });
   });
@@ -336,6 +351,24 @@ function createApp(options = {}) {
     })
   );
 
+  const listingsConfig = runtimeConfig.listings || { mode: "mock" };
+  const listingsStore =
+    options.listingsStore ||
+    createListingsStore({
+      memory: !!options.listingsMemory || (!options.listingsDataDir && !!options.ddMemory),
+      dataDir: options.listingsDataDir || path.join(__dirname, "data"),
+    });
+  const listingsProvider = options.listingsProvider || createListingsProvider(listingsConfig);
+  const listingsService =
+    options.listingsService || createListingsService({ store: listingsStore, provider: listingsProvider });
+
+  app.use(
+    createListingsRouter({
+      service: listingsService,
+      adminPassword: options.adminPassword || runtimeConfig.adminPassword || "",
+    })
+  );
+
   if (runtimeConfig.serveStatic || options.serveStatic) {
     const root = path.join(__dirname, "..");
     app.use(express.static(root));
@@ -361,6 +394,7 @@ function start(options = {}) {
     console.log(`  GET  /api/auth/me`);
     console.log(`  GET  /api/direct-deposit  (mode=${runtimeConfig.directDeposit.mode}, production=DISABLED)`);
     console.log(`  GET  /api/billing/catalog  (live charging=DISABLED)`);
+    console.log(`  GET  /api/listings  (mode=${runtimeConfig.listings.mode}, live MLS data=DISABLED)`);
     if (!runtimeConfig.demoPassword) {
       console.log("  Demo access disabled (set DEMO_PASSWORD to enable it). ");
     }
@@ -370,7 +404,30 @@ function start(options = {}) {
   });
 }
 
+function loadDotEnv() {
+  // Minimal, dependency-free .env loader so a launchd/systemd-supervised
+  // process picks up server/.env without a wrapper script. Real env vars
+  // (already set by the process supervisor) always win over the file.
+  const envPath = path.join(__dirname, ".env");
+  let raw;
+  try {
+    raw = fs.readFileSync(envPath, "utf8");
+  } catch {
+    return;
+  }
+  for (const line of raw.split("\n")) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) continue;
+    const eq = trimmed.indexOf("=");
+    if (eq === -1) continue;
+    const key = trimmed.slice(0, eq).trim();
+    if (key in process.env) continue;
+    process.env[key] = trimmed.slice(eq + 1).trim();
+  }
+}
+
 if (require.main === module) {
+  loadDotEnv();
   start();
 }
 

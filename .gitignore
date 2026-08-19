@@ -7,6 +7,7 @@ node_modules/
 server/node_modules/
 server/data/users.json
 server/data/direct-deposit.json
+server/data/listings-cache.json
 server/data/*.tmp
 server/.env
 .env

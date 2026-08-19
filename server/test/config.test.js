@@ -14,6 +14,11 @@ test("placeholder JWT secret fails closed", () => {
   assert.throws(() => assertRequiredConfig(config), /JWT_SECRET/);
 });
 
+test("the committed env.example JWT placeholder fails closed even though it's 32+ chars", () => {
+  const config = readConfig({ JWT_SECRET: "replace-with-a-long-random-secret-at-least-32-chars" });
+  assert.throws(() => assertRequiredConfig(config), /JWT_SECRET/);
+});
+
 test("strong JWT secret enables account auth without demo access", () => {
   const config = readConfig({ JWT_SECRET: "9f8e7d6c5b4a32109f8e7d6c5b4a3210" });
   assert.doesNotThrow(() => assertRequiredConfig(config));
@@ -46,4 +51,17 @@ test("billing production stays off even if env asks for stripe", () => {
   assert.equal(config.billing.mode, "stripe");
   assert.equal(config.billing.productionApproved, false);
   assert.equal(config.billing.liveCharging, false);
+});
+
+test("live MLS data stays off even if env asks for the provider with credentials", () => {
+  const config = readConfig({
+    JWT_SECRET: "9f8e7d6c5b4a32109f8e7d6c5b4a3210",
+    LISTINGS_MODE: "provider",
+    RESO_CLIENT_ID: "client",
+    RESO_CLIENT_SECRET: "secret",
+    RESO_TOKEN_URL: "https://example.test/token",
+    RESO_QUERY_URL: "https://example.test/odata",
+  });
+  assert.equal(config.listings.mode, "provider");
+  assert.equal(config.listings.idxAgreementAccepted, false);
 });

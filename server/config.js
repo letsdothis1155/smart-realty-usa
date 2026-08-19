@@ -4,9 +4,17 @@ function readConfig(env = process.env) {
   const jwtSecret = String(env.JWT_SECRET || "");
   const demoPassword = String(env.DEMO_PASSWORD || "");
   const publishedDemoPassword = ["Smart", "Realty2026"].join("");
+  // The exact string shipped in the committed env.example — anyone can read
+  // it on GitHub, so it must never pass as a real secret even though it's
+  // long enough to clear the length check on its own.
+  const publishedJwtPlaceholder = "replace-with-a-long-random-secret-at-least-32-chars";
   const issues = [];
 
-  if (jwtSecret.length < 32 || /change[-_ ]?me|example|paste/i.test(jwtSecret)) {
+  if (
+    jwtSecret.length < 32 ||
+    jwtSecret === publishedJwtPlaceholder ||
+    /change[-_ ]?me|example|paste|replace[-_ ]?with/i.test(jwtSecret)
+  ) {
     issues.push("jwt_secret_missing_or_weak");
   }
   if (
@@ -29,6 +37,23 @@ function readConfig(env = process.env) {
     adminPassword: String(env.ADMIN_PASSWORD || env.SRU_ADMIN_PASSWORD || ""),
     directDeposit: readDirectDepositConfig(env),
     billing: readBillingConfig(env),
+    listings: readListingsConfig(env),
+  };
+}
+
+function readListingsConfig(env = process.env) {
+  const requested = String(env.LISTINGS_MODE || "mock").toLowerCase();
+  return {
+    mode: requested === "provider" ? "provider" : "mock",
+    resoClientId: String(env.RESO_CLIENT_ID || ""),
+    resoClientSecret: String(env.RESO_CLIENT_SECRET || ""),
+    resoTokenUrl: String(env.RESO_TOKEN_URL || ""),
+    resoQueryUrl: String(env.RESO_QUERY_URL || ""),
+    // HARD RULE, same as billing/direct-deposit: this only flips to true by
+    // editing this line, never by an env var. It stands for "we have a
+    // signed IDX/MLS data-license agreement in hand" — a legal fact, not a
+    // deploy-time toggle. Do not wire this to an environment variable.
+    idxAgreementAccepted: false,
   };
 }
 
