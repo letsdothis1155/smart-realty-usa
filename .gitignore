@@ -19,3 +19,7 @@ api/config.local.php
 api/data/events.jsonl
 api/data/events.jsonl.*
 .htpasswd
+.wrangler/
+workers/**/node_modules/
+workers/**/.wrangler/
+workers/**/worker-configuration.d.ts

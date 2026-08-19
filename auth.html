@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sign in — Smart Realty USA</title>
-  <meta name="description" content="Create an account or sign in to Smart Realty USA." />
+  <meta name="description" content="Request an account or sign in to Smart Realty USA." />
   <meta name="theme-color" content="#0a0c10" />
   <meta name="robots" content="noindex, nofollow" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -31,11 +31,11 @@
       <p class="auth-brand-badge">MEMBER ACCESS</p>
       <h1>Your private doorway to transparent homes.</h1>
       <p class="auth-brand-copy">
-        Create a free account to unlock listings, Blue Book estimates, Bitcoin checkout quotes,
+        Request a free account to unlock listings, Blue Book estimates, Bitcoin checkout quotes,
         and Try-Before-Buy stays — or enter with a shared demo password.
       </p>
       <ul class="auth-perks">
-        <li>Secure password storage (hashed on the server)</li>
+        <li>Account requests go to andrewiredale@smartrealty.us</li>
         <li>Live Bitcoin pricing while you browse</li>
         <li>House Blue Book · lowest transparent offers</li>
         <li>24/7 human support · ai@smartrealty.us</li>
@@ -46,7 +46,7 @@
     <main class="auth-panel glass">
       <div class="auth-tabs auth-tabs-4" role="tablist">
         <button type="button" class="auth-tab is-active" data-tab="signin" role="tab" aria-selected="true">Sign in</button>
-        <button type="button" class="auth-tab" data-tab="signup" role="tab" aria-selected="false">Create</button>
+        <button type="button" class="auth-tab" data-tab="signup" role="tab" aria-selected="false">Request</button>
         <button type="button" class="auth-tab" data-tab="forgot" role="tab" aria-selected="false">Forgot</button>
         <button type="button" class="auth-tab" data-tab="demo" role="tab" aria-selected="false">Demo</button>
       </div>
@@ -72,15 +72,19 @@
         </label>
         <button type="submit" class="btn btn-primary btn-block" id="signinBtn">Sign in</button>
         <p class="auth-switch">
-          New here? <button type="button" class="linkish" data-goto="signup">Create an account</button>
+          New here? <button type="button" class="linkish" data-goto="signup">Request an account</button>
           · <button type="button" class="linkish" data-goto="forgot">Forgot password?</button>
         </p>
       </form>
 
       <!-- Sign up -->
       <form id="signupForm" class="auth-form hidden" data-panel="signup" autocomplete="on">
-        <h2>Create your account</h2>
-        <p class="auth-lead">Takes under a minute. Your password is hashed on the server — never stored in plain text.</p>
+        <h2>Request an account</h2>
+        <p class="auth-lead">
+          GitHub Pages cannot store member passwords. Send your name and email — it goes to
+          <a href="mailto:andrewiredale@smartrealty.us">andrewiredale@smartrealty.us</a>.
+          We will write you back when login is ready. No password is collected.
+        </p>
         <label>
           Full name
           <input type="text" name="name" id="signupName" required minlength="2" maxlength="80" autocomplete="name" placeholder="Andrew Iredale" />
@@ -90,22 +94,20 @@
           <input type="email" name="email" id="signupEmail" required autocomplete="email" placeholder="you@email.com" />
         </label>
         <label>
-          Password
-          <input type="password" name="password" id="signupPassword" required minlength="8" maxlength="128" autocomplete="new-password" placeholder="At least 8 characters" />
+          Note <span class="auth-optional">(optional)</span>
+          <textarea name="note" id="signupNote" maxlength="500" rows="3" placeholder="What you need access for"></textarea>
         </label>
-        <label>
-          Confirm password
-          <input type="password" name="confirm" id="signupConfirm" required minlength="8" autocomplete="new-password" placeholder="Repeat password" />
-        </label>
-        <label class="auth-check">
-          <input type="checkbox" id="signupRemember" checked />
-          <span>Keep me signed in on this device</span>
-        </label>
+        <div class="sr-hp" aria-hidden="true">
+          <label>
+            Company website
+            <input type="text" name="website" id="signupWebsite" tabindex="-1" autocomplete="off" />
+          </label>
+        </div>
         <label class="auth-check">
           <input type="checkbox" id="signupTerms" required />
           <span>I understand this is a <strong>demo platform</strong>, not a licensed brokerage transaction system.</span>
         </label>
-        <button type="submit" class="btn btn-primary btn-block" id="signupBtn">Create account</button>
+        <button type="submit" class="btn btn-primary btn-block" id="signupBtn">Send account request</button>
         <p class="auth-switch">Already registered? <button type="button" class="linkish" data-goto="signin">Sign in</button></p>
       </form>
 
@@ -121,15 +123,15 @@
           <input type="password" name="password" id="demoPassword" required autocomplete="current-password" placeholder="Shared demo password" />
         </label>
         <button type="submit" class="btn btn-primary btn-block" id="demoBtn">Unlock demo</button>
-        <p class="auth-switch">Want your own login? <button type="button" class="linkish" data-goto="signup">Create an account</button></p>
+        <p class="auth-switch">Want your own login? <button type="button" class="linkish" data-goto="signup">Request an account</button></p>
       </form>
 
       <!-- Forgot password -->
       <form id="forgotForm" class="auth-form hidden" data-panel="forgot" autocomplete="on">
         <h2>Forgot password</h2>
         <p class="auth-lead">
-          Enter your account email. On GoDaddy the API issues a one-time reset link
-          (demo returns the link on-screen; production should email it).
+          Enter your account email. If member login is live the API issues a reset link.
+          Otherwise email <a href="mailto:andrewiredale@smartrealty.us">andrewiredale@smartrealty.us</a>.
         </p>
         <label>
           Email

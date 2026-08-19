@@ -86,6 +86,12 @@ window.SRU_CONFIG = {
     mode: "open", // "accounts" | "demo" | "open"
     apiUrl: "", // "" = same website origin (GoDaddy). Local Node: "http://127.0.0.1:8787"
     usePhp: true, // true for GoDaddy PHP api/; false for Node server/
+    /**
+     * Create-account on GitHub Pages emails this address via the signup Worker.
+     * Do not collect or send passwords here.
+     */
+    signupUrl: "/api/signup",
+    signupEmail: "andrewiredale@smartrealty.us",
     demoPassword: "", // server-only: set SRU_DEMO_PASSWORD in api/config.local.php
     allowDemoAccess: true,
     allowOfflineDemo: false,

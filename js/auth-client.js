@@ -172,6 +172,93 @@
     return data;
   }
 
+  function signupEndpoint() {
+    const raw = authCfg().signupUrl;
+    if (raw && /^https?:\/\//i.test(String(raw))) return String(raw).replace(/\/$/, "");
+    const path = raw && String(raw).startsWith("/") ? String(raw) : "/api/signup";
+    if (typeof location !== "undefined" && /^https?:$/i.test(location.protocol)) {
+      return `${location.origin}${path}`;
+    }
+    return `https://smartrealty.us${path}`;
+  }
+
+  function saveLocalAccountRequest(entry) {
+    try {
+      const key = "sru_account_requests";
+      const list = JSON.parse(localStorage.getItem(key) || "[]");
+      list.push(entry);
+      localStorage.setItem(key, JSON.stringify(list.slice(-50)));
+    } catch {
+      /* ignore */
+    }
+  }
+
+  async function deliverViaFormSubmit({ name, email, note }) {
+    const to = authCfg().signupEmail || "andrewiredale@smartrealty.us";
+    const res = await fetch(`https://formsubmit.co/ajax/${encodeURIComponent(to)}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({
+        name,
+        email,
+        _subject: `Account request: ${name}`,
+        _template: "box",
+        _captcha: "false",
+        _replyto: email,
+        message: `Name: ${name}\nEmail: ${email}\nNote: ${note || "(none)"}\n\nFrom the smartrealty.us account request page. No password was collected.`,
+      }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || data.success === "false" || data.success === false) {
+      const err = new Error(data.message || "Email fallback failed");
+      err.status = res.status;
+      throw err;
+    }
+    return data;
+  }
+
+  async function requestAccount({ name, email, note, website }) {
+    const payload = {
+      name: String(name || "").trim(),
+      email: String(email || "").trim(),
+      note: String(note || "").trim(),
+      website: String(website || ""),
+    };
+    saveLocalAccountRequest({
+      name: payload.name,
+      email: payload.email,
+      note: payload.note,
+      at: new Date().toISOString(),
+    });
+    const res = await fetch(signupEndpoint(), {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify(payload),
+    });
+    let data = {};
+    try {
+      data = await res.json();
+    } catch {
+      data = {};
+    }
+    if (!res.ok) {
+      const err = new Error(data.error || `Request failed (${res.status})`);
+      err.status = res.status;
+      err.data = data;
+      throw err;
+    }
+    if (data.emailed) return data;
+    try {
+      await deliverViaFormSubmit(payload);
+      data.emailed = true;
+      data.via = "formsubmit";
+      data.message = "Request sent. We will email you when your account is ready.";
+    } catch {
+      /* Worker already saved the request; page shows a mailto backup if needed. */
+    }
+    return data;
+  }
+
   async function login({ email, password, remember }) {
     const data = await api(ep("login"), {
       method: "POST",
@@ -290,6 +377,8 @@
     saveSession,
     clearSession,
     register,
+    requestAccount,
+    signupEndpoint,
     login,
     demoLogin,
     me,

@@ -1,0 +1,12 @@
+{
+  "name": "smart-realty-signup",
+  "private": true,
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "types": "wrangler types"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.2",
+    "wrangler": "^4.124.0"
+  }
+}
