@@ -1683,7 +1683,7 @@ function openProperty(id) {
         <button class="btn btn-ghost" type="button" id="sharePropertyLink" title="Copy link">Copy link</button>
         <button class="btn btn-ghost" type="button" id="favFromModal" data-fav="${p.id}">${fav ? "♥ Saved" : "♡ Save"}</button>
         <button class="btn btn-ghost" type="button" id="compareFromModal" data-compare-btn="${p.id}">${compareSet.has(p.id) ? "✓ In compare" : "＋ Compare"}</button>
-        <button class="btn btn-ghost" type="button" id="askAboutProperty">Ask Live Human</button>
+        <button class="btn btn-ghost" type="button" id="askAboutProperty">Ask about this home</button>
       </div>
     </div>`;
   $("#propertyModal").classList.remove("hidden");
@@ -2795,13 +2795,13 @@ function initDemoGate() {
 
 // ---------- Live chat (human-style responses) ----------
 const AGENT_REPLIES = [
-  "Absolutely — I’m Maya, a real Smart Realty concierge. I’ll stay with you on this.",
-  "Great question. Our House Blue Book is free and shows fair market value next to our lowest offer with zero hidden fees.",
-  "Yes — Bitcoin checkout locks a 15-minute quote and moves funds into multi-sig escrow until title clears.",
-  "Try-Before-Buy lets you stay like Airbnb. Up to 100% of eligible stay costs can credit toward purchase.",
-  "I can also connect you by phone at 1-800-SMART-USA anytime — a human always answers, 24/7.",
-  "Security is monitored around the clock by our engineering SOC. Your documents and payments stay encrypted end-to-end.",
-  "Want me to pull a Blue Book estimate, open a BTC quote, or book a preview stay right now?",
+  "This chat is a demo assistant — not a live concierge. For a real reply, email ai@smartrealty.us.",
+  "House Blue Book on this demo is a transparent offer next to a fair-value estimate. No hidden fees in the UI.",
+  "Bitcoin quotes use live Coinbase/CoinGecko prices. The pay button does not move real funds.",
+  "Try-Before-Buy is a product idea on this demo: stay first, then apply eligible nights toward a purchase.",
+  "SMART REALTY.US LLC is owner-operated in Louisville. Phone 1-800-762-7879 · ai@smartrealty.us.",
+  "This site is a static public demo on GitHub Pages. Account requests email Andrew. It is not a licensed brokerage.",
+  "Want a Blue Book, a BTC quote, or a waitlist invite? I can point you to those sections — or email Andrew.",
 ];
 
 let replyIndex = 0;
@@ -2810,7 +2810,7 @@ function appendChat(text, who = "agent") {
   const box = $("#chatMessages");
   const div = document.createElement("div");
   div.className = `chat-msg ${who}`;
-  const label = who === "agent" ? "Maya · Human" : "You";
+  const label = who === "agent" ? "Demo assistant" : "You";
   div.innerHTML = `<span class="meta">${label}</span>${escapeHtml(text)}`;
   box.appendChild(div);
   box.scrollTop = box.scrollHeight;
@@ -2828,7 +2828,7 @@ function openChat(prefill) {
   $("#chatPanel").classList.remove("hidden");
   if (!$("#chatMessages").children.length) {
     appendChat(
-      "Hi! I’m Maya — a real person on the Smart Realty USA team. Phone or chat, we’re here 24/7. How can I help?"
+      "Hi — this is the Smart Realty demo assistant. It is not a 24/7 human desk. For Andrew, email ai@smartrealty.us. What do you want to know about the demo?"
     );
   }
   if (prefill) {
@@ -2862,7 +2862,7 @@ function initChat() {
     const typing = document.createElement("div");
     typing.className = "chat-typing";
     typing.id = "typingIndicator";
-    typing.textContent = "Maya is typing…";
+    typing.textContent = "Assistant is typing…";
     $("#chatMessages").appendChild(typing);
     $("#chatMessages").scrollTop = $("#chatMessages").scrollHeight;
 
@@ -2876,19 +2876,19 @@ function initChat() {
       if (lower.includes("bitcoin") || lower.includes("btc") || lower.includes("crypto")) {
         reply =
           btcRate
-            ? `Bitcoin is fully supported at the live market rate of ${formatUsdPrecise(btcRate)}/BTC (we compare CoinGecko + Coinbase). Lock the quote in checkout and send to multi-sig escrow — I can stay on the line through settlement.`
-            : "Bitcoin is fully supported. Pick a listing, lock the live quote in our checkout, and send to multi-sig escrow. I can stay on the line through settlement.";
+            ? `Live Bitcoin is about ${formatUsdPrecise(btcRate)}/BTC (CoinGecko + Coinbase). Checkout can show a quote. No real funds move on this demo.`
+            : "Bitcoin quotes are live market data. Pick a listing and open checkout to see the quote. This demo does not move real funds.";
       } else if (lower.includes("rent") || lower.includes("stay") || lower.includes("airbnb") || lower.includes("try")) {
         reply =
-          "Try-Before-Buy is available on most estates. Book a furnished stay, live in the home, and apply eligible nights toward your purchase. I’ll hold inventory if you like.";
+          "Try-Before-Buy is shown on this demo: book a stay on an eligible listing, then apply eligible nights toward a purchase. It is not a live reservation system yet.";
       } else if (lower.includes("blue book") || lower.includes("value") || lower.includes("price")) {
         reply =
           "Our free House Blue Book is like a Kelley Blue Book for homes — fair market value, comps, and our lowest transparent offer with no surprise fees.";
       } else if (lower.includes("phone") || lower.includes("call")) {
-        reply = "Call us anytime at 1-800-SMART-USA (1-800-762-7887). A real human answers 24 hours a day, 7 days a week.";
+        reply = "Call 1-800-762-7879 or email ai@smartrealty.us. This is an owner-operated Louisville LLC — not a 24/7 call center.";
       } else if (lower.includes("security") || lower.includes("safe") || lower.includes("hack")) {
         reply =
-          "We run 24/7 security with elite engineers — zero-trust access, multi-sig crypto escrow, encrypted title vaults, and continuous penetration testing.";
+          "The public site is static HTTPS on GitHub Pages + Cloudflare. The Bitcoin explorer is a read-only node. We do not run a 24/7 SOC or a live title vault.";
       }
       appendChat(reply, "agent");
     }, delay);
@@ -3113,10 +3113,10 @@ function getConfig() {
       siteUrl: "https://smartrealty.us",
       canonicalHost: "smartrealty.us",
       contactEmail: "ai@smartrealty.us",
-      phoneDisplay: "1-800-SMART-USA",
+      phoneDisplay: "1-800-762-7879",
       phoneTel: "+18007627879",
-      isPrivateDemo: true,
-      presenterMode: true,
+      isPrivateDemo: false,
+      presenterMode: false,
     }
   );
 }
@@ -3138,6 +3138,14 @@ function applyDomainConfig() {
   });
   $$("[data-contact-email-text]").forEach((el) => {
     el.textContent = email;
+  });
+  const phoneDisplay = cfg.phoneDisplay || "1-800-762-7879";
+  const phoneTel = cfg.phoneTel || "+18007627879";
+  $$("[data-phone]").forEach((el) => {
+    el.textContent = phoneDisplay;
+  });
+  $$('a[href^="tel:"]').forEach((a) => {
+    a.href = `tel:${phoneTel}`;
   });
 
   // Live-on footer line when not file://
@@ -3175,21 +3183,28 @@ function applyDomainConfig() {
       : `@${seo.twitterHandle}`;
   }
 
-  // JSON-LD RealEstateAgent + ItemList of homes (public SEO)
+  // JSON-LD Organization + ItemList of demo homes (public SEO)
   const ld = $("#jsonLdOrg");
   if (ld && publicIndex) {
     const org = {
       "@context": "https://schema.org",
-      "@type": "RealEstateAgent",
-      name: cfg.siteName || "Smart Realty USA",
+      "@type": "Organization",
+      name: cfg.legalName || "SMART REALTY.US LLC",
+      alternateName: cfg.siteName || "Smart Realty USA",
       url: siteUrl || "https://smartrealty.us",
       email,
       telephone: cfg.phoneTel || "+1-800-762-7879",
-      description: cfg.tagline || "Transparent homes. Bitcoin ready.",
+      description: "Kentucky LLC. Public demo of transparent home pricing and Bitcoin-ready checkout. Not a licensed brokerage.",
       areaServed: "US",
       numberOfEmployees: 1,
       address: cfg.businessAddress
-        ? { "@type": "PostalAddress", streetAddress: cfg.businessAddress, addressRegion: cfg.formationState || "KY", addressCountry: "US" }
+        ? {
+            "@type": "PostalAddress",
+            streetAddress: cfg.businessAddress,
+            addressLocality: "Louisville",
+            addressRegion: cfg.formationState || "KY",
+            addressCountry: "US",
+          }
         : undefined,
     };
     if (cfg.dunsNumber) org.identifier = cfg.dunsNumber;
@@ -3246,7 +3261,7 @@ Suggested walkthrough (5–7 minutes):
   5. Open any home — see Blue Book stack + live ₿ price
   6. Try Free Blue Book on the form
   7. Optional: Simulate Bitcoin checkout or book a Try-Before-Buy stay
-  8. Live Chat (Maya) or call 1-800-SMART-USA
+  8. Email ai@smartrealty.us or call 1-800-762-7879
 
 Official contact: ${cfg.contactEmail || "ai@smartrealty.us"}
 
