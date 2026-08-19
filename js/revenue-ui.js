@@ -9,9 +9,19 @@
       .replace(/>/g, "&gt;");
   }
 
+  function prefillFromQuery(form) {
+    const q = new URLSearchParams(location.search);
+    ["property", "city", "state", "name", "email"].forEach((k) => {
+      const v = q.get(k);
+      const el = form.querySelector(`[name="${k}"]`);
+      if (v && el && !el.value) el.value = v.slice(0, 160);
+    });
+  }
+
   function bindLeadForm(form) {
     if (!form || form.dataset.bound) return;
     form.dataset.bound = "1";
+    prefillFromQuery(form);
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       const msg = form.querySelector("[data-lead-msg]");

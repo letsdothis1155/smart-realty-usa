@@ -1700,6 +1700,9 @@ function openProperty(id) {
         <p class="pay-est-note">*Illustrative P&amp;I only — not a loan offer. Taxes/insurance extra.</p>
       </div>
       <div class="modal-actions">
+        <a class="btn btn-primary" href="showing/?property=${encodeURIComponent(p.title + " · " + p.location)}&amp;city=${encodeURIComponent((p.location || "").split(",")[0] || "")}">Request a showing</a>
+        <a class="btn btn-outline" href="buy/?property=${encodeURIComponent(p.title)}&amp;city=${encodeURIComponent((p.location || "").split(",")[0] || "")}">Buy inquiry</a>
+        <a class="btn btn-ghost" href="invest/?property=${encodeURIComponent(p.title)}">Analyze</a>
         <button class="btn btn-btc" type="button" data-btc="${p.id}">₿ Purchase with Bitcoin</button>
         ${
           p.rentable
@@ -2063,6 +2066,17 @@ function initBlueBook() {
     result?.classList.add("bb-pop");
     setTimeout(() => result?.classList.remove("bb-pop"), 600);
     toast("Your free House Blue Book estimate is ready.");
+    let next = document.getElementById("bbLeadCta");
+    if (!next && result) {
+      next = document.createElement("p");
+      next.id = "bbLeadCta";
+      next.className = "bb-note";
+      result.appendChild(next);
+    }
+    if (next) {
+      const href = `value/?property=${encodeURIComponent(address)}`;
+      next.innerHTML = `<a class="btn btn-outline btn-sm" href="${href}">Request a follow-up on this address</a> <span class="bb-note">Estimate only — not an appraisal.</span>`;
+    }
     // Live BTC for this estimate
     if (btcRate) {
       const btcLine = document.getElementById("bbBtcLine");

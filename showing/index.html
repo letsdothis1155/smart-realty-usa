@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Request a showing — SmartRealty</title>
+  <meta name="description" content="Request a showing on a SmartRealty demo listing or an address you name. Not a confirmed appointment. Not a licensed brokerage." />
+  <link rel="canonical" href="https://smartrealty.us/showing/" />
+  <meta property="og:title" content="Request a showing" />
+  <meta property="og:url" content="https://smartrealty.us/showing/" />
+  <meta name="robots" content="index, follow" />
+  <meta name="theme-color" content="#0a0c10" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" /><link rel="stylesheet" href="/growth.css" />
+  <script src="/domain-config.js"></script><script src="/js/auth-client.js"></script><script src="/js/analytics.js"></script><script src="/js/growth.js"></script><script src="/js/revenue.js"></script>
+</head>
+<body class="g-page" data-growth="learn">
+  <div id="gChrome"></div>
+  <main class="g-section">
+    <div class="container">
+      <p class="g-kicker">Showing request</p>
+      <h1>Ask to see a property</h1>
+      <p class="g-lead">This is a request, not a booked tour. Demo listings are illustrative. We will not send your details to a third party from this form.</p>
+      <form class="g-form g-card" data-lead-form data-intent="showing" data-source="showing_page">
+        <label>Name <input name="name" autocomplete="name" /></label>
+        <label>Email <input name="email" type="email" required autocomplete="email" /></label>
+        <label>Phone <input name="phone" type="tel" /></label>
+        <label>City <input name="city" /></label>
+        <label>State <input name="state" maxlength="2" placeholder="KY" /></label>
+        <label>Property <input name="property" required placeholder="Listing name or address" /></label>
+        <label>When you are free <textarea name="message" rows="3"></textarea></label>
+        <label class="auth-check"><input type="checkbox" name="consent" required /> <span>You may contact me about this showing request.</span></label>
+        <button type="submit" class="btn btn-primary">Request showing</button>
+        <p class="g-msg hidden" data-lead-msg></p>
+      </form>
+    </div>
+  </main>
+  <div id="gFoot"></div>
+  <script src="/js/growth-ui.js"></script>
+  <script src="/js/revenue-ui.js"></script>
+</body>
+</html>

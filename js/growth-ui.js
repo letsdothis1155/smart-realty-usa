@@ -55,6 +55,8 @@
         <div>
           <h5>Product</h5>
           <a href="/start/">Start</a>
+          <a href="/buy/">Buy</a>
+          <a href="/sell/">Sell</a>
           <a href="/list/">List a property</a>
           <a href="/services/">Services</a>
           <a href="/invest/">Investor calculator</a>

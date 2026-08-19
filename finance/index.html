@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Financing information — SmartRealty</title>
+  <meta name="description" content="Request educational financing information. Not a loan, pre-approval, or rate lock. SmartRealty is not a lender." />
+  <link rel="canonical" href="https://smartrealty.us/finance/" />
+  <meta property="og:title" content="Financing information" />
+  <meta property="og:url" content="https://smartrealty.us/finance/" />
+  <meta name="robots" content="index, follow" />
+  <meta name="theme-color" content="#0a0c10" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" /><link rel="stylesheet" href="/growth.css" />
+  <script src="/domain-config.js"></script><script src="/js/auth-client.js"></script><script src="/js/analytics.js"></script><script src="/js/growth.js"></script><script src="/js/revenue.js"></script>
+</head>
+<body class="g-page" data-growth="learn">
+  <div id="gChrome"></div>
+  <main class="g-section">
+    <div class="container">
+      <p class="g-kicker">Education · not a loan</p>
+      <h1>Financing information</h1>
+      <p class="g-lead">We can point you at questions to ask a licensed lender. This form is not an application, pre-approval, or rate quote. SmartRealty is not a bank or mortgage broker.</p>
+      <form class="g-form g-card" data-lead-form data-intent="finance" data-source="finance_page">
+        <label>Name <input name="name" autocomplete="name" /></label>
+        <label>Email <input name="email" type="email" required autocomplete="email" /></label>
+        <label>Phone <input name="phone" type="tel" /></label>
+        <label>City <input name="city" /></label>
+        <label>State <input name="state" maxlength="2" placeholder="KY" /></label>
+        <label>Price range you are thinking about <input name="budget" /></label>
+        <label>What you want explained <textarea name="message" rows="3" placeholder="Down payment, pre-approval steps, Bitcoin checkout…"></textarea></label>
+        <label class="auth-check"><input type="checkbox" name="consent" required /> <span>You may email educational follow-up. This is not a loan offer.</span></label>
+        <button type="submit" class="btn btn-primary">Request information</button>
+        <p class="g-msg hidden" data-lead-msg></p>
+      </form>
+      <p><a href="/learn/saving-for-a-down-payment/">Down-payment guide</a> · <a href="/learn/saving-for-closing-costs/">Closing costs</a></p>
+    </div>
+  </main>
+  <div id="gFoot"></div>
+  <script src="/js/growth-ui.js"></script>
+  <script src="/js/revenue-ui.js"></script>
+</body>
+</html>
