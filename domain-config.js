@@ -90,7 +90,7 @@ window.SRU_CONFIG = {
      * Create-account on GitHub Pages emails this address via the signup Worker.
      * Do not collect or send passwords here.
      */
-    signupUrl: "/api/signup",
+    signupUrl: "https://smartrealty.us/api/signup",
     signupEmail: "andrewiredale@smartrealty.us",
     demoPassword: "", // server-only: set SRU_DEMO_PASSWORD in api/config.local.php
     allowDemoAccess: true,

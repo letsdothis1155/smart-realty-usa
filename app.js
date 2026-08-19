@@ -2619,7 +2619,7 @@ function openSoftAuthSheet(action, onAllow) {
   if (body) body.textContent = copy.body;
   if (guest) guest.classList.toggle("hidden", !softGateConfig().allowGuest);
   const next = encodeURIComponent("index.html");
-  if ($("#softAuthSignup")) $("#softAuthSignup").href = `signup.html?next=${next}`;
+  if ($("#softAuthSignup")) $("#softAuthSignup").href = `account.html?next=${next}`;
   if ($("#softAuthSignin")) $("#softAuthSignin").href = `auth.html?tab=signin&next=${next}`;
   const overlay = $("#softAuthOverlay");
   if (overlay) {

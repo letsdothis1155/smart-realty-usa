@@ -3,15 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Your account — Smart Realty USA</title>
+  <title>Accounts — Smart Realty USA</title>
+  <meta name="description" content="Request a Smart Realty USA account. Requests go to andrewiredale@smartrealty.us. No password is collected on this page." />
   <meta name="robots" content="noindex, nofollow" />
   <meta name="theme-color" content="#0a0c10" />
+  <link rel="canonical" href="https://smartrealty.us/account.html" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
-  <script src="domain-config.js"></script>
-  <script src="js/auth-client.js"></script>
+  <script src="domain-config.js?v=accounts2"></script>
+  <script src="js/auth-client.js?v=accounts2"></script>
 </head>
 <body class="auth-page account-page">
   <div class="ambient ambient-1" aria-hidden="true"></div>
@@ -21,17 +23,64 @@
         <span class="logo-mark">SR</span>
         <span class="logo-text"><strong>Smart Realty</strong><small>USA</small></span>
       </a>
-      <p class="auth-brand-badge">MEMBER HUB</p>
+      <p class="auth-brand-badge">ACCOUNTS</p>
       <h1>Your account</h1>
-      <p class="auth-brand-copy">Manage password, see saved activity on this device, and jump back into listings.</p>
-      <a class="btn btn-outline" href="index.html#listings">← Back to homes</a>
+      <p class="auth-brand-copy">
+        Request access from this page. It emails
+        <a href="mailto:andrewiredale@smartrealty.us">andrewiredale@smartrealty.us</a>.
+        GitHub Pages cannot store member passwords — no password is collected here.
+      </p>
+      <ul class="auth-perks">
+        <li>Account requests go to Andrew’s inbox</li>
+        <li>Saved homes stay on this device until login is live</li>
+        <li>Node explorer and 3D chain stay public</li>
+      </ul>
+      <div class="account-aside-links">
+        <a class="btn btn-outline" href="index.html#listings">← Homes</a>
+        <a class="btn btn-ghost" href="https://mempool.smartrealty.us" target="_blank" rel="noopener">Node explorer</a>
+      </div>
     </aside>
 
     <main class="auth-panel glass">
-      <div id="accountGuest" class="hidden">
-        <h2>Sign in required</h2>
-        <p class="auth-lead">Request an account or sign in to manage your profile.</p>
-        <a class="btn btn-primary btn-block" href="auth.html?tab=signup&amp;next=account.html">Sign in / Request account</a>
+      <p class="auth-status hidden" id="accStatus" role="status"></p>
+      <p class="auth-error hidden" id="accError" role="alert"></p>
+
+      <div id="accountGuest">
+        <form id="accountRequestForm" class="auth-form" autocomplete="on">
+          <h2>Request an account</h2>
+          <p class="auth-lead">
+            Send your name and email. We write back when member login is ready.
+            Password sign-in is not live on this GitHub Pages host.
+          </p>
+          <label>Full name
+            <input type="text" id="reqName" name="name" required minlength="2" maxlength="80" autocomplete="name" placeholder="Andrew Iredale" />
+          </label>
+          <label>Email
+            <input type="email" id="reqEmail" name="email" required autocomplete="email" placeholder="you@email.com" />
+          </label>
+          <label>Note <span class="auth-optional">(optional)</span>
+            <textarea id="reqNote" name="note" maxlength="500" rows="3" placeholder="What you need access for"></textarea>
+          </label>
+          <div class="sr-hp" aria-hidden="true">
+            <label>Company website
+              <input type="text" id="reqWebsite" name="website" tabindex="-1" autocomplete="off" />
+            </label>
+          </div>
+          <label class="auth-check">
+            <input type="checkbox" id="reqTerms" required />
+            <span>I understand this is a <strong>demo platform</strong>, not a licensed brokerage transaction system.</span>
+          </label>
+          <button type="submit" class="btn btn-primary btn-block" id="reqBtn">Send account request</button>
+          <p class="auth-switch">
+            Already have a login?
+            <a href="auth.html?tab=signin&amp;next=account.html">Sign in</a>
+          </p>
+        </form>
+
+        <section class="account-section" id="pendingSection">
+          <h3>Requests from this device</h3>
+          <div id="pendingList" class="account-pending"></div>
+        </section>
       </div>
 
       <div id="accountMember" class="hidden">
@@ -43,8 +92,6 @@
             <div class="p-meta" id="accRole">member</div>
           </div>
         </div>
-
-        <div class="account-stats" id="accStats"></div>
 
         <section class="account-section hidden" id="resetSection">
           <h3>Reset password</h3>
@@ -75,18 +122,23 @@
             <button type="submit" class="btn btn-primary btn-block">Update password</button>
           </form>
         </section>
+      </div>
 
-        <p class="auth-error hidden" id="accError"></p>
-        <p class="auth-status hidden" id="accStatus"></p>
+      <div class="account-stats" id="accStats"></div>
 
+      <section class="account-section" id="toolsSection">
+        <h3>On this site</h3>
         <div class="account-links">
           <a href="index.html#listings">Browse homes</a>
+          <a href="https://mempool.smartrealty.us" target="_blank" rel="noopener">Node explorer</a>
+          <a href="https://mempool.smartrealty.us/mempools" target="_blank" rel="noopener">Mempools</a>
+          <a href="blockchain-live.html">3D blockchain</a>
           <a href="auth.html?tab=demo">Demo access</a>
-          <button type="button" class="linkish" id="accSignOut">Sign out</button>
+          <button type="button" class="linkish hidden" id="accSignOut">Sign out</button>
         </div>
-      </div>
+      </section>
     </main>
   </div>
-  <script src="js/account-page.js"></script>
+  <script src="js/account-page.js?v=accounts2"></script>
 </body>
 </html>
