@@ -3397,6 +3397,30 @@ function initDomainPanel() {
 }
 
 // ---------- Boot ----------
+function initListingImageFallback() {
+  const grid = $("#listingsGrid");
+  if (!grid) return;
+  const applyFallback = (root = grid) => {
+    const images = root.matches?.(".listing-media img") ? [root] : [...root.querySelectorAll?.(".listing-media img") || []];
+    images.forEach((img) => {
+      const src = img.getAttribute("src") || "";
+      img.onerror = () => {
+        img.onerror = null;
+        img.src = "/images/photo-unavailable.svg";
+      };
+      if (!src || /NoImage|placeholder|courthouse|circuit.?court/i.test(src)) {
+        img.src = "/images/photo-unavailable.svg";
+      }
+    });
+  };
+  applyFallback();
+  new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => mutation.addedNodes.forEach((node) => {
+      if (node.nodeType === Node.ELEMENT_NODE) applyFallback(node);
+    }));
+  }).observe(grid, { childList: true, subtree: true });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   applyDomainConfig();
   initDemoGate();
@@ -3405,6 +3429,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initMarketplace();
   setViewMode("grid");
   renderListings();
+  initListingImageFallback();
   renderRentals();
   initUI();
   initBlueBook();
