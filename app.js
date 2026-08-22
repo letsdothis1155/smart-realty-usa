@@ -304,7 +304,7 @@ function listingCardHtml(p) {
           </div>
           <div class="listing-actions">
             <button class="btn btn-ghost" type="button" data-view="${p.id}">View Details</button>
-            <a class="btn btn-outline" href="/room-builder/?listing=${encodeURIComponent(p.id)}&photo=${encodeURIComponent(propertyGallery(p)[0] || "")}">View in 3D</a>
+            <a class="btn btn-outline" href="${roomBuilderHref(p.id, propertyGallery(p)[0])}">View in 3D</a>
             <button class="btn btn-btc" type="button" data-btc="${p.id}">₿ Buy with BTC</button>
           </div>
         </div>
@@ -1500,6 +1500,10 @@ function renderRentals() {
 }
 
 // ---------- Property modal + multi-photo gallery ----------
+function roomBuilderHref(listingId, photoUrl) {
+  return `/room-builder/?listing=${encodeURIComponent(listingId || "")}&photo=${encodeURIComponent(photoUrl || "")}`;
+}
+
 function galleryHeroHtml(p) {
   const gallery = propertyGallery(p);
   const n = gallery.length;
@@ -1544,7 +1548,7 @@ function galleryHeroHtml(p) {
       : "";
 
   return `
-    <div class="modal-hero gallery-hero" data-gallery-root data-gallery-count="${n}">
+    <div class="modal-hero gallery-hero" data-gallery-root data-gallery-count="${n}" data-listing-id="${escapeHtml(p.id)}">
       <div class="gallery-stage">
         ${slides}
       </div>
@@ -1552,6 +1556,7 @@ function galleryHeroHtml(p) {
         <span class="badge gold">Save ${savingsPct(p)}%</span>
         <span class="badge btc">₿ ready</span>
         ${n > 1 ? `<span class="badge gallery-badge">${n} photos</span>` : ""}
+        <a class="badge gallery-3d-cta" data-gallery-3d href="${roomBuilderHref(p.id, gallery[0])}">Stage this photo in 3D</a>
       </div>
       ${controls}
       ${thumbs}
@@ -1578,6 +1583,9 @@ function wirePropertyGallery(root) {
     });
     const cur = root.querySelector("[data-gallery-current]");
     if (cur) cur.textContent = String(index + 1);
+    const activePhoto = root.querySelector(`.gallery-slide[data-gallery-index="${index}"] img`)?.getAttribute("src") || "";
+    const roomLink = root.querySelector("[data-gallery-3d]");
+    if (roomLink) roomLink.href = roomBuilderHref(root.dataset.listingId || "", activePhoto);
   };
 
   root.addEventListener("click", (e) => {

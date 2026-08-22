@@ -2,17 +2,19 @@
   "$schema": "https://www.unpkg.com/wrangler@4.124.0/config-schema.json",
   "name": "smart-realty-signup",
   "main": "src/index.ts",
-  "compatibility_date": "2026-08-19",
+  "compatibility_date": "2026-08-22",
   "compatibility_flags": ["nodejs_compat"],
   "workers_dev": true,
   "observability": {
     "enabled": true,
-    "logs": { "enabled": true, "head_sampling_rate": 1 }
+    "logs": { "enabled": true, "head_sampling_rate": 1 },
+    "traces": { "enabled": true, "head_sampling_rate": 0.01 }
   },
   "vars": {
     "SIGNUP_TO": "andrewiredale@smartrealty.us",
     "SIGNUP_FROM": "signup@smartrealty.us",
-    "SIGNUP_FROM_NAME": "Smart Realty USA"
+    "SIGNUP_FROM_NAME": "Smart Realty USA",
+    "OPENAI_MODEL": "gpt-5.4-mini"
   },
   "kv_namespaces": [
     {
@@ -32,6 +34,8 @@
   ],
   "routes": [
     { "pattern": "smartrealty.us/api/signup*", "zone_name": "smartrealty.us" },
-    { "pattern": "www.smartrealty.us/api/signup*", "zone_name": "smartrealty.us" }
+    { "pattern": "www.smartrealty.us/api/signup*", "zone_name": "smartrealty.us" },
+    { "pattern": "smartrealty.us/api/shop/reconstruct*", "zone_name": "smartrealty.us" },
+    { "pattern": "www.smartrealty.us/api/shop/reconstruct*", "zone_name": "smartrealty.us" }
   ]
 }

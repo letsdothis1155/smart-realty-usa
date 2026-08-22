@@ -3,16 +3,16 @@
  * become an editable 3D room without rewriting the shop UI.
  *
  * ROOM PHOTO
- *   → depth estimation          (later)
- *   → wall / floor detection    (later)
- *   → approximate dimensions    (Mode A: photo estimate API)
+ *   → room / scene classification (OpenAI vision)
+ *   → wall / floor estimation     (OpenAI vision)
+ *   → approximate dimensions      (single-photo estimate)
  *   → 3D geometry               (this client + /api/shop/reconstruct)
  *   → editable room
  *   → furniture placement
  *   → purchasable products
  *
- * Mode A (now): rectangular living-room shell, labeled as an estimate.
- * Mode B (later): RoomPlan / LiDAR / multi-photo via the same reconstructRoom() contract.
+ * Mode A (now): vision-estimated rectangular shell from a real listing photo.
+ * Mode B (later): RoomPlan / LiDAR / multi-photo via the same contract.
  */
 
 export const PIPELINE_STAGES = [
@@ -46,20 +46,45 @@ export const DEFAULT_LIVING_ROOM = {
   objects: [],
 };
 
+export function normalizeListingPhotoUrl(photoUrl) {
+  const raw = String(photoUrl || "").trim();
+  if (!raw || typeof window === "undefined") return raw;
+  try {
+    const siteRoot = `${window.SRU_CONFIG?.siteUrl || window.location.origin}/`;
+    return new URL(raw.replace(/^\.\//, ""), siteRoot).toString();
+  } catch {
+    return raw;
+  }
+}
+
 export async function reconstructRoom({ photoUrl = "", listingId = "", roomType = "living" } = {}) {
-  if (photoUrl && (typeof window === "undefined" || window.SRU_SHOP_API === true)) {
+  const normalizedPhotoUrl = normalizeListingPhotoUrl(photoUrl);
+  const config = typeof window === "undefined" ? null : window.SRU_CONFIG?.photoReconstruction;
+  const enabled = typeof window === "undefined" || config?.enabled !== false;
+  if (normalizedPhotoUrl && enabled) {
     try {
-      const res = await fetch("/api/shop/reconstruct", {
+      const res = await fetch(config?.endpoint || "/api/shop/reconstruct", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mode: "photo", imageUrl: photoUrl, roomType, widthPx: 1600, heightPx: 900 }),
+        body: JSON.stringify({ imageUrl: normalizedPhotoUrl, listingId, roomType }),
       });
       const data = await res.json();
-      if (data.ok && data.room) return { ...DEFAULT_LIVING_ROOM, ...data.room, listingId };
-      if (data.room) return { ...DEFAULT_LIVING_ROOM, ...data.room, listingId };
+      if (data?.room) return { ...DEFAULT_LIVING_ROOM, ...data.room, listingId };
     } catch {
-      /* fall through to default shell — prototype must run without the API */
+      /* The builder remains usable when photo analysis is unavailable. */
     }
   }
-  return { ...DEFAULT_LIVING_ROOM, listingId, photoUrl, roomType };
+  if (normalizedPhotoUrl) {
+    return {
+      ...DEFAULT_LIVING_ROOM,
+      mode: "fallback",
+      label: "Photo analysis unavailable — showing a sample room.",
+      listingId,
+      roomType,
+      photoUrl: "",
+      sourcePhotoUrl: normalizedPhotoUrl,
+      analysis: { sceneKind: "unusable", confidence: "low" },
+    };
+  }
+  return { ...DEFAULT_LIVING_ROOM, listingId, roomType };
 }

@@ -160,13 +160,24 @@ export function initRoomBuilder(canvas, options = {}) {
     roomDepth = Number(opts.depth) || roomDepth;
     roomHeight = Number(opts.height) || roomHeight;
     if (opts.photoUrl !== undefined) photoUrl = opts.photoUrl || "";
+    const wallPlan = Array.isArray(opts.walls) ? opts.walls : DEFAULT_LIVING_ROOM.walls;
+    const wallDetails = (id) => wallPlan.find((wall) => wall?.id === id) || { id, windows: 0, door: id === "south" };
+    const floorFinish = opts.floor?.finish || "oak";
     while (shellGroup.children.length) shellGroup.remove(shellGroup.children[0]);
     windowLights.length = 0;
     cutawayMeshes.length = 0;
 
+    const floorOptions = {
+      "dark-wood": { map: floorTex, color: "#6d5037", roughness: 0.7 },
+      tile: { color: "#c9c5bd", roughness: 0.38, metalness: 0.04 },
+      carpet: { color: "#aaa59b", roughness: 1 },
+      concrete: { color: "#989b9c", roughness: 0.92 },
+      other: { color: "#b4aa99", roughness: 0.82 },
+      oak: { map: floorTex, color: "#ffffff", roughness: 0.72, metalness: 0.02 },
+    };
     const floor = new THREE.Mesh(
       new THREE.PlaneGeometry(roomWidth, roomDepth),
-      new THREE.MeshStandardMaterial({ map: floorTex, roughness: 0.72, metalness: 0.02 })
+      new THREE.MeshStandardMaterial(floorOptions[floorFinish] || floorOptions.oak)
     );
     floor.rotation.x = -Math.PI / 2;
     floor.receiveShadow = true;
@@ -242,20 +253,53 @@ export function initRoomBuilder(canvas, options = {}) {
       mullion.rotation.y = rotY;
       mullion.translateZ(0.05);
       shellGroup.add(mullion);
+      return [frame, glass, paneLight, mullion];
     }
 
-    addWindow(-roomWidth / 2, -roomDepth * 0.22, Math.PI / 2);
-    addWindow(-roomWidth / 2, roomDepth * 0.18, Math.PI / 2);
-    const door = new THREE.Mesh(
-      new THREE.BoxGeometry(0.92, 2.05, 0.06),
-      new THREE.MeshStandardMaterial({ color: "#6b4a32", roughness: 0.55 })
-    );
-    door.position.set(roomWidth * 0.28, 1.025, roomDepth / 2 - 0.03);
-    shellGroup.add(door);
-    const knob = new THREE.Mesh(new THREE.SphereGeometry(0.03, 10, 8), new THREE.MeshStandardMaterial({ color: "#c9a56a", metalness: 0.8, roughness: 0.25 }));
-    knob.position.set(roomWidth * 0.28 + 0.32, 1.0, roomDepth / 2 - 0.07);
-    shellGroup.add(knob);
-    cutawayMeshes.push(door, knob);
+    function evenlySpaced(count, span) {
+      return Array.from({ length: Math.min(4, Math.max(0, Number(count) || 0)) }, (_, index) =>
+        ((index + 1) / (Math.min(4, Math.max(0, Number(count) || 0)) + 1) - 0.5) * span * 0.72
+      );
+    }
+
+    evenlySpaced(wallDetails("west").windows, roomDepth).forEach((z) => addWindow(-roomWidth / 2, z, Math.PI / 2));
+    evenlySpaced(wallDetails("east").windows, roomDepth).forEach((z) => addWindow(roomWidth / 2, z, -Math.PI / 2));
+    evenlySpaced(wallDetails("north").windows, roomWidth).forEach((x) => addWindow(x, -roomDepth / 2, 0));
+    evenlySpaced(wallDetails("south").windows, roomWidth).forEach((x) => {
+      cutawayMeshes.push(...addWindow(x, roomDepth / 2, Math.PI));
+    });
+
+    function addDoor(id) {
+      const vertical = id === "west" || id === "east";
+      const wallSpan = vertical ? roomDepth : roomWidth;
+      const offset = wallSpan * 0.27;
+      const x = id === "west" ? -roomWidth / 2 : id === "east" ? roomWidth / 2 : offset;
+      const z = id === "north" ? -roomDepth / 2 : id === "south" ? roomDepth / 2 : offset;
+      const rotation = id === "west" ? Math.PI / 2 : id === "east" ? -Math.PI / 2 : id === "south" ? Math.PI : 0;
+      const door = new THREE.Mesh(
+        new THREE.BoxGeometry(0.92, 2.05, 0.06),
+        new THREE.MeshStandardMaterial({ color: "#6b4a32", roughness: 0.55 })
+      );
+      door.position.set(x, 1.025, z);
+      door.rotation.y = rotation;
+      door.translateZ(-0.03);
+      shellGroup.add(door);
+      const knob = new THREE.Mesh(
+        new THREE.SphereGeometry(0.03, 10, 8),
+        new THREE.MeshStandardMaterial({ color: "#c9a56a", metalness: 0.8, roughness: 0.25 })
+      );
+      knob.position.copy(door.position);
+      knob.rotation.y = rotation;
+      knob.translateX(0.32);
+      knob.position.y = 1;
+      knob.translateZ(-0.045);
+      shellGroup.add(knob);
+      if (id === "south") cutawayMeshes.push(door, knob);
+    }
+
+    ["north", "west", "east", "south"].forEach((id) => {
+      if (wallDetails(id).door) addDoor(id);
+    });
 
     ceilingMesh = new THREE.Mesh(
       new THREE.PlaneGeometry(roomWidth, roomDepth),

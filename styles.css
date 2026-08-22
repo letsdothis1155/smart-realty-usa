@@ -4007,6 +4007,21 @@ html.auth-open-boot #demoGate {
   color: #fff !important;
 }
 
+.gallery-3d-cta {
+  background: rgba(232, 200, 122, 0.94) !important;
+  border-color: rgba(255, 240, 195, 0.9) !important;
+  color: #17130a !important;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+.gallery-3d-cta:hover,
+.gallery-3d-cta:focus-visible {
+  transform: translateY(-1px);
+  filter: brightness(1.06);
+}
+
 .modal-content {
   padding: 1.5rem 1.6rem 1.75rem;
 }

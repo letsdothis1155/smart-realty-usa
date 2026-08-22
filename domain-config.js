@@ -120,6 +120,12 @@ window.SRU_CONFIG = {
     enabled: true,
   },
 
+  /** AI photo analysis runs server-side; the browser never receives the API key. */
+  photoReconstruction: {
+    enabled: true,
+    endpoint: "/api/shop/reconstruct",
+  },
+
   social: {
     // Optional future: x, linkedin, instagram
   },

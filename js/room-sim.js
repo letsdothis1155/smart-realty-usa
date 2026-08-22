@@ -1,5 +1,5 @@
 import { initRoomBuilder } from "/js/room-builder.js";
-import { reconstructRoom } from "/js/room-pipeline.js";
+import { reconstructRoom } from "/js/room-pipeline.js?v=20260822f";
 import { CATALOG_TREE, SAMPLE_PRODUCTS, VENDOR_OPTIONS, productsInGroup, money } from "/js/room-catalog.js";
 
 function track(event, props) {
@@ -49,7 +49,7 @@ export async function bootRoomSim() {
     hint: document.getElementById("simHint"),
     time: document.getElementById("simTime"),
     timeVal: document.getElementById("simTimeVal"),
-    title: document.getElementById("simListingTitle"),
+    photoStatus: document.getElementById("simPhotoStatus"),
   };
 
   let department = CATALOG_TREE[0].id;
@@ -58,6 +58,39 @@ export async function bootRoomSim() {
   let selected = null;
   let replaceMode = false;
   let listingTitle = "Property";
+
+  function setPhotoStatus(text, state = "sample") {
+    if (!hud.photoStatus) return;
+    hud.photoStatus.textContent = text;
+    hud.photoStatus.dataset.state = state;
+  }
+
+  async function reconstructFromPhoto(source) {
+    if (!source) return null;
+    setPhotoStatus("Analyzing listing photo…", "analyzing");
+    if (hud.loading) {
+      hud.loading.textContent = "ANALYZING LISTING PHOTO";
+      hud.loading.hidden = false;
+    }
+    try {
+      const room = await reconstructRoom({ photoUrl: source, listingId, roomType: "living" });
+      const confidence = room.analysis?.confidence;
+      if (room.mode === "vision") {
+        setPhotoStatus(
+          `AI photo estimate · ${room.roomType || "room"}${confidence ? ` · ${confidence} confidence` : ""}`,
+          "vision"
+        );
+      } else {
+        setPhotoStatus(room.label || "Sample planning room", "sample");
+      }
+      return room;
+    } finally {
+      if (hud.loading) {
+        hud.loading.hidden = true;
+        hud.loading.textContent = "LOADING 3D";
+      }
+    }
+  }
 
   builder.onBusyChange = (busy) => {
     if (hud.loading) hud.loading.hidden = !busy;
@@ -255,6 +288,7 @@ export async function bootRoomSim() {
   const back = document.getElementById("simBack");
   if (back) back.href = "/#listings";
 
+  let selectedPhoto = photoUrl;
   if (listingId) {
     track("listing_view", { listingId });
     try {
@@ -264,15 +298,17 @@ export async function bootRoomSim() {
       if (listing) {
         listingTitle = listing.title || listing.address || "Property";
         const photos = (listing.images && listing.images.length ? listing.images : listing.image ? [listing.image] : []).filter(Boolean);
-        const room = await reconstructRoom({ photoUrl: photoUrl || photos[0] || "", listingId, roomType: "living" });
-        builder.applyReconstruction(room);
+        selectedPhoto = selectedPhoto || photos[0] || "";
       }
     } catch {
-      /* default shell */
+      /* The photo passed from the static listing card still works without the listings API. */
     }
-  } else if (photoUrl) {
-    const room = await reconstructRoom({ photoUrl, roomType: "living" });
-    builder.applyReconstruction(room);
+  }
+  if (selectedPhoto) {
+    const room = await reconstructFromPhoto(selectedPhoto);
+    if (room) builder.applyReconstruction(room);
+  } else {
+    setPhotoStatus("Sample planning room", "sample");
   }
 
   const backLabel = document.getElementById("simBackLabel");
