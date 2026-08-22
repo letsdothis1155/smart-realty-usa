@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500" viewBox="0 0 800 500" role="img" aria-label="Photo unavailable">
+  <rect width="800" height="500" fill="#1b2130"/>
+  <rect x="250" y="160" width="300" height="180" rx="10" fill="#2a3348"/>
+  <polygon points="230,170 400,90 570,170" fill="#3a4760"/>
+  <rect x="365" y="250" width="70" height="90" fill="#151b28"/>
+  <text x="400" y="390" text-anchor="middle" fill="#c9d2e3" font-family="system-ui,sans-serif" font-size="22">Photo unavailable</text>
+</svg>

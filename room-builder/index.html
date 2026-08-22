@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>3D Room · Shop This Room — SMART REALTY.US LLC</title>
+  <meta name="description" content="Walk a property-inspired room, place planning models from Best Buy, IKEA, Wayfair, and Home Depot, and estimate the staged space before buying a home." />
+  <link rel="stylesheet" href="/room-builder/room-sim.css" />
+  <script src="/domain-config.js"></script>
+  <script src="/js/analytics.js"></script>
+</head>
+<body class="room-sim">
+  <div class="sim-root">
+    <canvas id="simCanvas" class="sim-canvas"></canvas>
+    <div class="sim-hud">
+      <header class="sim-top">
+        <a class="sim-back" id="simBack" href="/#listings">← <span id="simBackLabel">Property</span></a>
+        <div class="sim-title">3D ROOM</div>
+        <div class="sim-modes">
+          <button type="button" class="sim-mode-btn is-active" id="simBuild" data-mode="orbit">BUILD</button>
+          <button type="button" class="sim-mode-btn" data-mode="walk">WALK</button>
+          <button type="button" class="sim-mode-btn" id="simReset">RESET</button>
+        </div>
+      </header>
+
+      <div class="sim-side">
+        <div class="sim-total">Planning total <strong id="simTotalValue">~$0</strong></div>
+        <button type="button" class="sim-chip" id="simBuyRoom">SHOP THIS ROOM</button>
+        <button type="button" class="sim-chip" id="simAuto">✨ AUTO FURNISH</button>
+        <button type="button" class="sim-chip" id="simUndo">UNDO</button>
+        <button type="button" class="sim-chip" id="simRedo">REDO</button>
+        <div class="sim-time">
+          <label>Time of day <span id="simTimeVal">2:00 PM</span></label>
+          <input id="simTime" type="range" min="6" max="20" step="0.5" value="14" />
+        </div>
+      </div>
+
+      <div class="sim-hint" id="simHint">Drag to orbit · click the sofa · scroll to zoom</div>
+
+      <aside class="sim-float" id="simFloat" hidden>
+        <h3>Item</h3>
+        <p class="price">$0</p>
+        <p class="meta"></p>
+        <div class="sim-actions">
+          <button type="button" data-act="move">MOVE</button>
+          <button type="button" data-act="rotate">ROTATE</button>
+          <button type="button" data-act="replace">REPLACE</button>
+          <button type="button" data-act="delete">DELETE</button>
+          <button type="button" data-act="duplicate">DUPLICATE</button>
+          <a class="buy" data-act="buy" target="_blank" rel="noopener">VIEW PRODUCT</a>
+        </div>
+      </aside>
+
+      <div class="sim-catalog" id="simCatalog">
+        <button type="button" class="sim-cat-toggle" id="simCatToggle">FURNISH <span>▲</span></button>
+        <div class="sim-cats" id="simCats"></div>
+        <div class="sim-groups" id="simGroups"></div>
+        <div class="sim-vendors" id="simVendors" aria-label="Retailer filter"></div>
+        <div class="sim-items" id="simItems"></div>
+      </div>
+    </div>
+
+    <div class="sim-loading" id="simLoading" hidden>LOADING 3D</div>
+    <div class="sim-sheet" id="simSheet" hidden>
+      <div class="sim-sheet-card">
+        <h2>Shop this room</h2>
+        <p class="grand">PLANNING TOTAL — ~$0</p>
+        <ol class="lines"></ol>
+        <p class="sim-note">Prices are planning estimates, not live quotes. Each item opens a retailer search so you can confirm the exact model, price, delivery, and availability. Smart Realty has no retailer affiliation or commission relationship today.</p>
+        <button type="button" class="sim-mode-btn" id="simSheetClose">Close</button>
+      </div>
+    </div>
+  </div>
+  <noscript><p class="sim-loading">JavaScript is required for the interactive 3D room.</p></noscript>
+  <script type="module">
+    import("/js/room-sim.js")
+      .then(({ bootRoomSim }) => bootRoomSim())
+      .catch(() => {
+        const loading = document.getElementById("simLoading");
+        if (loading) {
+          loading.hidden = false;
+          loading.textContent = "3D COULD NOT LOAD · CHECK YOUR CONNECTION AND TRY AGAIN";
+        }
+      });
+  </script>
+</body>
+</html>
