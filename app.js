@@ -14,6 +14,9 @@ if (!PROPERTIES.length) {
 const RECENT_KEY = "sru_recent_searches";
 const POPULAR_MARKETS = [
   "Louisville",
+  "Jeffersonville, IN",
+  "New Albany, IN",
+  "Utica, IN",
   "Lexington",
   "Las Vegas",
   "Austin",
@@ -262,7 +265,7 @@ function listingCardHtml(p) {
   return `
       <article class="listing-card reveal" data-id="${p.id}">
         <div class="listing-media">
-          <img src="${p.image}" alt="${p.title}" loading="lazy" decoding="async" />
+          <img src="${p.image}" alt="${p.title}" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='/images/photo-unavailable.svg'" />
           <div class="listing-badges">
             <span class="badge gold">Blue Book</span>
             <span class="badge btc">₿ BTC OK</span>
@@ -301,6 +304,7 @@ function listingCardHtml(p) {
           </div>
           <div class="listing-actions">
             <button class="btn btn-ghost" type="button" data-view="${p.id}">View Details</button>
+            <a class="btn btn-outline" href="/room-builder/?listing=${encodeURIComponent(p.id)}&photo=${encodeURIComponent(propertyGallery(p)[0] || "")}">View in 3D</a>
             <button class="btn btn-btc" type="button" data-btc="${p.id}">₿ Buy with BTC</button>
           </div>
         </div>
@@ -799,13 +803,14 @@ function renderListings() {
   }
 
   if (!filtered.length) {
+    const searchedMarket = (searchState.query || "this search").trim();
     grid.innerHTML = `
       <div class="empty-results glass">
-        <h3>No homes match</h3>
-        <p>Try <strong>Louisville</strong>, <strong>Las Vegas</strong>, or <strong>Austin</strong> — or clear filters for all ${PROPERTIES.length} homes.</p>
+        <h3>No active homes found</h3>
+        <p>There is no matching inventory for <strong>${escapeHtml(searchedMarket)}</strong> in the current source feed. Try Louisville or clear the filters; Smart Realty will not substitute courthouse records or unrelated cities.</p>
         <div class="empty-actions">
           <button type="button" class="btn btn-primary" id="clearFiltersBtn">Clear filters</button>
-          <button type="button" class="btn btn-ghost" data-search="Las Vegas">Try Las Vegas</button>
+          <button type="button" class="btn btn-ghost" data-search="Louisville">Try Louisville</button>
         </div>
       </div>`;
     renderMap([]);
