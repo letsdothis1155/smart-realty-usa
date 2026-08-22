@@ -71,15 +71,36 @@ body.room-sim {
 
 .sim-title {
   justify-self: center;
-  letter-spacing: 0.18em;
-  font-size: 0.72rem;
-  font-weight: 700;
   color: #e8c87a;
   background: rgba(10, 12, 16, 0.72);
   border: 1px solid rgba(232, 200, 122, 0.28);
   padding: 0.45rem 1rem;
   border-radius: 999px;
   backdrop-filter: blur(16px);
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  max-width: min(52vw, 620px);
+}
+.sim-title strong {
+  letter-spacing: 0.18em;
+  font-size: 0.72rem;
+  white-space: nowrap;
+}
+.sim-title span {
+  color: #c9d0dc;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sim-title span[data-state="analyzing"] {
+  color: #8fc9ff;
+}
+.sim-title span[data-state="vision"] {
+  color: #9ee6b5;
 }
 
 .sim-modes {
@@ -394,6 +415,9 @@ body.room-sim {
   .sim-title,
   .sim-modes {
     justify-self: start;
+  }
+  .sim-title {
+    max-width: calc(100vw - 28px);
   }
   .sim-float {
     left: 50% !important;

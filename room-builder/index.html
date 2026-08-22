@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>3D Room · Shop This Room — SMART REALTY.US LLC</title>
   <meta name="description" content="Walk a property-inspired room, place planning models from Best Buy, IKEA, Wayfair, and Home Depot, and estimate the staged space before buying a home." />
-  <link rel="stylesheet" href="/room-builder/room-sim.css" />
-  <script src="/domain-config.js"></script>
+  <link rel="stylesheet" href="/room-builder/room-sim.css?v=20260822f" />
+  <script src="/domain-config.js?v=20260822f"></script>
   <script src="/js/analytics.js"></script>
 </head>
 <body class="room-sim">
@@ -15,7 +15,10 @@
     <div class="sim-hud">
       <header class="sim-top">
         <a class="sim-back" id="simBack" href="/#listings">← <span id="simBackLabel">Property</span></a>
-        <div class="sim-title">3D ROOM</div>
+        <div class="sim-title">
+          <strong>3D ROOM</strong>
+          <span id="simPhotoStatus" data-state="sample">Sample planning room</span>
+        </div>
         <div class="sim-modes">
           <button type="button" class="sim-mode-btn is-active" id="simBuild" data-mode="orbit">BUILD</button>
           <button type="button" class="sim-mode-btn" data-mode="walk">WALK</button>
@@ -73,7 +76,7 @@
   </div>
   <noscript><p class="sim-loading">JavaScript is required for the interactive 3D room.</p></noscript>
   <script type="module">
-    import("/js/room-sim.js")
+    import("/js/room-sim.js?v=20260822f")
       .then(({ bootRoomSim }) => bootRoomSim())
       .catch(() => {
         const loading = document.getElementById("simLoading");
