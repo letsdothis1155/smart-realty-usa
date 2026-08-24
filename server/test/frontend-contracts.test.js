@@ -97,3 +97,10 @@ test("listings without eligible photos offer an honestly labeled sample 3D room"
   assert.match(source, /demo=1/);
   assert.match(source, /generic sample room; it does not model this property/i);
 });
+
+test("sample 3D rooms link clearly back to listings without relabeling property rooms", () => {
+  const source = fs.readFileSync(path.join(ROOT, "js", "room-sim.js"), "utf8");
+  assert.match(source, /params\.get\("demo"\) === "1" && !listingId/);
+  assert.match(source, /isSampleDemo \? "Back to listings" : "Property"/);
+  assert.match(source, /: listingTitle/);
+});

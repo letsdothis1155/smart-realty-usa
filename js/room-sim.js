@@ -120,6 +120,7 @@ export async function bootRoomSim() {
   const listingId = params.get("listing") || "";
   const photoUrl = params.get("photo") || "";
   const from = params.get("from") || "";
+  const isSampleDemo = params.get("demo") === "1" && !listingId;
   const bundledListing = catalogListing(listingId);
   const returnHref =
     sameOriginReturnHref(from) ||
@@ -503,7 +504,11 @@ export async function bootRoomSim() {
   }
 
   const backLabel = document.getElementById("simBackLabel");
-  if (backLabel) backLabel.textContent = listingTitle === "Property" ? "Property" : listingTitle;
+  if (backLabel) {
+    backLabel.textContent = listingTitle === "Property"
+      ? (isSampleDemo ? "Back to listings" : "Property")
+      : listingTitle;
+  }
 
   renderCatalog();
   track("3d_preview_open", { listingId });
