@@ -17,8 +17,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Google+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
   <script src="../domain-config.js"></script>
-  <script src="../js/properties.js"></script>
-  <script src="../js/auth-client.js?v=20260819d"></script>
+  <script src="../js/listings.js"></script>
+  <script src="../js/auth-client.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../supabase-config.js?v=supabase1"></script>
+  <script src="../js/auth-guard.js?v=supabase1"></script>
 </head>
 <body>
   <!-- Android system bars -->
@@ -201,7 +204,9 @@
             <input type="number" id="bbSqft" min="400" step="50" value="1800" />
           </label>
           <button type="button" class="btn-filled" id="bbRun">Get Blue Book</button>
-          <div class="bb-result hidden" id="bbResult"></div>
+          <div class="signin-gate" data-requires-auth data-gate-title="Unlock the full Blue Book report">
+            <div class="signin-gate-content"><div class="bb-result hidden" id="bbResult"></div></div>
+          </div>
         </div>
         <div class="tool-card soft">
           <h3>₿ Live Bitcoin</h3>
@@ -225,8 +230,8 @@
           </div>
         </div>
         <div class="menu-list">
-          <a class="menu-row" href="../auth.html?next=m/index.html">
-            <span>🔐</span><span>Sign in / Request account</span><span class="chev">›</span>
+          <a class="menu-row" href="../auth.html?next=m/index.html" data-auth-guest>
+            <span>🔐</span><span>Sign in / Create free account</span><span class="chev">›</span>
           </a>
           <button type="button" class="menu-row" id="btnSignOut">
             <span>🚪</span><span>Sign out</span><span class="chev">›</span>
@@ -258,7 +263,7 @@
       <button type="button" class="nav-item" data-nav="search">
         <span class="nav-ico">🔍</span><span>Search</span>
       </button>
-      <button type="button" class="nav-item" data-nav="saved">
+      <button type="button" class="nav-item" data-nav="saved" data-requires-auth data-gate-title="Sign in to see saved homes">
         <span class="nav-ico">♡</span><span>Saved</span>
         <span class="nav-badge hidden" id="savedBadge">0</span>
       </button>
@@ -272,6 +277,6 @@
   </div>
 
   <div class="toast hidden" id="toast"></div>
-  <script src="app.js?v=20260819d"></script>
+  <script src="app.js"></script>
 </body>
 </html>

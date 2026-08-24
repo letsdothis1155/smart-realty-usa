@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Smart Realty USA — Exclusive Homes. Transparent Prices. Bitcoin Ready.</title>
-  <meta name="description" content="SMART REALTY.US LLC — Louisville public demo of transparent Blue Book pricing, Bitcoin checkout quotes, and try-before-you-buy stays. Not a licensed brokerage." />
+  <meta name="description" content="SMART REALTY.US LLC — Louisville-based real estate platform with transparent Blue Book pricing, live Bitcoin checkout quotes, and try-before-you-buy stays. Public demo ahead of full brokerage licensing." />
   <meta name="theme-color" content="#0a0c10" />
   <meta name="robots" content="index, follow" id="metaRobots" />
   <link rel="canonical" href="https://smartrealty.us/" id="canonicalLink" />
@@ -23,10 +23,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet" />
   <!-- Live map tiles (OpenStreetMap via Leaflet) -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-  <link rel="stylesheet" href="styles.css?v=20260822f" />
+  <link rel="stylesheet" href="styles.css?v=20260824h" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏡</text></svg>" />
   <!-- Edit domain-config.js when going live on a custom domain -->
-  <script src="domain-config.js?v=20260822f"></script>
+  <script src="domain-config.js?v=20260819d"></script>
   <script>
     /* Early open-mode unlock — avoid password-gate flash before app.js boots */
     (function () {
@@ -40,10 +40,13 @@
       } catch (e) {}
     })();
   </script>
-  <script src="js/properties.js?v=20260819e"></script>
-  <script src="js/auth-client.js?v=20260819e"></script>
-  <script src="js/security-banner.js?v=20260819e"></script>
-  <script src="js/analytics.js?v=20260819e"></script>
+  <script src="js/listings.js?v=20260824a"></script>
+  <script src="js/auth-client.js?v=20260819c"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js?v=supabase1"></script>
+  <script src="js/auth-guard.js?v=supabase1"></script>
+  <script src="js/security-banner.js?v=20260819c"></script>
+  <script src="js/analytics.js?v=20260819c"></script>
   <script type="application/ld+json" id="jsonLdOrg">
   {
     "@context": "https://schema.org",
@@ -54,7 +57,7 @@
     "email": "ai@smartrealty.us",
     "telephone": "+1-800-762-7879",
     "foundingDate": "2026-08-03",
-    "description": "Kentucky LLC. Public demo of transparent home pricing and Bitcoin-ready checkout. Not a licensed brokerage.",
+    "description": "Kentucky LLC building a transparent home-pricing and Bitcoin-ready checkout platform. Public demo ahead of full brokerage licensing.",
     "areaServed": "US",
     "address": {
       "@type": "PostalAddress",
@@ -68,6 +71,7 @@
   </script>
 </head>
 <body>
+  <a class="skip-link" href="#home">Skip to content</a>
   <!-- Access gate — redirects to auth.html for full sign-in / create account -->
   <div class="gate" id="demoGate">
     <div class="gate-card glass">
@@ -86,8 +90,8 @@
         Contact <a href="mailto:ai@smartrealty.us">ai@smartrealty.us</a>
       </p>
       <div class="gate-actions" style="display:grid;gap:0.65rem">
-        <a class="btn btn-primary btn-block" href="auth.html?tab=demo&next=index.html">Enter with demo password</a>
-        <a class="btn btn-ghost btn-block" href="auth.html?tab=signup&amp;next=index.html">Sign in / Request account</a>
+        <a class="btn btn-primary btn-block" href="auth.html?tab=demo&amp;next=index.html">Enter with demo password</a>
+        <a class="btn btn-ghost btn-block" href="auth.html?next=index.html">Create free account / Sign in</a>
       </div>
       <form id="gateForm" class="gate-form" style="margin-top:1rem">
         <label>
@@ -117,8 +121,8 @@
         <span class="open-landing-note">Not a live brokerage.</span>
       </p>
       <div class="open-landing-actions">
-        <a class="btn btn-primary btn-sm" href="account.html">Request an account</a>
-        <a class="btn btn-ghost btn-sm" href="auth.html?tab=signin&next=index.html">Sign in</a>
+        <a class="btn btn-primary btn-sm" href="auth.html?next=index.html">Create free account</a>
+        <a class="btn btn-ghost btn-sm" href="auth.html?next=index.html">Sign in</a>
         <button type="button" class="btn btn-ghost btn-sm" id="dismissOpenBanner" aria-label="Dismiss notice">Dismiss</button>
       </div>
     </div>
@@ -130,7 +134,7 @@
       <span class="top-pill"><span class="pulse-dot"></span> Louisville · Kentuckiana</span>
       <a href="tel:+18007627879" class="top-link">📞 1-800-762-7879</a>
       <span class="top-sep">·</span>
-      <span class="top-link">₿ Bitcoin accepted</span>
+      <span class="top-link hide-sm">₿ Bitcoin accepted</span>
       <span class="top-sep">·</span>
       <a href="mailto:ai@smartrealty.us" class="top-link">ai@smartrealty.us</a>
       <span class="top-sep">·</span>
@@ -161,7 +165,7 @@
         <span class="ticker-updated" id="tickerUpdated">connecting live feed…</span>
       </div>
       <div class="btc-ticker-right">
-        <a href="#bitcoin" class="ticker-link">Live checkout →</a>
+        <a href="#bitcoin" class="ticker-link">Demo checkout →</a>
         <button type="button" class="btn btn-ghost btn-sm" id="tickerRefresh" title="Force REST refresh">↻</button>
       </div>
     </div>
@@ -179,13 +183,22 @@
       </a>
 
       <nav class="nav" id="nav">
-        <a href="#listings" class="nav-link">Listings</a>
-        <a href="room-builder/" class="nav-link">3D Room</a>
-        <a href="#bluebook" class="nav-link">Blue Book</a>
-        <a href="#bitcoin" class="nav-link">Bitcoin</a>
-        <a href="#rentals" class="nav-link">Stay &amp; buy</a>
+        <a href="#listings" class="nav-link">Homes</a>
+        <a href="start/" class="nav-link">Start</a>
         <a href="apps/" class="nav-link">Apps</a>
-        <a href="https://mempool.smartrealty.us" class="nav-link" target="_blank" rel="noopener">Node</a>
+        <div class="nav-item">
+          <button type="button" class="nav-link nav-drop-btn" id="navToolsBtn" aria-expanded="false" aria-controls="navToolsMenu">
+            Tools
+          </button>
+          <div class="nav-drop" id="navToolsMenu" hidden>
+            <a href="#bluebook">Blue Book</a>
+            <a href="room-builder/">3D Room Planner</a>
+            <a href="#bitcoin">Bitcoin checkout</a>
+            <a href="#rentals">Stay &amp; buy</a>
+            <a href="direct-deposit/">Direct deposit</a>
+            <a href="https://mempool.smartrealty.us" target="_blank" rel="noopener">Node explorer</a>
+          </div>
+        </div>
         <a href="#support" class="nav-link">Contact</a>
       </nav>
 
@@ -197,10 +210,9 @@
         </div>
         <a class="btn btn-ghost btn-sm btn-sm-auth" id="signUpNav" href="account.html">Account</a>
         <a class="btn btn-ghost btn-sm btn-sm-auth hidden" id="signInNav" href="auth.html?next=index.html">Sign in</a>
-        <button class="btn btn-icon" id="openFavDrawer" type="button" aria-label="Saved homes" title="Saved homes">
+        <button class="btn btn-icon" id="openFavDrawer" type="button" aria-label="Saved homes" title="Saved homes" data-requires-auth data-gate-title="Sign in to see saved homes">
           ♥ <span class="count-badge hidden" id="favCount">0</span>
         </button>
-        <button class="btn btn-ghost" id="openChatBtn" type="button">Demo help</button>
         <button class="btn btn-primary" id="openBlueBookBtn" type="button">Free Blue Book</button>
         <button class="menu-toggle" id="menuToggle" type="button" aria-label="Open menu">
           <span></span><span></span><span></span>
@@ -218,32 +230,30 @@
       </div>
       <div class="container">
         <div class="hero-content">
-          <p class="eyebrow fade-up">Exclusive · Transparent · Bitcoin ready</p>
+          <p class="eyebrow fade-up">Public demo · Louisville LLC · Bitcoin ready</p>
           <h1 class="fade-up delay-1">
-            Exclusive homes with<br />
-            <span class="gradient-text">transparent lowest offers</span>
+            Transparent<br />
+            home prices.
+            <span class="gradient-text">Bitcoin-ready checkout.</span>
           </h1>
-          <p class="hero-sub fade-up delay-2">
-            Browse free — House Blue Book valuations, live Bitcoin quotes, and
-            try-before-you-buy stays. Public demo from
-            <strong>SMART REALTY.US LLC</strong> in Louisville. Not a licensed brokerage.
-          </p>
+          <div class="hero-sub fade-up delay-2">
+            <p>Public demo from <strong>SMART REALTY.US LLC</strong>.</p>
+            <p>Louisville, KY. Blue Book and live Bitcoin quotes.</p>
+            <p>Try before you buy. Not a licensed brokerage.</p>
+          </div>
           <div class="hero-cta fade-up delay-3">
-            <a href="#listings" class="btn btn-primary btn-lg">Browse exclusive homes</a>
-            <a href="room-builder/" class="btn btn-outline btn-lg">Try the 3D Room Planner</a>
-            <a href="#bitcoin" class="btn btn-outline btn-lg">
-              <span class="btc-icon">₿</span> Buy with Bitcoin
-            </a>
-            <a href="#waitlist" class="btn btn-ghost btn-lg">Join the waitlist</a>
+            <a href="#listings" class="btn btn-primary btn-lg">Browse homes</a>
+            <a href="#bluebook" class="btn btn-outline btn-lg">Free Blue Book</a>
+            <a href="#bitcoin" class="btn btn-ghost btn-lg">Bitcoin checkout</a>
           </div>
           <div class="hero-stats fade-up delay-4">
             <div class="stat">
               <strong id="statListings">24+</strong>
-              <span>Curated Listings</span>
+              <span>Demo listings</span>
             </div>
             <div class="stat">
               <strong>$0</strong>
-              <span>Hidden Fees</span>
+              <span>Hidden fees on the stack</span>
             </div>
             <div class="stat">
               <strong>KY</strong>
@@ -251,7 +261,7 @@
             </div>
             <div class="stat">
               <strong>₿</strong>
-              <span>Live Crypto Pay</span>
+              <span>Live BTC quotes</span>
             </div>
           </div>
         </div>
@@ -278,74 +288,39 @@
       </div>
     </section>
 
-    <!-- Business identity / accounting facts -->
-    <section class="biz-strip" id="business">
-      <div class="container biz-strip-inner">
-        <div class="biz-copy">
-          <p class="eyebrow">Company · Kentucky LLC</p>
-          <h2>SMART REALTY.US LLC is a filed Kentucky company</h2>
-          <p class="section-sub">
-            Member-managed LLC filed 3 Aug 2026 (KY SOS 1614978.06). Owner
-            Andrew Iredale Jr, Louisville. This website is a public demo — not a
-            licensed brokerage and not a bank. Revenue is $0 until an invoice is paid.
-          </p>
-        </div>
-        <div class="biz-cards">
-          <div class="biz-card glass">
-            <span class="biz-step">01</span>
-            <strong>Legal name &amp; address</strong>
-            <p>SMART REALTY.US LLC · 2611 Harmony Rd, Louisville, KY 40299</p>
-          </div>
-          <div class="biz-card glass">
-            <span class="biz-step">02</span>
-            <strong>Accounting / billing</strong>
-            <p>Invoices bill from the LLC. Pay by emailed instructions. This site does not collect cards or bank numbers.</p>
-          </div>
-          <div class="biz-card glass">
-            <span class="biz-step">03</span>
-            <strong>Customer accounts</strong>
-            <p>Request with name, email, and what you need. No password on this host. Requests go to andrewiredale@smartrealty.us.</p>
-          </div>
-        </div>
-        <div class="biz-actions">
-          <a class="btn btn-primary" href="account.html">Request an account</a>
-          <a class="btn btn-outline" href="invoice/">Print an invoice</a>
-          <button type="button" class="btn btn-ghost" id="openDunsGuide">Owner D‑U‑N‑S® checklist</button>
-        </div>
-        <p class="biz-note">D‑U‑N‑S® is still pending. It is a <em>business identifier</em>, not a real-estate license. EIN is not published here.</p>
-      </div>
-    </section>
-
-    <!-- Trust strip -->
-    <section class="trust-strip">
-      <div class="container trust-inner">
-        <div class="trust-item">
-          <span class="trust-icon">📘</span>
-          <div>
-            <strong>Free House Blue Book</strong>
-            <p>True market value like Kelley Blue Book — for homes</p>
-          </div>
-        </div>
-        <div class="trust-item">
-          <span class="trust-icon">💎</span>
-          <div>
-            <strong>Lowest Transparent Offers</strong>
-            <p>Every price, fee, and comparable fully disclosed</p>
-          </div>
-        </div>
-        <div class="trust-item">
-          <span class="trust-icon">₿</span>
-          <div>
-            <strong>Bitcoin Checkout</strong>
-            <p>Industry-first crypto purchase flow for real estate</p>
-          </div>
-        </div>
-        <div class="trust-item">
-          <span class="trust-icon">🏠</span>
-          <div>
-            <strong>Rent Before You Buy</strong>
-            <p>Stay like Airbnb, then lock your purchase</p>
-          </div>
+    <!-- Core tools -->
+    <section class="trust-strip" id="tools" aria-label="Demo tools">
+      <div class="container">
+        <p class="tools-kicker">What you can try on this demo</p>
+        <div class="trust-inner">
+          <a class="trust-item" href="#bluebook">
+            <span class="trust-icon" aria-hidden="true">📘</span>
+            <div>
+              <strong>House Blue Book</strong>
+              <p>Sample home value, then a lowest offer — labeled as a demo estimator</p>
+            </div>
+          </a>
+          <a class="trust-item" href="#listings">
+            <span class="trust-icon" aria-hidden="true">🏡</span>
+            <div>
+              <strong>Listings</strong>
+              <p>Browse demo homes with Blue Book, lowest offer, and live BTC on each card</p>
+            </div>
+          </a>
+          <a class="trust-item" href="#bitcoin">
+            <span class="trust-icon" aria-hidden="true">₿</span>
+            <div>
+              <strong>Bitcoin checkout</strong>
+              <p>Live market quote and a 15-minute lock. No real funds move</p>
+            </div>
+          </a>
+          <a class="trust-item" href="#rentals">
+            <span class="trust-icon" aria-hidden="true">🏠</span>
+            <div>
+              <strong>Stay &amp; buy</strong>
+              <p>Try-before-you-buy stay flow on eligible listings — demo credits only</p>
+            </div>
+          </a>
         </div>
       </div>
     </section>
@@ -355,10 +330,10 @@
       <div class="container">
         <div class="growth-markets-head">
           <div>
-            <p class="eyebrow">National demo inventory</p>
-            <h2>Growing market coverage</h2>
+            <p class="eyebrow">Demo inventory</p>
+            <h2>Start with Louisville, then other markets</h2>
           </div>
-          <p class="growth-markets-sub">Luxury + everyday homes across sunbelt, tech, and Kentucky roots — all with Blue Book + lowest offer.</p>
+          <p class="growth-markets-sub">Kentucky roots plus sunbelt and everyday homes — every card shows Blue Book and lowest offer.</p>
         </div>
         <div class="growth-chips" id="growthMarketChips"></div>
         <div class="growth-kpi" id="growthKpis"></div>
@@ -370,9 +345,9 @@
       <div class="container marketplace">
         <div class="section-head">
           <div>
-            <p class="eyebrow">Marketplace · Homes.com / Zillow-style browse</p>
-            <h2>Search exclusive &amp; everyday homes</h2>
-            <p class="section-sub">Universal search, live filters, map pins, and Bitcoin price on every card — Blue Book value always visible.</p>
+            <p class="eyebrow">Listings · public demo catalog</p>
+            <h2>Search the homes</h2>
+            <p class="section-sub">Filters, map pins, Blue Book, and a live Bitcoin price on every card. This is demo inventory, not an MLS feed.</p>
           </div>
         </div>
 
@@ -381,7 +356,7 @@
           <div class="market-search-main">
             <div class="search-field grow" id="searchFieldWrap">
               <span class="search-ico" aria-hidden="true">🔍</span>
-              <input type="search" id="searchQuery" placeholder="City, neighborhood, ZIP, or home name…" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="searchSuggest" />
+              <input type="search" id="searchQuery" placeholder="3 bed under 250k near Greensboro, ZIP, or street…" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="searchSuggest" />
               <button type="button" class="search-clear hidden" id="searchClear" aria-label="Clear search">×</button>
               <div class="search-suggest hidden" id="searchSuggest" role="listbox"></div>
             </div>
@@ -403,44 +378,57 @@
               Price min
               <select id="filterPriceMin">
                 <option value="0">Any</option>
+                <option value="50000">$50k+</option>
+                <option value="100000">$100k+</option>
+                <option value="150000">$150k+</option>
+                <option value="250000">$250k+</option>
                 <option value="400000">$400k+</option>
                 <option value="1000000">$1M+</option>
-                <option value="3000000">$3M+</option>
-                <option value="5000000">$5M+</option>
-                <option value="10000000">$10M+</option>
               </select>
             </label>
             <label>
               Price max
               <select id="filterPriceMax">
                 <option value="0">Any</option>
+                <option value="150000">Under $150k</option>
+                <option value="250000">Under $250k</option>
+                <option value="300000">Under $300k</option>
+                <option value="500000">Under $500k</option>
                 <option value="1000000">Under $1M</option>
                 <option value="5000000">Under $5M</option>
-                <option value="10000000">Under $10M</option>
-                <option value="15000000">Under $15M</option>
-                <option value="30000000">Under $30M</option>
               </select>
             </label>
             <label>
               Beds
               <select id="filterBeds">
                 <option value="0">Any</option>
+                <option value="1">1+</option>
                 <option value="2">2+</option>
                 <option value="3">3+</option>
                 <option value="4">4+</option>
                 <option value="5">5+</option>
-                <option value="6">6+</option>
+              </select>
+            </label>
+            <label>
+              Baths
+              <select id="filterBaths">
+                <option value="0">Any</option>
+                <option value="1">1+</option>
+                <option value="2">2+</option>
+                <option value="3">3+</option>
               </select>
             </label>
             <label>
               Sort
               <select id="sortBy">
-                <option value="featured">Featured</option>
+                <option value="featured">Best match</option>
+                <option value="newest">Newest</option>
                 <option value="price-asc">Price: Low → High</option>
                 <option value="price-desc">Price: High → Low</option>
-                <option value="savings">Biggest savings</option>
-                <option value="sqft">Largest sqft</option>
-                <option value="btc">Lowest BTC cost</option>
+                <option value="beds">Beds</option>
+                <option value="baths">Baths</option>
+                <option value="sqft">Square feet</option>
+                <option value="distance">Distance</option>
               </select>
             </label>
             <label class="check-inline">
@@ -453,6 +441,27 @@
           <div class="active-filters" id="activeFilters" aria-live="polite"></div>
         </form>
 
+        <div class="deal-finder glass" id="dealFinder" hidden>
+          <div class="deal-finder-head">
+            <strong>Deal Finder</strong>
+            <span class="g-fine">Catalog signals only — not an appraisal</span>
+          </div>
+          <div class="deal-finder-chips" id="dealFinderChips"></div>
+        </div>
+        <div class="signin-gate" data-requires-auth data-gate-title="Instant new-listing alerts" data-gate-copy="Sign in free to save this search and manage your alerts.">
+          <div class="signin-gate-content">
+            <div class="market-search glass" id="alertBar" style="margin-top:0.75rem">
+              <div class="form-row" style="gap:0.5rem;flex-wrap:wrap;align-items:end">
+                <label style="flex:1;min-width:180px">Email for alerts
+                  <input type="email" id="alertEmail" placeholder="you@email.com" autocomplete="email" />
+                </label>
+                <button type="button" class="btn btn-outline btn-sm" id="saveSearchBtn">Save this search</button>
+                <button type="button" class="btn btn-ghost btn-sm" id="viewAlertsBtn">My alerts</button>
+              </div>
+              <p class="g-fine" id="alertMsg"></p>
+            </div>
+          </div>
+        </div>
         <div class="market-toolbar">
           <div class="filters" id="styleFilters">
             <button class="filter-btn active" data-filter="all" type="button">All homes</button>
@@ -462,6 +471,7 @@
             <button class="filter-btn" data-filter="family" type="button">Family / Everyday</button>
             <button class="filter-btn" data-filter="waterfront" type="button">Waterfront</button>
             <button class="filter-btn" data-filter="rentable" type="button">Try Before Buy</button>
+            <button class="filter-btn" data-filter="deals" type="button">Deal Finder</button>
           </div>
           <div class="market-toolbar-right">
             <span class="results-count" id="resultsCount">0 homes</span>
@@ -484,19 +494,61 @@
         </div>
 
         <div class="market-layout" id="marketLayout" data-mode="grid">
+          <div>
           <div class="listings-grid" id="listingsGrid">
             <!-- Filled by JS -->
+          </div>
+          <p style="text-align:center;margin:1rem 0 0">
+            <button type="button" class="btn btn-outline" id="loadMoreListings" hidden>Load more homes</button>
+          </p>
           </div>
           <aside class="market-map glass" id="marketMap" aria-label="Listing map">
             <div class="map-head">
               <strong>Explore map</strong>
               <span class="map-sub" id="mapSub">Live OSM tiles · listing pins</span>
             </div>
+            <div class="map-layers" id="mapLayers">
+              <button type="button" class="map-layer-btn is-active" data-map-layer="streets">Streets</button>
+              <button type="button" class="map-layer-btn" data-map-layer="satellite">Satellite</button>
+              <button type="button" class="map-layer-btn" data-map-layer="earth3d">Earth 3D</button>
+            </div>
             <div class="map-canvas" id="mapCanvas">
               <!-- Leaflet map + pins -->
             </div>
-            <p class="map-footnote">© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> · pins are demo coordinates</p>
+            <div class="earth-host hidden" id="earthHost"></div>
+            <p class="map-footnote" id="mapFootnote">© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> · pins are demo coordinates</p>
           </aside>
+        </div>
+      </div>
+    </section>
+
+    <section class="member-value-strip" aria-labelledby="memberValueTitle">
+      <div class="container">
+        <div class="section-head center">
+          <p class="eyebrow">Optional account</p>
+          <h2 id="memberValueTitle">Save homes if you want a shortlist</h2>
+        </div>
+        <div class="member-value-grid">
+          <article>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16l-7-4-7 4Z"/></svg>
+            <strong>Save homes across devices</strong>
+            <span>Your shortlist follows your secure account.</span>
+          </article>
+          <article>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>
+            <strong>Instant new-listing alerts</strong>
+            <span>Keep searches ready for Louisville and Southern Indiana.</span>
+          </article>
+          <article>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Zm4-11h8M8 12h8M8 16h5"/></svg>
+            <strong>Full Blue Book reports</strong>
+            <span>Unlock the complete price stack and follow-up tools.</span>
+          </article>
+          <article>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            <strong>Bitcoin quote history</strong>
+            <span>Keep context around the live BTC prices you explore.</span>
+          </article>
         </div>
       </div>
     </section>
@@ -506,10 +558,10 @@
       <div class="container bluebook-grid">
         <div class="bluebook-copy">
           <p class="eyebrow">Free House Blue Book™</p>
-          <h2>Know the real value before you buy</h2>
+          <h2>See a sample value before you talk numbers</h2>
           <p class="section-sub">
-            Inspired by the Kelley Blue Book for cars — Smart Realty USA publishes
-            transparent fair-market valuations so you always see the lowest honest offer.
+            Inspired by Kelley Blue Book for cars: list price, Blue Book, and lowest
+            offer on one stack. This form is a demo estimator — not an appraisal.
           </p>
           <ul class="feature-list">
             <li>
@@ -573,21 +625,25 @@
             </div>
             <button type="submit" class="btn btn-primary btn-block">Generate Free Blue Book</button>
           </form>
-          <div class="bb-result hidden" id="bbResult">
-            <div class="bb-result-row">
-              <span>Estimated Blue Book Value</span>
-              <strong id="bbValue">—</strong>
+          <div class="signin-gate bb-report-gate" data-requires-auth data-gate-title="Unlock your full Blue Book report" data-gate-copy="The sample form stays public. Sign in free to reveal the complete result and follow-up tools.">
+            <div class="signin-gate-content">
+              <div class="bb-result hidden" id="bbResult">
+                <div class="bb-result-row">
+                  <span>Estimated Blue Book Value</span>
+                  <strong id="bbValue">—</strong>
+                </div>
+                <div class="bb-result-row highlight">
+                  <span>Smart Realty Lowest Offer</span>
+                  <strong id="bbOffer">—</strong>
+                </div>
+                <div class="bb-result-row savings">
+                  <span>Estimated savings vs list</span>
+                  <strong id="bbSavings">—</strong>
+                </div>
+                <p class="bb-btc-line hidden" id="bbBtcLine"></p>
+                <p class="bb-note">Sample estimate for demonstration. A licensed specialist can refine this free of charge.</p>
+              </div>
             </div>
-            <div class="bb-result-row highlight">
-              <span>Smart Realty Lowest Offer</span>
-              <strong id="bbOffer">—</strong>
-            </div>
-            <div class="bb-result-row savings">
-              <span>Estimated savings vs list</span>
-              <strong id="bbSavings">—</strong>
-            </div>
-            <p class="bb-btc-line hidden" id="bbBtcLine"></p>
-            <p class="bb-note">Sample estimate for demonstration. A licensed specialist can refine this free of charge.</p>
           </div>
         </div>
       </div>
@@ -613,11 +669,11 @@
     <section class="section" id="bitcoin">
       <div class="container">
         <div class="section-head center">
-          <p class="eyebrow">Industry First</p>
-          <h2>Purchase real estate with Bitcoin</h2>
+          <p class="eyebrow">Demo checkout · live market quotes</p>
+          <h2>See a home priced in Bitcoin</h2>
           <p class="section-sub">
-            The first streamlined checkout where you can secure a home with BTC —
-            escrow-protected, instant quote, real human settlement team.
+            Coinbase + CoinGecko quotes with a 15-minute lock so the number does not
+            jump while you look. This is a demo — the deposit address does not take real funds.
           </p>
         </div>
 
@@ -630,8 +686,8 @@
             </div>
             <div class="btc-step">
               <div class="step-num">02</div>
-              <h4>Lock live BTC quote</h4>
-              <p>We lock a 15-minute market quote so you aren’t burned by volatility mid-checkout.</p>
+              <h4>Lock a 15-minute demo quote</h4>
+              <p>Checkout freezes that rate for 15 minutes. The ticker keeps moving. Then the demo lock rolls to the live rate.</p>
             </div>
             <div class="btc-step">
               <div class="step-num">03</div>
@@ -640,14 +696,15 @@
             </div>
             <div class="btc-step">
               <div class="step-num">04</div>
-              <h4>Close &amp; keys</h4>
-              <p>Title transfer completes. You get keys, docs, and optional try-before-buy credit applied.</p>
+              <h4>Demo stops here</h4>
+              <p>No deed, no keys, no real escrow. A live close would need licensed partners and a brokerage license we do not have yet.</p>
             </div>
           </div>
 
-          <div class="btc-checkout glass" id="btcCheckout">
+          <div class="btc-checkout glass is-demo is-connecting" id="btcCheckout" data-flow="demo">
+            <p class="btc-demo-banner" role="status">Demo checkout — no wallet, no real escrow, no funds move.</p>
             <div class="btc-checkout-head">
-              <span class="btc-live" id="btcLivePill"><span class="pulse-dot"></span> <span id="btcLiveLabel">Connecting stream…</span></span>
+              <span class="btc-live" id="btcLivePill"><span class="pulse-dot"></span> <span id="btcLiveLabel">Connecting…</span></span>
               <h3>Bitcoin Checkout</h3>
               <p class="btc-source-note" id="btcSourceNote">Opening Coinbase real-time feed…</p>
             </div>
@@ -684,7 +741,15 @@
                 <strong id="btcSpread">—</strong>
               </div>
               <div class="quote-row">
-                <span>Best rate used</span>
+                <span>Live spot</span>
+                <strong id="btcLiveSpot">—</strong>
+              </div>
+              <div class="quote-row">
+                <span>Locked demo quote</span>
+                <strong id="btcLockedRate">—</strong>
+              </div>
+              <div class="quote-row">
+                <span>Quote used</span>
                 <strong id="btcRate" class="btc-price-num">—</strong>
               </div>
               <div class="quote-row">
@@ -699,10 +764,10 @@
                 <span>USD equivalent check</span>
                 <strong id="btcUsdCheck">—</strong>
               </div>
-              <div class="quote-timer">
-                <span class="live-lock"><span class="pulse-dot"></span> Stream live</span>
-                · quote lock <span id="btcTimer">15:00</span>
-                <button type="button" class="btn btn-ghost btn-sm" id="refreshBtcRates" style="margin-left:0.5rem">Refresh REST</button>
+              <div class="quote-timer" id="btcQuoteLock">
+                <span class="live-lock" id="btcLockStatus">Waiting for a lockable rate</span>
+                <span> · 15-min demo lock <strong id="btcTimer">15:00</strong></span>
+                <button type="button" class="btn btn-ghost btn-sm" id="refreshBtcRates">Relock quote</button>
               </div>
             </div>
 
@@ -727,9 +792,9 @@
               <button type="button" class="btn btn-ghost btn-sm" id="copyBtcAddr">Copy</button>
             </div>
             <button type="button" class="btn btn-primary btn-block" id="simulateBtcPay">
-              ₿ Simulate Secure BTC Payment
+              ₿ Simulate demo payment
             </button>
-            <p class="btc-disclaimer">Demo only — no real funds move. Live prices via Coinbase WebSocket + CoinGecko REST. Production uses licensed escrow partners.</p>
+            <p class="btc-disclaimer">Demo only — no real funds move. Live prices via Coinbase WebSocket + CoinGecko REST. The 15-minute lock freezes the checkout quote; the ticker keeps ticking. A real close would need licensed escrow and a brokerage license we do not have yet.</p>
           </div>
         </div>
 
@@ -750,7 +815,6 @@
             <a class="btn btn-primary" href="https://mempool.smartrealty.us" target="_blank" rel="noopener">Open mempool.smartrealty.us ↗</a>
             <a class="btn btn-ghost btn-sm" href="https://mempool.smartrealty.us/mempools" target="_blank" rel="noopener">Mempools · goggles</a>
             <a class="btn btn-ghost btn-sm" href="blockchain-live.html">3D blockchain</a>
-            <a class="btn btn-primary" href="https://mempool.smartrealty.us/#fund" target="_blank" rel="noopener" style="background:linear-gradient(135deg,#1a8f3c,#2f9e44)">Fund the node</a>
             <a class="btn btn-ghost btn-sm" href="https://mempool.smartrealty.us/status" target="_blank" rel="noopener">Live status board</a>
             <a class="btn btn-ghost btn-sm" href="https://mempool.smartrealty.us/about" target="_blank" rel="noopener">About the node</a>
             <img src="https://mempool.smartrealty.us/badge.svg" alt="SmartRealtyNode live status" width="280" height="48" style="max-width:100%;height:auto;border-radius:8px" loading="lazy" />
@@ -764,11 +828,11 @@
       <div class="container">
         <div class="section-head">
           <div>
-            <p class="eyebrow">Airbnb-Style Preview</p>
-            <h2>Rent it. Love it. Then buy it.</h2>
+            <p class="eyebrow">Stay &amp; buy · demo flow</p>
+            <h2>Try the home before you buy it</h2>
             <p class="section-sub">
-              Stay in the home for days or weeks before you commit.
-              Rental credits apply toward your purchase — risk-free discovery.
+              Eligible listings show a furnished-stay path and purchase credits.
+              Credits are calculated here; they are not settled on this site.
             </p>
           </div>
         </div>
@@ -801,15 +865,55 @@
       </div>
     </section>
 
+    <!-- Business identity / accounting facts -->
+    <section class="biz-strip" id="business">
+      <div class="container biz-strip-inner">
+        <div class="biz-copy">
+          <p class="eyebrow">Company · Kentucky LLC</p>
+          <h2>SMART REALTY.US LLC is a filed Kentucky company</h2>
+          <p class="section-sub">
+            Member-managed LLC filed 3 Aug 2026 (KY SOS 1614978.06), owned and
+            operated by Andrew Iredale Jr in Louisville. Every valuation, quote,
+            and member experience on this site is operated directly by the LLC —
+            no black-box middleman, and no brokerage license claimed yet.
+          </p>
+        </div>
+        <div class="biz-cards">
+          <div class="biz-card glass">
+            <span class="biz-step">01</span>
+            <strong>Legal name &amp; address</strong>
+            <p>SMART REALTY.US LLC · 2611 Harmony Rd, Louisville, KY 40299</p>
+          </div>
+          <div class="biz-card glass">
+            <span class="biz-step">02</span>
+            <strong>Accounting / billing</strong>
+            <p>Invoices bill from the LLC. Pay by emailed instructions. This site does not collect cards or bank numbers.</p>
+          </div>
+          <div class="biz-card glass">
+            <span class="biz-step">03</span>
+            <strong>Customer accounts</strong>
+            <p>Sign in by email magic link—no password to create or remember. Supabase Auth manages the session while Smart Realty stores only the member profile and features you choose to use.</p>
+          </div>
+        </div>
+        <div class="biz-actions">
+          <a class="btn btn-primary" href="auth.html">Sign in free</a>
+          <a class="btn btn-outline" href="invoice/">Print an invoice</a>
+          <button type="button" class="btn btn-ghost" id="openDunsGuide">Owner D‑U‑N‑S® checklist</button>
+        </div>
+        <p class="biz-note">D‑U‑N‑S® is still pending. It is a <em>business identifier</em>, not a real-estate license. EIN is not published here.</p>
+      </div>
+    </section>
+
     <!-- Security -->
     <section class="section" id="security">
       <div class="container">
         <div class="section-head center">
           <p class="eyebrow">How this site is hosted</p>
-          <h2>Public demo, honest boundary</h2>
+          <h2>Built to hold up, built to be honest</h2>
           <p class="section-sub">
-            This is a static site on GitHub Pages with Cloudflare in front.
-            It is not a licensed brokerage and does not store member passwords here.
+            The public site runs on GitHub Pages behind Cloudflare — fast,
+            static, and a small attack surface. We're not yet a licensed
+            brokerage, so no funds or member passwords are ever stored here.
           </p>
         </div>
         <div class="security-grid">
@@ -820,8 +924,8 @@
           </div>
           <div class="sec-card glass">
             <div class="sec-icon">🔐</div>
-            <h4>No password store on this host</h4>
-            <p>GitHub Pages cannot keep member logins. Account requests email Andrew.</p>
+            <h4>Passwordless by design</h4>
+            <p>Email magic links replace passwords. Member records are protected by Supabase Row Level Security.</p>
           </div>
           <div class="sec-card glass">
             <div class="sec-icon">₿</div>
@@ -836,12 +940,12 @@
           <div class="sec-card glass">
             <div class="sec-icon">🏢</div>
             <h4>Kentucky LLC</h4>
-            <p>SMART REALTY.US LLC, filed 2026. Owner Andrew Iredale Jr. Revenue $0.</p>
+            <p>SMART REALTY.US LLC, filed 2026. Owned and operated by Andrew Iredale Jr.</p>
           </div>
           <div class="sec-card glass">
             <div class="sec-icon">✅</div>
-            <h4>Not a brokerage (yet)</h4>
-            <p>Listings are a product demo. Real closings need state licensing we do not claim.</p>
+            <h4>Licensing in progress</h4>
+            <p>Listings showcase the pricing model today. Closing a real transaction requires state brokerage licensing, which we're pursuing next.</p>
           </div>
         </div>
       </div>
@@ -883,7 +987,7 @@
 
           <form id="contactLeadForm" class="contact-lead-form glass">
             <h3>Request a callback / info</h3>
-            <p class="contact-lead-sub">We’ll add you to the concierge list — same pipeline as the waitlist.</p>
+            <p class="contact-lead-sub">Andrew reviews these personally. Not a live brokerage desk.</p>
             <div class="form-row">
               <label>Name
                 <input type="text" id="contactName" autocomplete="name" placeholder="Your name" />
@@ -894,19 +998,26 @@
             </div>
             <label>What do you need?
               <select id="contactInterest">
+                <option value="buy">Buy a home</option>
+                <option value="sell">Sell a home</option>
+                <option value="rent">Rent</option>
+                <option value="valuation">Home value</option>
+                <option value="showing">Request a showing</option>
+                <option value="agent">Find an agent</option>
+                <option value="finance">Financing information</option>
+                <option value="investor">Investment look</option>
+                <option value="service">Digital services</option>
+                <option value="list">List a property</option>
                 <option value="callback">Phone callback</option>
                 <option value="bluebook">Blue Book help</option>
                 <option value="bitcoin">Bitcoin checkout</option>
-                <option value="rental">Try-before-buy stay</option>
-                <option value="financing">Mortgage / financing</option>
-                <option value="moving">Moving / relocation</option>
                 <option value="general">General question</option>
               </select>
             </label>
             <label>Message (optional)
               <textarea id="contactMsg" rows="3" placeholder="Tell us which home or city…"></textarea>
             </label>
-            <button type="submit" class="btn btn-primary" id="contactLeadBtn">Send to concierge</button>
+            <button type="submit" class="btn btn-primary" id="contactLeadBtn">Send to Andrew</button>
             <p class="waitlist-msg hidden" id="contactLeadMsg" role="status"></p>
           </form>
         </div>
@@ -932,10 +1043,10 @@
     <!-- CTA -->
     <section class="cta-band">
       <div class="container cta-inner">
-        <h2>Ready for transparent luxury?</h2>
-        <p>Browse exclusive estates, pull a free Blue Book, or talk to a human right now.</p>
+        <h2>Keep browsing, or email the owner</h2>
+        <p>Public demo from a Louisville LLC. Not a licensed brokerage.</p>
         <div class="hero-cta">
-          <a href="#listings" class="btn btn-primary btn-lg">View Listings</a>
+          <a href="#listings" class="btn btn-primary btn-lg">View listings</a>
           <a href="mailto:ai@smartrealty.us" class="btn btn-outline btn-lg">Email Andrew</a>
         </div>
       </div>
@@ -953,41 +1064,57 @@
             <small>USA</small>
           </span>
         </a>
-        <p class="footer-tag">Exclusive homes. Transparent prices. Bitcoin ready.</p>
+        <p class="footer-tag">Homes, apps, and owner tools from a Louisville LLC. Public demo — not a live brokerage.</p>
       </div>
       <div>
-        <h5>Explore</h5>
+        <h5>Homes</h5>
         <a href="#listings">Listings</a>
+        <a href="start/">Start</a>
+        <a href="buy/">Buy</a>
+        <a href="sell/">Sell</a>
+        <a href="rent/">Rent</a>
+        <a href="showing/">Showing</a>
+        <a href="list/">List a property</a>
+        <a href="locations/">Louisville</a>
+      </div>
+      <div>
+        <h5>Apps &amp; tools</h5>
+        <a href="apps/">All apps</a>
+        <a href="apps/daily-cache-wiper/">Daily Cache Wiper</a>
+        <a href="apps/axiom/">Axiom</a>
         <a href="#bluebook">Blue Book</a>
-        <a href="#bitcoin">Bitcoin</a>
-        <a href="apps/">Apps</a>
+        <a href="#bitcoin">Bitcoin checkout</a>
+        <a href="direct-deposit/">Direct deposit</a>
         <a href="https://mempool.smartrealty.us" target="_blank" rel="noopener">Node explorer</a>
-        <a href="https://mempool.smartrealty.us/mempools" target="_blank" rel="noopener">Mempools</a>
-        <a href="blockchain-live.html">3D blockchain</a>
-        <a href="#rentals">Stay &amp; buy</a>
-        <a href="#business">Company</a>
       </div>
       <div>
-        <h5>Trust</h5>
-        <a href="#security">How this is hosted</a>
+        <h5>Company</h5>
+        <a href="#business">LLC facts</a>
+        <a href="security/">Trust center</a>
         <a href="#support">Contact</a>
-        <a href="tel:+18007627879">Call</a>
-        <a href="https://mempool.smartrealty.us/about" target="_blank" rel="noopener">About our node</a>
-        <a href="https://mempool.smartrealty.us/#fund" target="_blank" rel="noopener">Fund the node</a>
-      </div>
-      <div>
-        <h5>Contact</h5>
+        <a href="auth.html">Sign in</a>
+        <a href="privacy.html">Privacy</a>
+        <a href="terms.html">Terms</a>
         <p>1-800-762-7879</p>
         <p><a href="mailto:ai@smartrealty.us">ai@smartrealty.us</a></p>
-        <p>Louisville, KY · owner-operated</p>
-        <p><a href="account.html">Request an account</a></p>
-        <p><a href="invoice/">Invoice</a></p>
-        <p><a href="https://mempool.smartrealty.us" target="_blank" rel="noopener">mempool.smartrealty.us</a></p>
-        <p><a href="apps/">Daily Cache Wiper</a></p>
       </div>
     </div>
 
     <!-- Growth: waitlist / lead capture -->
+    <div class="container waitlist-band" id="hire">
+      <div class="waitlist-card glass">
+        <div>
+          <p class="eyebrow">Paid add-on service</p>
+          <h3>Hire listing copy — $150</h3>
+          <p class="waitlist-sub">SMART REALTY.US LLC writes headlines and a description you can edit, billed by invoice — no cards handled on this site. This service is copywriting only: not a sale, appraisal, or guaranteed listing result.</p>
+        </div>
+        <div class="g-cta-row">
+          <a class="btn btn-primary" href="mailto:ai@smartrealty.us?subject=Listing%20copy%20%24150&amp;body=Name%3A%0AProperty%20address%3A%0ACity%3A%0ABeds%2Fbaths%2Fsqft%3A%0AFacts%20I%20confirm%3A%0A">Email the $150 job</a>
+          <a class="btn btn-outline" href="copy/">Write a draft</a>
+          <a class="btn btn-ghost" href="invoice/">Invoice</a>
+        </div>
+      </div>
+    </div>
     <div class="container waitlist-band" id="waitlist">
       <div class="waitlist-card glass">
         <div>
@@ -1007,18 +1134,19 @@
     <div class="container footer-legal-links">
       <a href="privacy.html">Privacy Policy</a>
       <a href="terms.html">Terms of Use</a>
-      <a href="account.html">Request an account</a>
-      <a href="invoice/">Invoice</a>
+      <a href="security/">Security</a>
+      <a href="early-access/">Early access</a>
+      <a href="account.html">Account</a>
       <a href="auth.html">Sign in</a>
     </div>
     <div class="container footer-bottom">
       <p>© 2026 SMART REALTY.US LLC · Louisville, KY · <strong>Public demo</strong> · All Rights Reserved.</p>
       <p>House Blue Book™ · Official contact: <a href="mailto:ai@smartrealty.us" data-contact-email>ai@smartrealty.us</a></p>
-      <p>Public node: <a href="https://mempool.smartrealty.us" target="_blank" rel="noopener">explorer</a> · <a href="https://mempool.smartrealty.us/mempools" target="_blank" rel="noopener">mempools</a> · <a href="https://mempool.smartrealty.us/#fund" target="_blank" rel="noopener">fund</a> · <a href="https://mempool.smartrealty.us/status" target="_blank" rel="noopener">status</a> · independent SmartRealtyNode</p>
+      <p>Public node: <a href="https://mempool.smartrealty.us" target="_blank" rel="noopener">explorer</a> · <a href="https://mempool.smartrealty.us/status" target="_blank" rel="noopener">status</a> · <a href="https://mempool.smartrealty.us/about" target="_blank" rel="noopener">about</a> · independent SmartRealtyNode</p>
       <p class="live-on hidden" id="liveOnLine">Live on <a href="#" id="liveOnLink" rel="noopener">—</a></p>
     </div>
     <div class="container demo-banner">
-      <p>PUBLIC DEMO — All Rights Reserved. Not a live brokerage. Revenue $0. See <a href="terms.html">Terms</a> &amp; <a href="privacy.html">Privacy</a>.</p>
+      <p>SMART REALTY.US LLC · Public demo ahead of full brokerage licensing. See <a href="terms.html">Terms</a> &amp; <a href="privacy.html">Privacy</a> for details.</p>
       <p class="presenter-launch">
         <button type="button" class="btn btn-ghost btn-sm hidden" id="openDomainPanel">Domain Deploy · Presenter</button>
       </p>
@@ -1187,18 +1315,27 @@
         Create a free account or sign in to save progress. You can also continue as a guest for this demo.
       </p>
       <div class="soft-auth-actions">
-        <a class="btn btn-primary btn-block" id="softAuthSignup" href="account.html">Request an account</a>
-        <a class="btn btn-ghost btn-block" id="softAuthSignin" href="auth.html?tab=signin&next=index.html">Sign in</a>
+        <a class="btn btn-primary btn-block" id="softAuthSignup" href="auth.html?next=index.html">Create free account</a>
+        <a class="btn btn-ghost btn-block" id="softAuthSignin" href="auth.html?next=index.html">Sign in</a>
         <button type="button" class="btn btn-outline btn-block" id="softAuthGuest">Continue as guest</button>
       </div>
       <p class="soft-auth-foot">Demo only · Not a live brokerage transaction</p>
     </div>
   </div>
 
+  <div class="member-sticky-cta" data-auth-guest data-auth-visibility hidden>
+    <span><strong>See every detail free</strong><small>Magic link · no password</small></span>
+    <button type="button" class="btn btn-primary btn-sm" data-requires-auth data-gate-title="See every listing detail free">Sign in</button>
+  </div>
+
   <!-- Toast -->
   <div class="toast hidden" id="toast" role="status"></div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  <script src="app.js?v=20260822f"></script>
+  <script src="js/property-search.js?v=20260819t"></script>
+  <script src="js/smart-score.js?v=20260819t"></script>
+  <script src="js/bitcoin.js?v=20260824h"></script>
+  <script src="js/bluebook.js?v=20260824a"></script>
+  <script src="app.js?v=20260824b"></script>
 </body>
 </html>
