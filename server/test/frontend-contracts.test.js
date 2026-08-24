@@ -89,3 +89,11 @@ test("room builder disposes owned GPU resources without destroying cached GLTF a
   assert.match(source, /wallTex\.dispose\(\)/);
   assert.match(source, /controls\.dispose\(\)/);
 });
+
+test("listings without eligible photos offer an honestly labeled sample 3D room", () => {
+  const source = fs.readFileSync(path.join(ROOT, "new-listings", "index.html"), "utf8");
+  assert.match(source, /Try sample 3D room/);
+  assert.match(source, /Try a sample 3D room/);
+  assert.match(source, /demo=1/);
+  assert.match(source, /generic sample room; it does not model this property/i);
+});
