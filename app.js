@@ -172,6 +172,7 @@ let searchState = {
   priceMax: 0,
   beds: 0,
   baths: 0,
+  propertyType: "",
   rentableOnly: false,
   sort: "featured",
   page: 1,
@@ -250,6 +251,7 @@ function getFilteredProperties() {
     priceMax: searchState.priceMax || parsed.priceMax,
     beds: searchState.beds || parsed.beds,
     baths: searchState.baths || parsed.baths,
+    propertyType: searchState.propertyType || parsed.propertyType,
   };
   let list = window.SRUSearch
     ? SRUSearch.filterListings(PROPERTIES, parsed, extra)
@@ -263,8 +265,10 @@ function getFilteredProperties() {
         }
         if (searchState.rentableOnly && !p.rentable) return false;
         if (searchState.beds && p.beds < searchState.beds) return false;
+        if (searchState.baths && p.baths < searchState.baths) return false;
         if (searchState.priceMin && p.offer < searchState.priceMin) return false;
         if (searchState.priceMax && p.offer > searchState.priceMax) return false;
+        if (searchState.propertyType && window.SRUSearch && !SRUSearch.propertyTypeMatches(p, searchState.propertyType)) return false;
         if (searchState.query && !queryMatchesListing(p, searchState.query)) return false;
         return true;
       });
@@ -297,6 +301,26 @@ function getFilteredProperties() {
   return list;
 }
 
+function listingStatusLabel(p) {
+  const raw = String(p.status || p.provider || "demo").toLowerCase();
+  if (raw === "demo" || raw === "mock" || raw === "sample") return "Demo catalog";
+  if (raw === "hud") return "HUD";
+  if (raw === "active" || raw === "for_sale" || raw === "for-sale") return "For sale";
+  return p.status || "Listing";
+}
+
+function simulatorHrefFor(p) {
+  const photo = propertyGallery(p)[0] || "";
+  if (window.SRUSearch && SRUSearch.roomSimulatorHref) {
+    return SRUSearch.roomSimulatorHref(p, {
+      photo,
+      from: `${location.pathname}${location.search}#listings`,
+    });
+  }
+  if (!(window.SRUSearch && SRUSearch.hasUsableRoomPhoto(p) && photo)) return "";
+  return `/room-builder/?listing=${encodeURIComponent(p.id)}&photo=${encodeURIComponent(photo)}`;
+}
+
 function listingCardHtml(p) {
   enrichProperty(p);
   const save = savings(p);
@@ -310,10 +334,12 @@ function listingCardHtml(p) {
 
   const photoCount = propertyGallery(p).length;
   const photo = displayPhoto(p);
+  const simHref = simulatorHrefFor(p);
+  const status = listingStatusLabel(p);
   return `
       <article class="listing-card reveal" data-id="${p.id}">
         <div class="listing-media">
-          <img src="${photo.src}" alt="${p.address || p.title || "Home"}" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='/images/photo-unavailable.svg'" />
+          <img src="${photo.src}" alt="${escapeHtml(p.address || p.title || "Home")}" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='/images/photo-unavailable.svg'" />
           ${
             photo.source === "street_view"
               ? `<span class="sv-badge">Street View</span><span class="sv-attr">${photo.attribution || "© Google"}</span>`
@@ -322,7 +348,9 @@ function listingCardHtml(p) {
                 : ""
           }
           <div class="listing-badges">
+            <span class="badge status">${escapeHtml(status)}</span>
             <span class="badge gold">Blue Book</span>
+            ${simHref ? `<span class="badge sim">3D ready</span>` : ""}
             ${p.smartScore ? `<span class="badge">Score ${p.smartScore.score}</span>` : ""}
             ${(p.deals || []).slice(0, 2).map((d) => `<span class="badge rent">${d.label}</span>`).join("")}
             ${p.rentable ? `<span class="badge rent">Try Before Buy</span>` : ""}
@@ -342,13 +370,13 @@ function listingCardHtml(p) {
           </label>
         </div>
         <div class="listing-body">
-          <div class="listing-loc">📍 ${p.location}</div>
-          <h3 class="listing-title">${p.title}</h3>
-          <div class="listing-type">${p.propertyType} · Built ${p.yearBuilt}</div>
+          <div class="listing-loc">📍 ${escapeHtml(p.location)}</div>
+          <h3 class="listing-title">${escapeHtml(p.title)}</h3>
+          <div class="listing-type">${escapeHtml(p.propertyType || "Home")} · ${p.beds} bd · ${p.baths} ba · ${Number(p.sqft || 0).toLocaleString()} sqft</div>
           <div class="listing-meta">
             <span>🛏 ${p.beds} beds</span>
             <span>🛁 ${p.baths} baths</span>
-            <span>📐 ${p.sqft.toLocaleString()} sqft</span>
+            <span>📐 ${Number(p.sqft || 0).toLocaleString()} sqft</span>
             <span>💵 ${formatUSD(pricePerSqft(p))}/ft²</span>
           </div>
           <div class="price-stack">
@@ -359,12 +387,8 @@ function listingCardHtml(p) {
             ${btcLine}
           </div>
           <div class="listing-actions">
-            <button class="btn btn-ghost" type="button" data-view="${p.id}">View Details</button>
-            ${
-              window.SRUSearch && SRUSearch.hasUsableRoomPhoto(p) && propertyGallery(p).length
-                ? `<a class="btn btn-outline" href="/room-builder/?listing=${encodeURIComponent(p.id)}&photo=${encodeURIComponent(propertyGallery(p)[0])}">View in 3D</a>`
-                : ""
-            }
+            <button class="btn btn-ghost" type="button" data-view="${p.id}">View details</button>
+            ${simHref ? `<a class="btn btn-outline btn-sim" href="${simHref}">Visualize this home</a>` : ""}
             ${
               Array.isArray(p.publicRecords) && p.publicRecords.length
                 ? `<span class="badge">Public records attached</span>`
@@ -979,6 +1003,9 @@ function renderListings() {
     more.hidden = visible.length >= filtered.length;
     more.textContent = `Load more homes (${visible.length}/${filtered.length})`;
   }
+  // Update the URL before rendering cards so every 3D link carries the
+  // current search/filter state in its return path.
+  persistSearchUrl();
 
   if (!filtered.length) {
     const searchedMarket = (searchState.query || "this search").trim();
@@ -989,6 +1016,7 @@ function renderListings() {
         <div class="empty-actions">
           <button type="button" class="btn btn-primary" id="clearFiltersBtn">Clear filters</button>
           <button type="button" class="btn btn-ghost" data-search="Louisville">Try Louisville</button>
+          <a class="btn btn-outline" href="new-listings/?q=${encodeURIComponent(searchState.query || "Louisville")}">Search live HUD listings</a>
         </div>
       </div>`;
     renderMap([]);
@@ -1012,6 +1040,7 @@ function clearMarketFilters() {
     priceMax: 0,
     beds: 0,
     baths: 0,
+    propertyType: "",
     rentableOnly: false,
     sort: "featured",
     page: 1,
@@ -1020,10 +1049,16 @@ function clearMarketFilters() {
   activeFilter = "all";
   const q = $("#searchQuery");
   if (q) q.value = "";
+  if ($("#heroLocation")) $("#heroLocation").value = "";
+  if ($("#heroPrice")) $("#heroPrice").value = "0";
+  if ($("#heroType")) $("#heroType").value = "";
+  if ($("#heroBeds")) $("#heroBeds").value = "0";
+  if ($("#heroBaths")) $("#heroBaths").value = "0";
   if ($("#filterPriceMin")) $("#filterPriceMin").value = "0";
   if ($("#filterPriceMax")) $("#filterPriceMax").value = "0";
   if ($("#filterBeds")) $("#filterBeds").value = "0";
   if ($("#filterBaths")) $("#filterBaths").value = "0";
+  if ($("#filterType")) $("#filterType").value = "";
   if ($("#sortBy")) $("#sortBy").value = "featured";
   if ($("#filterRentable")) $("#filterRentable").checked = false;
   $$("#styleFilters .filter-btn").forEach((b) => b.classList.toggle("active", b.dataset.filter === "all"));
@@ -1122,6 +1157,10 @@ function renderActiveFilters() {
   if (searchState.priceMax) pills.push({ key: "max", label: `Max ${formatUSD(searchState.priceMax)}` });
   if (searchState.beds) pills.push({ key: "beds", label: `${searchState.beds}+ beds` });
   if (searchState.baths) pills.push({ key: "baths", label: `${searchState.baths}+ baths` });
+  if (searchState.propertyType) {
+    const typeLabels = { house: "House", condo: "Condo / loft", town: "Townhome", estate: "Estate" };
+    pills.push({ key: "type", label: typeLabels[searchState.propertyType] || searchState.propertyType });
+  }
   if (searchState.rentableOnly) pills.push({ key: "rent", label: "Try Before Buy" });
   if (searchState.sort && searchState.sort !== "featured") {
     const sortLabels = {
@@ -1153,6 +1192,7 @@ function removeActiveFilter(key) {
   if (key === "query") {
     searchState.query = "";
     if ($("#searchQuery")) $("#searchQuery").value = "";
+    if ($("#heroLocation")) $("#heroLocation").value = "";
   } else if (key === "style") {
     activeFilter = "all";
     $$("#styleFilters .filter-btn").forEach((b) => b.classList.toggle("active", b.dataset.filter === "all"));
@@ -1162,12 +1202,19 @@ function removeActiveFilter(key) {
   } else if (key === "max") {
     searchState.priceMax = 0;
     if ($("#filterPriceMax")) $("#filterPriceMax").value = "0";
+    if ($("#heroPrice")) $("#heroPrice").value = "0";
   } else if (key === "beds") {
     searchState.beds = 0;
     if ($("#filterBeds")) $("#filterBeds").value = "0";
+    if ($("#heroBeds")) $("#heroBeds").value = "0";
   } else if (key === "baths") {
     searchState.baths = 0;
     if ($("#filterBaths")) $("#filterBaths").value = "0";
+    if ($("#heroBaths")) $("#heroBaths").value = "0";
+  } else if (key === "type") {
+    searchState.propertyType = "";
+    if ($("#filterType")) $("#filterType").value = "";
+    if ($("#heroType")) $("#heroType").value = "";
   } else if (key === "rent") {
     searchState.rentableOnly = false;
     if ($("#filterRentable")) $("#filterRentable").checked = false;
@@ -1351,6 +1398,135 @@ function initAlertsBar() {
   });
 }
 
+function searchQueryString() {
+  const qs = new URLSearchParams();
+  if (searchState.query) qs.set("q", searchState.query);
+  if (searchState.priceMin) qs.set("min", String(searchState.priceMin));
+  if (searchState.priceMax) qs.set("max", String(searchState.priceMax));
+  if (searchState.beds) qs.set("beds", String(searchState.beds));
+  if (searchState.baths) qs.set("baths", String(searchState.baths));
+  if (searchState.propertyType) qs.set("type", searchState.propertyType);
+  if (searchState.sort && searchState.sort !== "featured") qs.set("sort", searchState.sort);
+  if (searchState.rentableOnly) qs.set("rent", "1");
+  if (activeFilter && activeFilter !== "all") qs.set("style", activeFilter);
+  return qs;
+}
+
+function persistSearchUrl() {
+  if (!$("#marketSearchForm")) return;
+  const qs = searchQueryString();
+  const hash = location.hash && location.hash !== "#home" ? location.hash : (qs.toString() ? "#listings" : location.hash);
+  const next = `${location.pathname}${qs.toString() ? `?${qs.toString()}` : ""}${hash || ""}`;
+  if (`${location.pathname}${location.search}${location.hash}` !== next) {
+    history.replaceState({}, "", next);
+  }
+  const live = $("#heroLiveListings");
+  if (live) {
+    const liveQs = new URLSearchParams();
+    if (searchState.query) liveQs.set("q", searchState.query);
+    if (searchState.priceMax) liveQs.set("maxPrice", String(searchState.priceMax));
+    if (searchState.beds) liveQs.set("minBeds", String(searchState.beds));
+    if (searchState.baths) liveQs.set("minBaths", String(searchState.baths));
+    if (searchState.propertyType) liveQs.set("propertyType", searchState.propertyType);
+    live.href = `new-listings/${liveQs.toString() ? `?${liveQs.toString()}` : ""}`;
+  }
+}
+
+function applySearchStateToForms() {
+  if ($("#searchQuery")) $("#searchQuery").value = searchState.query || "";
+  if ($("#filterPriceMin")) $("#filterPriceMin").value = String(searchState.priceMin || 0);
+  if ($("#filterPriceMax")) $("#filterPriceMax").value = String(searchState.priceMax || 0);
+  if ($("#filterBeds")) $("#filterBeds").value = String(searchState.beds || 0);
+  if ($("#filterBaths")) $("#filterBaths").value = String(searchState.baths || 0);
+  if ($("#filterType")) $("#filterType").value = searchState.propertyType || "";
+  if ($("#sortBy")) $("#sortBy").value = searchState.sort || "featured";
+  if ($("#filterRentable")) $("#filterRentable").checked = Boolean(searchState.rentableOnly);
+  $$("#styleFilters .filter-btn").forEach((b) => b.classList.toggle("active", (b.dataset.filter || "all") === (activeFilter || "all")));
+  syncHeroFromSearchState();
+  updateSearchClearBtn();
+}
+
+function syncHeroFromSearchState() {
+  if ($("#heroLocation")) $("#heroLocation").value = searchState.query || "";
+  if ($("#heroPrice")) $("#heroPrice").value = String(searchState.priceMax || 0);
+  if ($("#heroType")) $("#heroType").value = searchState.propertyType || "";
+  if ($("#heroBeds")) $("#heroBeds").value = String(searchState.beds || 0);
+  if ($("#heroBaths")) $("#heroBaths").value = String(searchState.baths || 0);
+}
+
+function restoreSearchFromUrl() {
+  const params = new URLSearchParams(location.search);
+  if (![...params.keys()].length) return;
+  if (params.get("q")) searchState.query = params.get("q");
+  if (params.get("min")) searchState.priceMin = Number(params.get("min")) || 0;
+  if (params.get("max")) searchState.priceMax = Number(params.get("max")) || 0;
+  if (params.get("beds")) searchState.beds = Number(params.get("beds")) || 0;
+  if (params.get("baths")) searchState.baths = Number(params.get("baths")) || 0;
+  if (params.get("type")) searchState.propertyType = params.get("type") || "";
+  if (params.get("sort")) searchState.sort = params.get("sort") || "featured";
+  if (params.get("rent") === "1") searchState.rentableOnly = true;
+  if (params.get("style")) activeFilter = params.get("style");
+  applySearchStateToForms();
+}
+
+function initHeroSearch() {
+  const form = $("#heroSearchForm");
+  if (!form) return;
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    searchState.query = $("#heroLocation")?.value || "";
+    searchState.priceMax = Number($("#heroPrice")?.value || 0);
+    searchState.propertyType = $("#heroType")?.value || "";
+    searchState.beds = Number($("#heroBeds")?.value || 0);
+    searchState.baths = Number($("#heroBaths")?.value || 0);
+    searchState.page = 1;
+    applySearchStateToForms();
+    if (searchState.query.trim()) saveRecentSearch(searchState.query);
+    renderActiveFilters();
+    renderListings();
+    const listings = $("#listings");
+    if (listings) listings.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+    toast(`Showing homes for “${searchState.query || "all markets"}”.`);
+  });
+}
+
+function compactListingCard(p) {
+  enrichProperty(p);
+  const photo = displayPhoto(p);
+  const simHref = simulatorHrefFor(p);
+  return `
+    <article class="listing-card reveal" data-id="${p.id}">
+      <div class="listing-media">
+        <img src="${photo.src}" alt="${escapeHtml(p.title)}" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='/images/photo-unavailable.svg'" />
+        <div class="listing-badges">
+          <span class="badge status">${escapeHtml(listingStatusLabel(p))}</span>
+          ${simHref ? `<span class="badge sim">3D ready</span>` : ""}
+        </div>
+      </div>
+      <div class="listing-body">
+        <div class="listing-loc">${escapeHtml(p.location)}</div>
+        <h3 class="listing-title">${escapeHtml(p.title)}</h3>
+        <div class="listing-type">${escapeHtml(p.propertyType || "Home")} · ${p.beds} bd · ${p.baths} ba · ${Number(p.sqft || 0).toLocaleString()} sqft</div>
+        <div class="price-stack">
+          <div class="price-row offer"><span>Lowest offer</span><strong>${formatUSD(p.offer)}</strong></div>
+        </div>
+        <div class="listing-actions">
+          <button class="btn btn-ghost btn-sm" type="button" data-view="${p.id}">Details</button>
+          ${simHref ? `<a class="btn btn-outline btn-sm btn-sim" href="${simHref}">Visualize this home</a>` : ""}
+        </div>
+      </div>
+    </article>`;
+}
+
+function renderHomeRails() {
+  const featured = [...PROPERTIES].sort((a, b) => (b.listPrice || 0) - (a.listPrice || 0)).slice(0, 4);
+  const family = PROPERTIES.filter((p) => (p.tags || []).includes("family")).slice(0, 4);
+  const featuredEl = $("#featuredRail");
+  const recentEl = $("#recentRail");
+  if (featuredEl) featuredEl.innerHTML = featured.map(compactListingCard).join("");
+  if (recentEl) recentEl.innerHTML = (family.length ? family : PROPERTIES.slice(-4)).map(compactListingCard).join("");
+}
+
 function initMarketplace() {
   const form = $("#marketSearchForm");
   if (!form) return;
@@ -1367,9 +1543,11 @@ function initMarketplace() {
     searchState.priceMax = Number($("#filterPriceMax")?.value || 0);
     searchState.beds = Number($("#filterBeds")?.value || 0);
     searchState.baths = Number($("#filterBaths")?.value || 0);
+    searchState.propertyType = $("#filterType")?.value || "";
     searchState.rentableOnly = Boolean($("#filterRentable")?.checked);
     searchState.sort = $("#sortBy")?.value || "featured";
     searchState.page = 1;
+    syncHeroFromSearchState();
     const parsed = window.SRUSearch ? SRUSearch.parseQuery(searchState.query) : {};
     if (parsed.nearMe && navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -1398,7 +1576,7 @@ function initMarketplace() {
     renderListings();
   });
 
-  ["filterPriceMin", "filterPriceMax", "filterBeds", "filterBaths", "sortBy", "filterRentable"].forEach((id) => {
+  ["filterPriceMin", "filterPriceMax", "filterBeds", "filterBaths", "filterType", "sortBy", "filterRentable"].forEach((id) => {
     $(`#${id}`)?.addEventListener("change", () => {
       syncFromForm();
       renderActiveFilters();
@@ -1693,8 +1871,11 @@ function openProperty(id) {
           : ""
       }
       ${
-        window.SRUSearch && SRUSearch.hasUsableRoomPhoto(p) && propertyGallery(p).length
-          ? `<p><a class="btn btn-outline" href="/room-builder/?listing=${encodeURIComponent(p.id)}&photo=${encodeURIComponent(propertyGallery(p)[0])}">View in 3D</a></p>`
+        simulatorHrefFor(p)
+          ? `<div class="pd-cta-row">
+              <a class="btn btn-primary" href="${simulatorHrefFor(p)}">Open in 3D Room Simulator</a>
+            </div>
+            <p class="pd-viz-note">Estimated 3D preview from listing photos — not a scan or a guaranteed layout of this home.</p>`
           : ""
       }
       <div class="amenity-block">
@@ -2068,6 +2249,16 @@ function initHeroPanel() {
   const btc = $("#heroPanelBtc");
   if (view) view.dataset.view = p.id;
   if (btc) btc.dataset.btc = p.id;
+  const sim = $("#heroPanel3d");
+  if (sim) {
+    const href = simulatorHrefFor(p);
+    if (href) {
+      sim.href = href;
+      sim.hidden = false;
+    } else {
+      sim.hidden = true;
+    }
+  }
 }
 
 function initDunsGuide() {
@@ -2169,7 +2360,7 @@ function isSignedInUser() {
 }
 
 function isMemberAccount() {
-  return !!window.SRU_SUPABASE?.session;
+  return isSignedInUser() || (authMode() === "open" && window.SRU_SUPABASE?.configured !== true);
 }
 
 function isSoftGuestOk() {
@@ -2277,7 +2468,7 @@ function initSoftAuthSheet() {
 function maybeSaveHint() {
   if (authMode() !== "open") return;
   if (!softGateConfig().saveHint) return;
-  if (isSignedInUser()) return;
+  if (window.SRU_SUPABASE?.session) return;
   if (sessionStorage.getItem(SAVE_HINT_KEY) === "1") return;
   sessionStorage.setItem(SAVE_HINT_KEY, "1");
   toast("Saved on this device. Sign in to sync across devices.");
@@ -2595,25 +2786,32 @@ function initUI() {
       e.preventDefault();
       const id = fav.dataset.fav;
       if (!isMemberAccount()) {
-        window.SRU_SUPABASE?.openSignIn({
-          title: "Sign in to save this home",
-          copy: "Your shortlist will sync across your signed-in devices.",
-          next: location.href,
-        });
+        if (window.SRU_SUPABASE?.configured) {
+          window.SRU_SUPABASE.openSignIn({
+            title: "Sign in to save this home",
+            copy: "Your shortlist will sync across your signed-in devices.",
+            next: location.href,
+          });
+        } else {
+          location.href = window.SRU_SUPABASE?.authPageUrl?.(location.href) || "/auth.html";
+        }
         return;
       }
       const shouldSave = !favorites.has(id);
-      try {
-        await window.SRU_SUPABASE.setSavedListing(id, shouldSave);
-      } catch (error) {
-        toast(error.message || "Could not update saved homes.");
-        return;
+      if (window.SRU_SUPABASE?.session) {
+        try {
+          await window.SRU_SUPABASE.setSavedListing(id, shouldSave);
+        } catch (error) {
+          toast(error.message || "Could not update saved homes.");
+          return;
+        }
       }
       if (shouldSave) favorites.add(id);
       else favorites.delete(id);
       toast(shouldSave ? "Saved to your shortlist." : "Removed from saved.");
       track(shouldSave ? "save_listing" : "unsave_listing", { id });
       localStorage.setItem("sru_favs", JSON.stringify([...favorites]));
+      if (!window.SRU_SUPABASE?.session) maybeSaveHint();
       updateFavBadge();
       renderListings();
       if ($("#favDrawer")?.classList.contains("open")) renderFavoritesDrawer();
@@ -2995,9 +3193,12 @@ document.addEventListener("DOMContentLoaded", () => {
   initDemoGate();
   initHeroPanel();
   initDunsGuide();
+  restoreSearchFromUrl();
+  initHeroSearch();
   initMarketplace();
   initMapLayers();
   setViewMode("grid");
+  renderHomeRails();
   renderListings();
   renderRentals();
   initUI();

@@ -678,8 +678,8 @@ export const DEFAULT_LAYOUT = [
   { id: "sr-plant-fig", x: -2.7, z: -1.95, rot: 0.3 },
   { id: "sr-plant-olive", x: 2.7, z: -1.9, rot: -0.2 },
   { id: "sr-plant-snake", x: 2.55, z: 1.95, rot: 0 },
-  { id: "sr-art-abstract", x: 3.14, z: 1.2, rot: -Math.PI / 2, y: 1.55 },
-  { id: "sr-mirror-round", x: 3.14, z: 0.2, rot: -Math.PI / 2, y: 1.55 },
+  { id: "sr-art-abstract", x: 3.14, z: 1.15, rot: -Math.PI / 2, y: 1.55 },
+  { id: "sr-mirror-round", x: 2.12, z: -2.52, rot: 0, y: 1.55 },
   { id: "sr-speaker-tower", x: -1.15, z: -2.22, rot: 0 },
   { id: "sr-speaker-tower", x: 1.15, z: -2.22, rot: 0 },
 ];

@@ -23,7 +23,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet" />
   <!-- Live map tiles (OpenStreetMap via Leaflet) -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-  <link rel="stylesheet" href="styles.css?v=20260824h" />
+  <link rel="stylesheet" href="styles.css?v=20260824p" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏡</text></svg>" />
   <!-- Edit domain-config.js when going live on a custom domain -->
   <script src="domain-config.js?v=20260819d"></script>
@@ -184,6 +184,8 @@
 
       <nav class="nav" id="nav">
         <a href="#listings" class="nav-link">Homes</a>
+        <a href="new-listings/" class="nav-link">Live listings</a>
+        <a href="#room-sim" class="nav-link">3D Room</a>
         <a href="start/" class="nav-link">Start</a>
         <a href="apps/" class="nav-link">Apps</a>
         <div class="nav-item">
@@ -192,7 +194,7 @@
           </button>
           <div class="nav-drop" id="navToolsMenu" hidden>
             <a href="#bluebook">Blue Book</a>
-            <a href="room-builder/">3D Room Planner</a>
+            <a href="room-builder/">3D Room Simulator</a>
             <a href="#bitcoin">Bitcoin checkout</a>
             <a href="#rentals">Stay &amp; buy</a>
             <a href="direct-deposit/">Direct deposit</a>
@@ -228,7 +230,63 @@
         <img src="images/hero-bg.jpg" alt="Evening view over a glass estate" class="hero-img" />
         <div class="hero-overlay"></div>
       </div>
-      <div class="container">
+      <div class="container hero-search-wrap fade-up delay-1">
+        <form class="hero-search glass" id="heroSearchForm" role="search" aria-label="Search homes">
+          <div class="hero-search-fields">
+            <label>
+              Location
+              <input type="search" id="heroLocation" name="q" placeholder="City, ZIP, or street" autocomplete="off" />
+            </label>
+            <label>
+              Price
+              <select id="heroPrice" name="maxPrice">
+                <option value="0">Any price</option>
+                <option value="150000">Under $150k</option>
+                <option value="250000">Under $250k</option>
+                <option value="500000">Under $500k</option>
+                <option value="1000000">Under $1M</option>
+                <option value="5000000">Under $5M</option>
+              </select>
+            </label>
+            <label>
+              Type
+              <select id="heroType" name="propertyType">
+                <option value="">Any type</option>
+                <option value="house">House</option>
+                <option value="condo">Condo / loft</option>
+                <option value="town">Townhome</option>
+                <option value="estate">Estate</option>
+              </select>
+            </label>
+            <label>
+              Beds
+              <select id="heroBeds" name="beds">
+                <option value="0">Any</option>
+                <option value="1">1+</option>
+                <option value="2">2+</option>
+                <option value="3">3+</option>
+                <option value="4">4+</option>
+              </select>
+            </label>
+            <label>
+              Baths
+              <select id="heroBaths" name="baths">
+                <option value="0">Any</option>
+                <option value="1">1+</option>
+                <option value="2">2+</option>
+                <option value="3">3+</option>
+              </select>
+            </label>
+            <button type="submit" class="btn btn-primary">Search homes</button>
+          </div>
+          <p class="hero-search-note">
+            This page searches the labeled demo catalog.
+            HUD and other live inventory is on
+            <a href="new-listings/" id="heroLiveListings">Live listings</a>.
+          </p>
+        </form>
+      </div>
+      <div class="container hero-main">
         <div class="hero-content">
           <p class="eyebrow fade-up">Public demo · Louisville LLC · Bitcoin ready</p>
           <h1 class="fade-up delay-1">
@@ -243,8 +301,8 @@
           </div>
           <div class="hero-cta fade-up delay-3">
             <a href="#listings" class="btn btn-primary btn-lg">Browse homes</a>
-            <a href="#bluebook" class="btn btn-outline btn-lg">Free Blue Book</a>
-            <a href="#bitcoin" class="btn btn-ghost btn-lg">Bitcoin checkout</a>
+            <a href="#room-sim" class="btn btn-outline btn-lg">Visualize a home in 3D</a>
+            <a href="#bluebook" class="btn btn-ghost btn-lg">Free Blue Book</a>
           </div>
           <div class="hero-stats fade-up delay-4">
             <div class="stat">
@@ -279,6 +337,7 @@
           </div>
           <div class="hero-panel-actions">
             <button type="button" class="btn btn-ghost btn-sm" id="heroPanelView" data-view="sr-001">Details</button>
+            <a class="btn btn-outline btn-sm" id="heroPanel3d" href="room-builder/?listing=sr-001&amp;photo=images/mansion-1.jpg">Visualize in 3D</a>
             <button type="button" class="btn btn-btc btn-sm" id="heroPanelBtc" data-btc="sr-001">₿ Buy BTC</button>
           </div>
         </aside>
@@ -321,7 +380,88 @@
               <p>Try-before-you-buy stay flow on eligible listings — demo credits only</p>
             </div>
           </a>
+          <a class="trust-item" href="#room-sim">
+            <span class="trust-icon" aria-hidden="true">🛋️</span>
+            <div>
+              <strong>3D Room Simulator</strong>
+              <p>Stage an estimated room from listing photos — labeled visualization, not a scan</p>
+            </div>
+          </a>
         </div>
+      </div>
+    </section>
+
+    <section class="section home-rail-section" id="featured" aria-labelledby="featuredTitle">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Demo catalog</p>
+            <h2 id="featuredTitle">Featured homes</h2>
+            <p class="section-sub">Highest-priced homes from the public demo catalog — not live MLS offers.</p>
+          </div>
+          <a class="btn btn-ghost" href="#listings">See all demo homes</a>
+        </div>
+        <div class="home-rail" id="featuredRail"></div>
+      </div>
+    </section>
+
+    <section class="section section-alt home-rail-section" id="recent-homes" aria-labelledby="recentTitle">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Everyday inventory</p>
+            <h2 id="recentTitle">Family homes in the catalog</h2>
+            <p class="section-sub">Demo listings tagged family — no invented “just listed” dates.</p>
+          </div>
+          <a class="btn btn-ghost" href="new-listings/">Search live HUD listings</a>
+        </div>
+        <div class="home-rail" id="recentRail"></div>
+      </div>
+    </section>
+
+    <section class="section room-sim-intro" id="room-sim" aria-labelledby="roomSimTitle">
+      <div class="container room-sim-intro-grid">
+        <div>
+          <p class="eyebrow">3D Room Simulator</p>
+          <h2 id="roomSimTitle">See how a room could feel before you tour</h2>
+          <p class="section-sub">
+            Open an eligible home and the listing photo maps onto an estimated room shell.
+            Place planning furniture, walk the space, and shop retailer links. This is a
+            visualization — not a LiDAR scan or a guaranteed layout of the property.
+          </p>
+          <ul class="feature-list">
+            <li>
+              <span class="check">✓</span>
+              <div>
+                <strong>Tied to a real listing photo</strong>
+                <p>Eligible cards and detail pages launch the simulator with that home’s context.</p>
+              </div>
+            </li>
+            <li>
+              <span class="check">✓</span>
+              <div>
+                <strong>Planning models, labeled prices</strong>
+                <p>Furniture is sized in inches. Retailer pages confirm live price and stock.</p>
+              </div>
+            </li>
+            <li>
+              <span class="check">✓</span>
+              <div>
+                <strong>Works on this Mac and phone</strong>
+                <p>Orbit, walk, undo, and reset. Reduced-motion and a still fallback if WebGL is blocked.</p>
+              </div>
+            </li>
+          </ul>
+          <div class="hero-cta" style="margin-top:1.25rem">
+            <a class="btn btn-primary" href="room-builder/?listing=sr-019&amp;photo=images/listing-19.jpg">Open Louisville brownstone in 3D</a>
+            <a class="btn btn-outline" href="room-builder/">Open sample room</a>
+          </div>
+        </div>
+        <aside class="room-sim-preview glass">
+          <img src="images/listing-19.jpg" alt="Louisville Highlands Brownstone — listing photo used as a 3D visualization backdrop" />
+          <p class="room-sim-preview-caption">Estimated 3D preview · listing photo on the back wall · not a scan</p>
+          <a class="btn btn-primary btn-block" href="room-builder/?listing=sr-019&amp;photo=images/listing-19.jpg">Visualize this home</a>
+        </aside>
       </div>
     </section>
 
@@ -419,6 +559,16 @@
               </select>
             </label>
             <label>
+              Type
+              <select id="filterType">
+                <option value="">Any type</option>
+                <option value="house">House</option>
+                <option value="condo">Condo / loft</option>
+                <option value="town">Townhome</option>
+                <option value="estate">Estate</option>
+              </select>
+            </label>
+            <label>
               Sort
               <select id="sortBy">
                 <option value="featured">Best match</option>
@@ -496,7 +646,7 @@
         <div class="market-layout" id="marketLayout" data-mode="grid">
           <div>
           <div class="listings-grid" id="listingsGrid">
-            <!-- Filled by JS -->
+            <div class="listing-loading glass" role="status">Loading demo homes…</div>
           </div>
           <p style="text-align:center;margin:1rem 0 0">
             <button type="button" class="btn btn-outline" id="loadMoreListings" hidden>Load more homes</button>
@@ -1332,10 +1482,10 @@
   <div class="toast hidden" id="toast" role="status"></div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  <script src="js/property-search.js?v=20260819t"></script>
+  <script src="js/property-search.js?v=20260824i"></script>
   <script src="js/smart-score.js?v=20260819t"></script>
   <script src="js/bitcoin.js?v=20260824h"></script>
   <script src="js/bluebook.js?v=20260824a"></script>
-  <script src="app.js?v=20260824b"></script>
+  <script src="app.js?v=20260824k"></script>
 </body>
 </html>

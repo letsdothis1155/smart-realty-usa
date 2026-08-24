@@ -99,13 +99,23 @@
         overlay.querySelector("p").textContent = gate.dataset.gateCopy || "Sign in with a magic link to unlock this section.";
         gate.appendChild(overlay);
       }
-      gate.classList.toggle("is-auth-locked", !state.session);
+      gate.classList.toggle("is-auth-locked", state.configured && !state.session);
     });
   }
 
   function updatePageState() {
     const signedIn = !!state.session;
     const user = state.session && state.session.user;
+    if (!state.configured) {
+      document.documentElement.classList.remove("has-member-session", "is-member-guest");
+      decorateGates(document);
+      document.dispatchEvent(
+        new CustomEvent("sru:auth-change", {
+          detail: { session: null, user: null, configured: false },
+        }),
+      );
+      return;
+    }
     document.documentElement.classList.toggle("has-member-session", signedIn);
     document.documentElement.classList.toggle("is-member-guest", !signedIn);
     if (signedIn) {
@@ -204,6 +214,10 @@
 
   function openSignIn(options) {
     const opts = options || {};
+    if (!state.configured || !state.client) {
+      location.href = authPageUrl(opts.next || location.href);
+      return;
+    }
     const modal = ensureModal();
     const title = modal.querySelector("h2");
     const copy = modal.querySelector(".member-auth-copy");
@@ -387,7 +401,7 @@
       }
 
       const gate = event.target.closest("[data-requires-auth]");
-      if (!gate || state.session) return;
+      if (!gate || state.session || !state.configured || !state.client) return;
       event.preventDefault();
       event.stopImmediatePropagation();
       openSignIn({

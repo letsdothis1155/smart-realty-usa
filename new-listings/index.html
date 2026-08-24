@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>New listings — SmartRealty USA</title>
+  <meta name="description" content="Newest listings first, source clearly labeled. Open any home in an interactive 3D room preview and shop real furniture inside it." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://smartrealty.us/new-listings/" />
+  <meta property="og:title" content="New listings — SmartRealty USA" />
+  <meta property="og:url" content="https://smartrealty.us/new-listings/" />
+  <meta property="og:image" content="https://smartrealty.us/images/og/goals.svg" />
+  <meta name="theme-color" content="#0a0c10" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css?v=20260824i" />
+  <link rel="stylesheet" href="/growth.css" />
+  <script src="/domain-config.js"></script>
+  <script src="/js/auth-client.js"></script>
+  <script src="/js/analytics.js"></script>
+  <script src="/js/growth.js"></script>
+  <style>
+    .nl-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; margin-top: 1.25rem; }
+    .nl-card { border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-card); overflow: hidden; display: flex; flex-direction: column; }
+    .nl-media { aspect-ratio: 16/10; background: var(--bg-elevated); display: flex; align-items: center; justify-content: center; color: var(--text-dim); font-size: 0.8rem; overflow: hidden; position: relative; }
+    .sv-badge,.sv-attr{position:absolute;left:10px;z-index:2;font-size:.68rem;padding:.18rem .45rem;border-radius:4px;background:rgba(0,0,0,.62);color:#fff}
+    .sv-badge{bottom:28px;font-weight:700}
+    .sv-attr{bottom:8px}
+    .nl-media img { width: 100%; height: 100%; object-fit: cover; }
+    .nl-body { padding: 0.9rem; display: flex; flex-direction: column; gap: 0.35rem; flex: 1; }
+    .nl-price { font-family: var(--serif); font-size: 1.2rem; }
+    .nl-loc { color: var(--text-muted); font-size: 0.85rem; }
+    .nl-meta { color: var(--text-dim); font-size: 0.8rem; }
+    .nl-source { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-dim); border: 1px solid var(--border); border-radius: 999px; padding: 0.15rem 0.55rem; width: fit-content; }
+    .nl-actions { margin-top: auto; display: flex; flex-wrap: wrap; gap: 0.5rem; padding-top: 0.5rem; }
+    .nl-empty, .nl-error { color: var(--text-muted); margin-top: 1.5rem; }
+    .nl-card .nl-type { font-size: 0.78rem; color: var(--text-dim); }
+    .nl-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0.5rem 0 0.2rem; }
+    .nl-chip-btn { display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.28rem 0.65rem; border-radius: 999px; border: 1px solid var(--border); background: var(--bg-card); font-size: 0.75rem; color: var(--text-muted); }
+    .nl-chip-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+    .nl-price-change { color: var(--success); font-size: 0.75rem; }
+    .nl-filters p { display: flex; flex-wrap: wrap; gap: 0.6rem 0.9rem; align-items: end; margin: 0.6rem 0; }
+    .nl-filters label { font-size: 0.82rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 0.2rem; }
+    .nl-markets { margin-top: 0.4rem; }
+    .nl-chip { display: inline-flex; padding: 0.28rem 0.7rem; border-radius: 999px; border: 1px solid var(--border); font-size: 0.78rem; }
+    .nl-detail { border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem; margin: 1rem 0; background: var(--bg-card); }
+    .nl-detail.hidden { display: none; }
+    .nl-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.45rem; margin: 0.8rem 0; }
+    .nl-gallery img { width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: 8px; background: var(--bg-elevated); }
+  </style>
+</head>
+<body class="g-page" data-growth="new-listings">
+  <div id="gChrome"></div>
+  <main class="g-section">
+    <div class="container">
+      <p class="g-kicker">Listings</p>
+      <h1>Homes for sale</h1>
+      <p class="g-lead">Public HUD inventory and labeled sample listings. Jeffersonville, New Albany, and Utica, Indiana are in the search radius — nearby real homes can appear when the city itself has no HUD listing today. We do not invent houses to fill the map.</p>
+      <form id="nlForm" class="nl-filters" action="/new-listings/" method="get">
+        <p class="nl-markets">
+          <a class="nl-chip" href="/new-listings/?q=Jeffersonville+IN">Jeffersonville</a>
+          <a class="nl-chip" href="/new-listings/?q=New+Albany+IN">New Albany</a>
+          <a class="nl-chip" href="/new-listings/?q=Utica+Indiana">Utica</a>
+          <a class="nl-chip" href="/homes/jeffersonville-in/">City page</a>
+        </p>
+        <p>
+          <label>Search
+            <input id="nlQ" name="q" type="search" placeholder="Jeffersonville IN, 3 bedroom homes New Albany, houses under $300k" style="min-width:min(100%,22rem)" />
+          </label>
+          <button type="submit" class="btn btn-primary btn-sm">Search</button>
+        </p>
+        <p>
+          <label>Max price $
+            <input id="nlMaxPrice" name="maxPrice" type="number" min="0" step="1000" style="width:7rem" />
+          </label>
+          <label>Beds
+            <select id="nlBeds" name="minBeds">
+              <option value="">Any</option>
+              <option value="1">1+</option>
+              <option value="2">2+</option>
+              <option value="3">3+</option>
+              <option value="4">4+</option>
+            </select>
+          </label>
+          <label>Baths
+            <select id="nlBaths" name="minBaths">
+              <option value="">Any</option>
+              <option value="1">1+</option>
+              <option value="2">2+</option>
+              <option value="3">3+</option>
+            </select>
+          </label>
+          <label>Type
+            <select id="nlType" name="propertyType">
+              <option value="">Any</option>
+              <option value="house">House</option>
+              <option value="condo">Condo</option>
+              <option value="townhouse">Townhome</option>
+            </select>
+          </label>
+          <label>Min sqft
+            <input id="nlMinSqft" name="minSqft" type="number" min="0" step="50" style="width:6rem" />
+          </label>
+          <label>City
+            <select id="nlCity" name="city">
+              <option value="">Any</option>
+              <option value="Jeffersonville">Jeffersonville</option>
+              <option value="New Albany">New Albany</option>
+              <option value="Utica">Utica</option>
+              <option value="Clarksville">Clarksville</option>
+            </select>
+          </label>
+          <label>Sort
+            <select id="nlSort" name="sort">
+              <option value="newest">Newest</option>
+              <option value="distance">Distance</option>
+              <option value="price-asc">Price: low</option>
+              <option value="price-desc">Price: high</option>
+              <option value="sqft">Square footage</option>
+            </select>
+          </label>
+          <label>Listed
+            <select id="nlWindow" name="listedWithin">
+              <option value="">Any time</option>
+              <option value="1">Last 24 hours</option>
+              <option value="3">Last 3 days</option>
+              <option value="7">Last 7 days</option>
+            </select>
+          </label>
+          <button type="button" class="btn btn-ghost btn-sm" id="nlReset">Clear filters</button>
+        </p>
+        <p class="nl-chips" id="nlChips" aria-live="polite"></p>
+      </form>
+      <article id="nlDetail" class="nl-detail hidden"></article>
+      <div id="nlStatus" class="nl-empty">Loading listings…</div>
+      <div class="nl-grid" id="nlGrid"></div>
+    </div>
+  </main>
+  <div id="gFoot"></div>
+  <script src="/js/growth-ui.js"></script>
+  <script>
+    (function () {
+      const grid = document.getElementById("nlGrid");
+      const status = document.getElementById("nlStatus");
+
+      function money(n) {
+        return Number(n || 0).toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+      }
+      function esc(s) {
+        return String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      }
+      function absUrl(u) {
+        if (!u) return "";
+        return /^(https?:)?\/\//i.test(u) || u.startsWith("/") ? u : `/${u}`;
+      }
+
+      function card(listing) {
+        const el = document.createElement("article");
+        el.className = "nl-card";
+        const priceChange = Array.isArray(listing.priceHistory) && listing.priceHistory.length
+          ? `<span class="nl-price-change">Price changed from ${money(listing.priceHistory[listing.priceHistory.length - 1].price)}</span>`
+          : "";
+        const qs = queryFromForm();
+        qs.set("id", listing.id);
+        const returnTo = `/new-listings/?${qs.toString()}`;
+        const simHref = listing.canView3D && listing.hasListingPhotos !== false && listing.primaryImageSource !== "street_view"
+          ? `/room-builder/?listing=${encodeURIComponent(listing.id)}${listing.image ? `&photo=${encodeURIComponent(absUrl(listing.image))}` : ""}&from=${encodeURIComponent(returnTo)}`
+          : "";
+        el.innerHTML = `
+          <div class="nl-media">${(listing.displayImage && listing.displayImage.src) || listing.image ? `<img src="${esc(absUrl((listing.displayImage && listing.displayImage.src) || listing.image))}" alt="${esc(listing.address || listing.title || "Home")}" loading="lazy" />` : `<img src="/images/photo-unavailable.svg" alt="Photo unavailable" />`}${listing.primaryImageSource === "street_view" ? `<span class="sv-badge">Street View</span><span class="sv-attr">© Google</span>` : ""}</div>
+          <div class="nl-body">
+            <span class="nl-source">${esc(listing.status || listing.source || "listing")}${listing.mlsSourceName ? " · " + esc(listing.mlsSourceName) : listing.source ? " · " + esc(listing.source) : ""}</span>
+            <div class="nl-price">${money(listing.listPrice)}</div>
+            ${priceChange}
+            <div class="nl-loc">${esc(listing.address || listing.location || "")}</div>
+            <div class="nl-type">${esc(listing.propertyType || "Home")}</div>
+            <div class="nl-meta">${listing.beds ?? "—"} bd · ${listing.baths ?? "—"} ba · ${listing.sqft ? Number(listing.sqft).toLocaleString() + " sqft" : "—"}</div>
+            <div class="nl-actions">
+              <a class="btn btn-outline btn-sm" href="${returnTo}">View home</a>
+              ${simHref ? `<a class="btn btn-primary btn-sm" href="${simHref}">Visualize this home</a>` : ""}
+            </div>
+          </div>
+        `;
+        return el;
+      }
+
+      function fillFormFromUrl() {
+        const u = new URLSearchParams(location.search);
+        const set = (id, key) => {
+          const el = document.getElementById(id);
+          if (el && u.get(key) != null) el.value = u.get(key);
+        };
+        set("nlQ", "q");
+        set("nlMaxPrice", "maxPrice");
+        set("nlBeds", "minBeds");
+        set("nlBaths", "minBaths");
+        set("nlType", "propertyType");
+        set("nlMinSqft", "minSqft");
+        set("nlCity", "city");
+        set("nlSort", "sort");
+        set("nlWindow", "listedWithin");
+      }
+
+      function queryFromForm() {
+        const qs = new URLSearchParams();
+        const put = (key, id) => {
+          const el = document.getElementById(id);
+          if (el && el.value) qs.set(key, el.value);
+        };
+        put("q", "nlQ");
+        put("maxPrice", "nlMaxPrice");
+        put("minBeds", "nlBeds");
+        put("minBaths", "nlBaths");
+        put("propertyType", "nlType");
+        put("minSqft", "nlMinSqft");
+        put("city", "nlCity");
+        put("sort", "nlSort");
+        put("listedWithin", "nlWindow");
+        if (!qs.get("sort")) qs.set("sort", "newest");
+        qs.set("limit", "24");
+        return qs;
+      }
+
+      function renderDetail(listing) {
+        const el = document.getElementById("nlDetail");
+        if (!el || !listing) return;
+        const photos = (listing.images && listing.images.length ? listing.images : listing.image ? [listing.image] : [])
+          .filter(Boolean);
+        const street = listing.primaryImageSource === "street_view";
+        const can3d = listing.canView3D && listing.hasListingPhotos !== false && !street;
+        const photo = photos[0] ? absUrl(photos[0]) : "";
+        el.classList.remove("hidden");
+        el.innerHTML = `
+          <p class="nl-source">${esc(listing.source || "")}${listing.mlsSourceName ? " · " + esc(listing.mlsSourceName) : ""}</p>
+          <h2 style="margin:0.2rem 0">${esc(listing.address || listing.title || "Home")}</h2>
+          <p class="nl-loc">${esc([listing.city, listing.state, listing.postalCode].filter(Boolean).join(", "))}</p>
+          <p class="nl-price">${money(listing.listPrice)}</p>
+          <p class="nl-meta">${listing.beds ?? "—"} bd · ${listing.baths ?? "—"} ba · ${listing.sqft ? Number(listing.sqft).toLocaleString() + " sqft" : "—"} · ${esc(listing.propertyType || "")}${listing.yearBuilt ? " · built " + listing.yearBuilt : ""}${listing.daysOnMarket != null ? " · " + listing.daysOnMarket + " days on market" : ""}</p>
+          ${listing.desc ? `<p class="nl-meta">${esc(listing.desc)}</p>` : ""}
+          <div class="nl-gallery">${photos.map((u) => `<img src="${esc(absUrl(u))}" alt="" />`).join("") || `<img src="/images/photo-unavailable.svg" alt="Photo unavailable" />`}</div>
+          ${street ? `<p class="nl-meta">Street View is a fallback image, not an official listing photo.</p>` : ""}
+          <div class="nl-actions">
+            ${can3d ? `<a class="btn btn-primary" href="/room-builder/?listing=${encodeURIComponent(listing.id)}${photo ? `&photo=${encodeURIComponent(photo)}` : ""}&from=${encodeURIComponent(location.pathname + location.search)}">Open in 3D Room Simulator</a>` : ""}
+            <a class="btn btn-outline" href="/showing/?property=${encodeURIComponent(listing.address || listing.title || "")}&amp;city=${encodeURIComponent(listing.city || "")}">Request a showing</a>
+            ${listing.sourceUrl ? `<a class="btn btn-ghost" href="${esc(listing.sourceUrl)}" target="_blank" rel="noopener">Source listing</a>` : ""}
+          </div>
+          ${can3d ? `<p class="nl-meta">3D is an estimated visualization from listing photos, not a scan of this home.</p>` : ""}
+        `;
+      }
+
+      function renderChips() {
+        const chips = document.getElementById("nlChips");
+        if (!chips) return;
+        const qs = queryFromForm();
+        const labels = [];
+        if (qs.get("q")) labels.push(["q", `Search: ${qs.get("q")}`]);
+        if (qs.get("maxPrice")) labels.push(["maxPrice", `Under $${Number(qs.get("maxPrice")).toLocaleString()}`]);
+        if (qs.get("minBeds")) labels.push(["minBeds", `${qs.get("minBeds")}+ beds`]);
+        if (qs.get("minBaths")) labels.push(["minBaths", `${qs.get("minBaths")}+ baths`]);
+        if (qs.get("propertyType")) labels.push(["propertyType", qs.get("propertyType")]);
+        if (qs.get("city")) labels.push(["city", qs.get("city")]);
+        if (qs.get("listedWithin")) labels.push(["listedWithin", `Last ${qs.get("listedWithin")}d`]);
+        if (!labels.length) {
+          chips.innerHTML = "";
+          return;
+        }
+        chips.innerHTML = labels.map(([key, label]) => `<button type="button" class="nl-chip-btn" data-clear="${esc(key)}">${esc(label)} ×</button>`).join("") +
+          `<button type="button" class="nl-chip-btn" data-clear="all">Clear all</button>`;
+      }
+
+      async function load() {
+        const base =
+          window.SRU_AUTH?.apiBase?.() && !/:878[89]$/.test(window.SRU_AUTH.apiBase())
+            ? window.SRU_AUTH.apiBase()
+            : /^878[89]$/.test(location.port)
+              ? "http://127.0.0.1:8787"
+              : location.origin;
+        const params = new URLSearchParams(location.search);
+        const id = params.get("id");
+        try {
+          if (id) {
+            const one = await fetch(`${base}/api/listings/${encodeURIComponent(id)}`);
+            const body = await one.json();
+            if (body.ok && body.listing) {
+              renderDetail(body.listing);
+              window.SRU_GROWTH?.track("listing_view", { listingId: body.listing.id, source: body.listing.source });
+            }
+          }
+          const qs = queryFromForm();
+          const res = await fetch(`${base}/api/listings?${qs.toString()}`);
+          const data = await res.json();
+          if (!data.ok) throw new Error(data.error || "Failed to load listings");
+          const listings = data.listings || [];
+          grid.innerHTML = "";
+          if (!listings.length) {
+            status.hidden = false;
+            status.className = "nl-empty";
+            status.textContent = data.parsedQuery && data.parsedQuery.city
+              ? `No residential homes in this dataset for that search. Nearby HUD homes can appear within about 30 miles — we do not invent listings.`
+              : "No listings matched. Provider timestamps only — we do not relabel old houses as new.";
+            renderChips();
+            return;
+          }
+          status.hidden = true;
+          listings.forEach((listing) => {
+            grid.appendChild(card(listing));
+            window.SRU_GROWTH?.track("listing_view", { listingId: listing.id, source: listing.source });
+          });
+          renderChips();
+        } catch (err) {
+          status.hidden = false;
+          status.textContent = "Couldn't load listings right now. Check that the listings API is running, then retry.";
+          status.className = "nl-error";
+          renderChips();
+        }
+      }
+
+      fillFormFromUrl();
+      document.getElementById("nlForm")?.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const qs = queryFromForm();
+        history.replaceState({}, "", `/new-listings/?${qs.toString()}`);
+        load();
+      });
+      ["nlMaxPrice", "nlBeds", "nlBaths", "nlType", "nlMinSqft", "nlCity", "nlSort", "nlWindow"].forEach((id) => {
+        document.getElementById(id)?.addEventListener("change", () => document.getElementById("nlForm")?.requestSubmit());
+      });
+      document.getElementById("nlReset")?.addEventListener("click", () => {
+        document.getElementById("nlForm")?.reset();
+        history.replaceState({}, "", "/new-listings/");
+        load();
+      });
+      document.getElementById("nlChips")?.addEventListener("click", (e) => {
+        const btn = e.target.closest("[data-clear]");
+        if (!btn) return;
+        const key = btn.getAttribute("data-clear");
+        if (key === "all") {
+          document.getElementById("nlReset")?.click();
+          return;
+        }
+        const map = { q: "nlQ", maxPrice: "nlMaxPrice", minBeds: "nlBeds", minBaths: "nlBaths", propertyType: "nlType", city: "nlCity", listedWithin: "nlWindow" };
+        const el = document.getElementById(map[key]);
+        if (el) el.value = "";
+        document.getElementById("nlForm")?.requestSubmit();
+      });
+      load();
+    })();
+  </script>
+</body>
+</html>
