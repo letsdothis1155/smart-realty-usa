@@ -152,6 +152,9 @@
         if (!u) return "";
         return /^(https?:)?\/\//i.test(u) || u.startsWith("/") ? u : `/${u}`;
       }
+      function sampleRoomHref(returnTo) {
+        return `/room-builder/?demo=1&from=${encodeURIComponent(returnTo)}`;
+      }
 
       function card(listing) {
         const el = document.createElement("article");
@@ -176,7 +179,9 @@
             <div class="nl-meta">${listing.beds ?? "—"} bd · ${listing.baths ?? "—"} ba · ${listing.sqft ? Number(listing.sqft).toLocaleString() + " sqft" : "—"}</div>
             <div class="nl-actions">
               <a class="btn btn-outline btn-sm" href="${returnTo}">View home</a>
-              ${simHref ? `<a class="btn btn-primary btn-sm" href="${simHref}">Visualize this home</a>` : ""}
+              ${simHref
+                ? `<a class="btn btn-primary btn-sm" href="${simHref}">Visualize this home</a>`
+                : `<a class="btn btn-outline btn-sm" href="${sampleRoomHref(returnTo)}" title="Opens a generic sample room, not this property's layout">Try sample 3D room</a>`}
             </div>
           </div>
         `;
@@ -239,11 +244,15 @@
           <div class="nl-gallery">${photos.map((u) => `<img src="${esc(absUrl(u))}" alt="" />`).join("") || `<img src="/images/photo-unavailable.svg" alt="Photo unavailable" />`}</div>
           ${street ? `<p class="nl-meta">Street View is a fallback image, not an official listing photo.</p>` : ""}
           <div class="nl-actions">
-            ${can3d ? `<a class="btn btn-primary" href="/room-builder/?listing=${encodeURIComponent(listing.id)}${photo ? `&photo=${encodeURIComponent(photo)}` : ""}&from=${encodeURIComponent(location.pathname + location.search)}">Open in 3D Room Simulator</a>` : ""}
+            ${can3d
+              ? `<a class="btn btn-primary" href="/room-builder/?listing=${encodeURIComponent(listing.id)}${photo ? `&photo=${encodeURIComponent(photo)}` : ""}&from=${encodeURIComponent(location.pathname + location.search)}">Open in 3D Room Simulator</a>`
+              : `<a class="btn btn-outline" href="${sampleRoomHref(location.pathname + location.search)}">Try a sample 3D room</a>`}
             <a class="btn btn-outline" href="/showing/?property=${encodeURIComponent(listing.address || listing.title || "")}&amp;city=${encodeURIComponent(listing.city || "")}">Request a showing</a>
             ${listing.sourceUrl ? `<a class="btn btn-ghost" href="${esc(listing.sourceUrl)}" target="_blank" rel="noopener">Source listing</a>` : ""}
           </div>
-          ${can3d ? `<p class="nl-meta">3D is an estimated visualization from listing photos, not a scan of this home.</p>` : ""}
+          ${can3d
+            ? `<p class="nl-meta">3D is an estimated visualization from listing photos, not a scan of this home.</p>`
+            : `<p class="nl-meta">The 3D demo opens a generic sample room; it does not model this property.</p>`}
         `;
       }
 
