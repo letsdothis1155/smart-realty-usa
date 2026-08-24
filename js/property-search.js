@@ -251,7 +251,8 @@
       if (pmax && price && price > pmax) return false;
       if ((extra.beds || parsed.beds) && (p.beds || 0) < (extra.beds || parsed.beds)) return false;
       if ((extra.baths || parsed.baths) && (p.baths || 0) < (extra.baths || parsed.baths)) return false;
-      if (parsed.propertyType === "condo" && !/condo/i.test(p.propertyType || "")) return false;
+      var wantedType = extra.propertyType || parsed.propertyType;
+      if (wantedType && !propertyTypeMatches(p, wantedType)) return false;
       if (parsed.zip && listingHay(p).indexOf(parsed.zip) === -1 && extra.requireZip) return false;
       if (parsed.city && !fuzzyHay(listingHay(p), parsed.city.toLowerCase())) return false;
       if (parsed.state && !new RegExp("\\b" + parsed.state + "\\b", "i").test(listingHay(p))) return false;
@@ -265,6 +266,30 @@
       }
       return true;
     });
+  }
+
+  function propertyTypeMatches(p, wanted) {
+    var want = String(wanted || "").toLowerCase().trim();
+    if (!want) return true;
+    var blob = [p.propertyType, p.title, (p.tags || []).join(" ")].join(" ").toLowerCase();
+    if (want === "condo") return /condo|loft|penthouse/.test(blob);
+    if (want === "town") return /townhome|townhouse|town home|duplex|brownstone/.test(blob);
+    if (want === "estate") return /estate|mansion|palace|villa/.test(blob);
+    if (want === "house" || want === "single") {
+      if (/condo|loft|penthouse/.test(blob) && !/town/.test(blob)) return false;
+      return /house|home|family|cottage|ranch|bungalow|residence|craftsman/.test(blob) || !blob.trim();
+    }
+    return blob.indexOf(want) !== -1;
+  }
+
+  function roomSimulatorHref(p, extra) {
+    extra = extra || {};
+    if (!p || !hasUsableRoomPhoto(p)) return "";
+    var photo = extra.photo || (Array.isArray(p.images) && p.images[0]) || p.image || "";
+    var href = "/room-builder/?listing=" + encodeURIComponent(p.id);
+    if (photo) href += "&photo=" + encodeURIComponent(photo);
+    if (extra.from) href += "&from=" + encodeURIComponent(extra.from);
+    return href;
   }
 
   function paginate(list, page, size) {
@@ -283,6 +308,8 @@
     hasHouseNumber: hasHouseNumber,
     rankListings: rankListings,
     filterListings: filterListings,
+    propertyTypeMatches: propertyTypeMatches,
+    roomSimulatorHref: roomSimulatorHref,
     paginate: paginate,
     cityCoords: cityCoords,
     haversine: haversine,

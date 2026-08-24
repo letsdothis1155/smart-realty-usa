@@ -297,14 +297,15 @@ function plantSnake(w, h, d, product) {
 
 function art(w, h, d, product) {
   const g = new THREE.Group();
+  const thick = 0.04;
   const frame = mat(product.swatch || "#7a5a44", { roughness: 0.5 });
   const canvas = artTexture(product);
-  add(g, geo.box, frame, 0, 0, 0, w, h, Math.max(d, 0.03));
+  add(g, geo.box, frame, 0, 0, 0, w, h, thick);
   const pic = new THREE.Mesh(geo.plane, new THREE.MeshStandardMaterial({ map: canvas, roughness: 0.85 }));
-  pic.position.set(0, 0, d / 2 + 0.008);
-  pic.scale.set(w * 0.88, h * 0.86, 1);
+  pic.position.set(0, 0, thick / 2 + 0.004);
+  pic.scale.set(w * 0.86, h * 0.84, 1);
   g.add(pic);
-  return footprint(g, w, Math.max(d, 0.04), h);
+  return footprint(g, w, thick, h);
 }
 
 function artSet(w, h, d, product) {

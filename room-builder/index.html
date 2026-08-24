@@ -5,26 +5,37 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>3D Room · Shop This Room — SMART REALTY.US LLC</title>
   <meta name="description" content="Walk a property-inspired room, place planning models from Best Buy, IKEA, Wayfair, and Home Depot, and estimate the staged space before buying a home." />
-  <link rel="stylesheet" href="/room-builder/room-sim.css?v=20260822f" />
-  <script src="/domain-config.js?v=20260822f"></script>
+  <link rel="stylesheet" href="/room-builder/room-sim.css" />
+  <script src="/domain-config.js"></script>
   <script src="/js/analytics.js"></script>
+  <script src="/js/listings.js"></script>
 </head>
 <body class="room-sim">
   <div class="sim-root">
-    <canvas id="simCanvas" class="sim-canvas"></canvas>
+    <canvas id="simCanvas" class="sim-canvas" aria-label="3D room canvas"></canvas>
+    <div class="sim-fallback" id="simFallback" hidden>
+      <p id="simFallbackMsg">3D is unavailable on this device. A still visualization is shown instead.</p>
+      <div class="sim-fallback-stage" id="simFallbackStage"></div>
+      <a class="sim-back" id="simFallbackBack" href="/new-listings/">← Back to listings</a>
+    </div>
     <div class="sim-hud">
       <header class="sim-top">
         <a class="sim-back" id="simBack" href="/#listings">← <span id="simBackLabel">Property</span></a>
-        <div class="sim-title">
-          <strong>3D ROOM</strong>
-          <span id="simPhotoStatus" data-state="sample">Sample planning room</span>
-        </div>
+        <div class="sim-title">3D ROOM · VISUALIZATION</div>
         <div class="sim-modes">
           <button type="button" class="sim-mode-btn is-active" id="simBuild" data-mode="orbit">BUILD</button>
           <button type="button" class="sim-mode-btn" data-mode="walk">WALK</button>
           <button type="button" class="sim-mode-btn" id="simReset">RESET</button>
+          <button type="button" class="sim-mode-btn" id="simPause" aria-pressed="false">PAUSE</button>
+          <button type="button" class="sim-mode-btn" id="simFull">FULLSCREEN</button>
         </div>
       </header>
+
+      <div class="sim-listing" id="simListingBar" hidden>
+        <strong id="simListingAddr"></strong>
+        <span id="simListingMeta"></span>
+        <div class="sim-photos" id="simPhotos" hidden></div>
+      </div>
 
       <div class="sim-side">
         <div class="sim-total">Planning total <strong id="simTotalValue">~$0</strong></div>
@@ -32,13 +43,24 @@
         <button type="button" class="sim-chip" id="simAuto">✨ AUTO FURNISH</button>
         <button type="button" class="sim-chip" id="simUndo">UNDO</button>
         <button type="button" class="sim-chip" id="simRedo">REDO</button>
+        <button type="button" class="sim-chip" id="simShare">COPY LINK</button>
+        <div class="sim-presets" role="group" aria-label="Room type">
+          <button type="button" class="sim-chip is-on" data-room="living">Living</button>
+          <button type="button" class="sim-chip" data-room="bedroom">Bedroom</button>
+          <button type="button" class="sim-chip" data-room="dining">Dining</button>
+        </div>
+        <div class="sim-presets" role="group" aria-label="Finish">
+          <button type="button" class="sim-chip is-on" data-finish="oak">Oak</button>
+          <button type="button" class="sim-chip" data-finish="linen">Linen</button>
+          <button type="button" class="sim-chip" data-finish="slate">Slate</button>
+        </div>
         <div class="sim-time">
           <label>Time of day <span id="simTimeVal">2:00 PM</span></label>
           <input id="simTime" type="range" min="6" max="20" step="0.5" value="14" />
         </div>
       </div>
 
-      <div class="sim-hint" id="simHint">Drag to orbit · click the sofa · scroll to zoom</div>
+      <div class="sim-hint" id="simHint">Drag to orbit · pinch or scroll to zoom · tap furniture to inspect</div>
 
       <aside class="sim-float" id="simFloat" hidden>
         <h3>Item</h3>
@@ -63,6 +85,18 @@
       </div>
     </div>
 
+    <div class="sim-onboard" id="simOnboard" hidden>
+      <div class="sim-onboard-card">
+        <p class="sim-kicker">Estimated 3D preview</p>
+        <h2>Stage a room from a listing photo</h2>
+        <ol>
+          <li>Orbit or walk the estimated shell — not a scan of the property.</li>
+          <li>Place planning furniture. Prices are estimates until you open the retailer.</li>
+          <li>Reset, undo, or copy the link to return to this listing’s room.</li>
+        </ol>
+        <button type="button" class="sim-mode-btn is-active" id="simOnboardGo">Start staging</button>
+      </div>
+    </div>
     <div class="sim-loading" id="simLoading" hidden>LOADING 3D</div>
     <div class="sim-sheet" id="simSheet" hidden>
       <div class="sim-sheet-card">
@@ -76,13 +110,16 @@
   </div>
   <noscript><p class="sim-loading">JavaScript is required for the interactive 3D room.</p></noscript>
   <script type="module">
-    import("/js/room-sim.js?v=20260822f")
+    import("/js/room-sim.js?v=20260824p")
       .then(({ bootRoomSim }) => bootRoomSim())
-      .catch(() => {
+      .catch((error) => {
+        console.error("Room simulator failed to start", error);
         const loading = document.getElementById("simLoading");
+        const fallback = document.getElementById("simFallback");
+        if (fallback) fallback.hidden = false;
         if (loading) {
           loading.hidden = false;
-          loading.textContent = "3D COULD NOT LOAD · CHECK YOUR CONNECTION AND TRY AGAIN";
+          loading.textContent = "3D COULD NOT LOAD · SHOWING STILL FALLBACK";
         }
       });
   </script>

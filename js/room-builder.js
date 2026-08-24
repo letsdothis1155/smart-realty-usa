@@ -3,9 +3,9 @@
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/+esm";
 import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js/+esm";
 import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js/+esm";
-import { buildFurnitureMesh, tintPlacement } from "/js/room-furniture.js";
-import { DEFAULT_LAYOUT, findProduct, normalizeProduct } from "/js/room-catalog.js";
-import { DEFAULT_LIVING_ROOM } from "/js/room-pipeline.js";
+import { buildFurnitureMesh, tintPlacement } from "/js/room-furniture.js?v=20260824j";
+import { DEFAULT_LAYOUT, findProduct, normalizeProduct } from "/js/room-catalog.js?v=20260824j";
+import { DEFAULT_LIVING_ROOM, FINISH_PRESETS, ROOM_PRESETS } from "/js/room-pipeline.js?v=20260824j";
 
 const IN_TO_M = 0.0254;
 const gltfLoader = new GLTFLoader();
@@ -93,6 +93,7 @@ function boxesOverlap(a, b, pad = 0.02) {
 }
 
 export function initRoomBuilder(canvas, options = {}) {
+  const reduceMotion = Boolean(window.matchMedia?.("(prefers-reduced-motion: reduce)").matches);
   const scene = new THREE.Scene();
   scene.background = new THREE.Color("#c5d4de");
   scene.fog = new THREE.Fog("#c5d4de", 16, 36);
@@ -106,7 +107,7 @@ export function initRoomBuilder(canvas, options = {}) {
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.05;
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, reduceMotion ? 1 : 2));
 
   const hemi = new THREE.HemisphereLight("#fff7ea", "#6a6458", 0.55);
   scene.add(hemi);
@@ -147,47 +148,100 @@ export function initRoomBuilder(canvas, options = {}) {
   let hour = 14;
   let mode = "orbit";
   let cutaway = true;
-
+  let finishId = "oak";
+  let paused = false;
+  let rafId = 0;
   const floorTex = woodTexture();
   const wallTex = wallTexture();
   const windowLights = [];
   const cutawayMeshes = [];
+  const listingPhotoMeshes = [];
+  let pendingListingPhotos = [];
   let southWall = null;
   let ceilingMesh = null;
+
+  function makePhotoFrame(url, w, h) {
+    const g = new THREE.Group();
+    const wood = new THREE.MeshStandardMaterial({ color: "#3f3228", roughness: 0.55, metalness: 0.08 });
+    const frame = new THREE.Mesh(new THREE.BoxGeometry(w + 0.08, h + 0.08, 0.045), wood);
+    frame.castShadow = true;
+    g.add(frame);
+    const mat = new THREE.MeshStandardMaterial({ color: "#1c1c1e", roughness: 0.65 });
+    const pic = new THREE.Mesh(new THREE.PlaneGeometry(w, h), mat);
+    pic.position.z = 0.024;
+    g.add(pic);
+    const loader = new THREE.TextureLoader();
+    loader.setCrossOrigin("anonymous");
+    loader.load(
+      url,
+      (tex) => {
+        if (g.userData.resourcesDisposed) {
+          tex.dispose();
+          return;
+        }
+        tex.colorSpace = THREE.SRGBColorSpace;
+        pic.material.dispose();
+        pic.material = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.78 });
+      },
+      undefined,
+      () => {}
+    );
+    g.userData.role = "listing-photo";
+    return g;
+  }
+
+  function mountListingPhotos(urls = []) {
+    pendingListingPhotos = (urls || []).filter(Boolean).slice(0, 4);
+    listingPhotoMeshes.forEach((m) => {
+      shellGroup.remove(m);
+      disposeObjectResources(m, {
+        geometries: true,
+        retainedTextures: new Set([floorTex, wallTex]),
+      });
+    });
+    listingPhotoMeshes.length = 0;
+    const list = pendingListingPhotos;
+    if (!list.length) return;
+    const url = list[0];
+    const w = Math.min(1.35, roomWidth * 0.24);
+    const h = 0.9;
+    const frame = makePhotoFrame(url, w, h);
+    frame.position.set(-roomWidth * 0.32, 1.62, -roomDepth / 2 + 0.05);
+    frame.rotation.y = 0;
+    shellGroup.add(frame);
+    listingPhotoMeshes.push(frame);
+  }
 
   function rebuildShell(opts = {}) {
     roomWidth = Number(opts.width) || roomWidth;
     roomDepth = Number(opts.depth) || roomDepth;
     roomHeight = Number(opts.height) || roomHeight;
     if (opts.photoUrl !== undefined) photoUrl = opts.photoUrl || "";
-    const wallPlan = Array.isArray(opts.walls) ? opts.walls : DEFAULT_LIVING_ROOM.walls;
-    const wallDetails = (id) => wallPlan.find((wall) => wall?.id === id) || { id, windows: 0, door: id === "south" };
-    const floorFinish = opts.floor?.finish || "oak";
+    if (opts.finish) finishId = opts.finish;
+    disposeObjectResources(shellGroup, {
+      geometries: true,
+      retainedTextures: new Set([floorTex, wallTex]),
+    });
     while (shellGroup.children.length) shellGroup.remove(shellGroup.children[0]);
     windowLights.length = 0;
     cutawayMeshes.length = 0;
+    listingPhotoMeshes.length = 0;
 
-    const floorOptions = {
-      "dark-wood": { map: floorTex, color: "#6d5037", roughness: 0.7 },
-      tile: { color: "#c9c5bd", roughness: 0.38, metalness: 0.04 },
-      carpet: { color: "#aaa59b", roughness: 1 },
-      concrete: { color: "#989b9c", roughness: 0.92 },
-      other: { color: "#b4aa99", roughness: 0.82 },
-      oak: { map: floorTex, color: "#ffffff", roughness: 0.72, metalness: 0.02 },
-    };
+    const finishFloor = (FINISH_PRESETS[finishId] || FINISH_PRESETS.oak).floor;
     const floor = new THREE.Mesh(
       new THREE.PlaneGeometry(roomWidth, roomDepth),
-      new THREE.MeshStandardMaterial(floorOptions[floorFinish] || floorOptions.oak)
+      new THREE.MeshStandardMaterial({ map: floorTex, color: finishFloor || "#ffffff", roughness: 0.72, metalness: 0.02 })
     );
     floor.rotation.x = -Math.PI / 2;
     floor.receiveShadow = true;
     floor.userData.role = "floor";
     shellGroup.add(floor);
 
+    const finish = FINISH_PRESETS[finishId] || FINISH_PRESETS.oak;
     const wallMat = () =>
       new THREE.MeshStandardMaterial({
         map: wallTex,
-        color: "#f3f0ea",
+        color: finish.wall || "#f3f0ea",
         roughness: 0.92,
         metalness: 0,
       });
@@ -253,53 +307,20 @@ export function initRoomBuilder(canvas, options = {}) {
       mullion.rotation.y = rotY;
       mullion.translateZ(0.05);
       shellGroup.add(mullion);
-      return [frame, glass, paneLight, mullion];
     }
 
-    function evenlySpaced(count, span) {
-      return Array.from({ length: Math.min(4, Math.max(0, Number(count) || 0)) }, (_, index) =>
-        ((index + 1) / (Math.min(4, Math.max(0, Number(count) || 0)) + 1) - 0.5) * span * 0.72
-      );
-    }
-
-    evenlySpaced(wallDetails("west").windows, roomDepth).forEach((z) => addWindow(-roomWidth / 2, z, Math.PI / 2));
-    evenlySpaced(wallDetails("east").windows, roomDepth).forEach((z) => addWindow(roomWidth / 2, z, -Math.PI / 2));
-    evenlySpaced(wallDetails("north").windows, roomWidth).forEach((x) => addWindow(x, -roomDepth / 2, 0));
-    evenlySpaced(wallDetails("south").windows, roomWidth).forEach((x) => {
-      cutawayMeshes.push(...addWindow(x, roomDepth / 2, Math.PI));
-    });
-
-    function addDoor(id) {
-      const vertical = id === "west" || id === "east";
-      const wallSpan = vertical ? roomDepth : roomWidth;
-      const offset = wallSpan * 0.27;
-      const x = id === "west" ? -roomWidth / 2 : id === "east" ? roomWidth / 2 : offset;
-      const z = id === "north" ? -roomDepth / 2 : id === "south" ? roomDepth / 2 : offset;
-      const rotation = id === "west" ? Math.PI / 2 : id === "east" ? -Math.PI / 2 : id === "south" ? Math.PI : 0;
-      const door = new THREE.Mesh(
-        new THREE.BoxGeometry(0.92, 2.05, 0.06),
-        new THREE.MeshStandardMaterial({ color: "#6b4a32", roughness: 0.55 })
-      );
-      door.position.set(x, 1.025, z);
-      door.rotation.y = rotation;
-      door.translateZ(-0.03);
-      shellGroup.add(door);
-      const knob = new THREE.Mesh(
-        new THREE.SphereGeometry(0.03, 10, 8),
-        new THREE.MeshStandardMaterial({ color: "#c9a56a", metalness: 0.8, roughness: 0.25 })
-      );
-      knob.position.copy(door.position);
-      knob.rotation.y = rotation;
-      knob.translateX(0.32);
-      knob.position.y = 1;
-      knob.translateZ(-0.045);
-      shellGroup.add(knob);
-      if (id === "south") cutawayMeshes.push(door, knob);
-    }
-
-    ["north", "west", "east", "south"].forEach((id) => {
-      if (wallDetails(id).door) addDoor(id);
-    });
+    addWindow(-roomWidth / 2, -roomDepth * 0.22, Math.PI / 2);
+    addWindow(-roomWidth / 2, roomDepth * 0.18, Math.PI / 2);
+    const door = new THREE.Mesh(
+      new THREE.BoxGeometry(0.92, 2.05, 0.06),
+      new THREE.MeshStandardMaterial({ color: "#6b4a32", roughness: 0.55 })
+    );
+    door.position.set(roomWidth * 0.28, 1.025, roomDepth / 2 - 0.03);
+    shellGroup.add(door);
+    const knob = new THREE.Mesh(new THREE.SphereGeometry(0.03, 10, 8), new THREE.MeshStandardMaterial({ color: "#c9a56a", metalness: 0.8, roughness: 0.25 }));
+    knob.position.set(roomWidth * 0.28 + 0.32, 1.0, roomDepth / 2 - 0.07);
+    shellGroup.add(knob);
+    cutawayMeshes.push(door, knob);
 
     ceilingMesh = new THREE.Mesh(
       new THREE.PlaneGeometry(roomWidth, roomDepth),
@@ -311,18 +332,11 @@ export function initRoomBuilder(canvas, options = {}) {
     shellGroup.add(ceilingMesh);
     cutawayMeshes.push(ceilingMesh);
 
-    if (photoUrl) {
-      const loader = new THREE.TextureLoader();
-      loader.setCrossOrigin("anonymous");
-      loader.load(photoUrl, (tex) => {
-        tex.colorSpace = THREE.SRGBColorSpace;
-        const north = shellGroup.children.find((c) => c.userData.role === "wall" && Math.abs(c.position.z + roomDepth / 2) < 0.01);
-        if (north) north.material = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.95 });
-      });
-    }
-
+    listingPhotoMeshes.forEach((m) => shellGroup.remove(m));
+    listingPhotoMeshes.length = 0;
     applyCutaway(cutaway);
     setTimeOfDay(hour);
+    if (pendingListingPhotos.length) mountListingPhotos(pendingListingPhotos);
   }
 
   function applyCutaway(on) {
@@ -335,7 +349,7 @@ export function initRoomBuilder(canvas, options = {}) {
   rebuildShell(options);
 
   const controls = new OrbitControls(camera, renderer.domElement);
-  controls.enableDamping = true;
+  controls.enableDamping = !reduceMotion;
   controls.dampingFactor = 0.08;
   controls.minDistance = 1.6;
   controls.maxDistance = 16;
@@ -563,10 +577,13 @@ export function initRoomBuilder(canvas, options = {}) {
         const sized = new THREE.Box3().setFromObject(wrapped);
         const sz = sized.getSize(new THREE.Vector3());
         wrapped.userData.footprint = { w: sz.x, d: sz.z, h: sz.y };
+        wrapped.userData.resourceOwnership = "shared-gltf";
         return wrapped;
       }
     }
-    return buildFurnitureMesh(p);
+    const procedural = buildFurnitureMesh(p);
+    procedural.userData.resourceOwnership = "procedural";
+    return procedural;
   }
 
   async function addItem(product, opts = {}) {
@@ -592,10 +609,52 @@ export function initRoomBuilder(canvas, options = {}) {
     return instanceId;
   }
 
-  function disposeMesh(mesh) {
-    mesh.traverse((ch) => {
+  function disposeMaterial(material, options, seenMaterials, seenTextures) {
+    if (!material || seenMaterials.has(material)) return;
+    seenMaterials.add(material);
+    if (options.textures !== false) {
+      for (const value of Object.values(material)) {
+        if (
+          value?.isTexture &&
+          !options.retainedTextures?.has(value) &&
+          !seenTextures.has(value)
+        ) {
+          seenTextures.add(value);
+          value.dispose();
+        }
+      }
+    }
+    material.dispose?.();
+  }
+
+  function disposeObjectResources(root, options = {}) {
+    if (!root) return;
+    const seenMaterials = new Set();
+    const seenTextures = new Set();
+    const seenGeometries = new Set();
+    root.userData.resourcesDisposed = true;
+    root.traverse((ch) => {
+      ch.userData.resourcesDisposed = true;
+      if (options.geometries && ch.geometry && !seenGeometries.has(ch.geometry)) {
+        seenGeometries.add(ch.geometry);
+        ch.geometry.dispose?.();
+      }
+      const materials = Array.isArray(ch.material) ? ch.material : [ch.material];
+      materials.forEach((material) =>
+        disposeMaterial(material, options, seenMaterials, seenTextures),
+      );
       if (ch.isLight) ch.dispose?.();
     });
+  }
+
+  function disposeMesh(mesh) {
+    const ownership = mesh?.userData?.resourceOwnership;
+    if (ownership === "shared-gltf") return;
+    if (ownership === "gltf-ghost") {
+      disposeObjectResources(mesh, { textures: false });
+      return;
+    }
+    disposeObjectResources(mesh);
   }
 
   function removeItem(id, silent) {
@@ -712,6 +771,7 @@ export function initRoomBuilder(canvas, options = {}) {
   function clearGhost() {
     if (ghost) {
       itemsGroup.remove(ghost);
+      disposeMesh(ghost);
       ghost = null;
     }
     placing = null;
@@ -727,11 +787,14 @@ export function initRoomBuilder(canvas, options = {}) {
     ghost.userData.product = { ...p, instanceId: "ghost" };
     ghost.userData.ghost = true;
     ghost.userData.valid = true;
+    const sourceOwnership = ghost.userData.resourceOwnership;
+    const replacedProceduralMaterials = new Set();
     controls.enabled = false;
     ghost.traverse((ch) => {
       if (ch.isLight) ch.visible = false;
       if (ch.isMesh && ch.material) {
         const src = Array.isArray(ch.material) ? ch.material[0] : ch.material;
+        if (sourceOwnership === "procedural") replacedProceduralMaterials.add(src);
         const c = src.clone();
         c.transparent = true;
         c.opacity = 0.48;
@@ -740,10 +803,21 @@ export function initRoomBuilder(canvas, options = {}) {
         ch.castShadow = false;
       }
     });
+    replacedProceduralMaterials.forEach((material) => material.dispose());
+    ghost.userData.resourceOwnership =
+      sourceOwnership === "shared-gltf" ? "gltf-ghost" : "procedural-ghost";
     tintPlacement(ghost, true);
     itemsGroup.add(ghost);
-    ghost.position.set(0, restY(p, ghost), Math.min(roomDepth * 0.28, roomDepth / 2 - 0.6));
-    clampToRoom(ghost, ghost.position.x, ghost.position.z);
+    const tries = [
+      { x: 0, z: roomDepth * 0.36 },
+      { x: -1.35, z: roomDepth * 0.32 },
+      { x: 1.35, z: roomDepth * 0.32 },
+      { x: 0, z: -0.4 },
+    ];
+    for (const spot of tries) {
+      clampToRoom(ghost, spot.x, spot.z);
+      if (!collides(ghost, null)) break;
+    }
     markValidity(ghost, null);
     onBusy(false);
     selectItem(null);
@@ -869,13 +943,32 @@ export function initRoomBuilder(canvas, options = {}) {
   }
 
   function animate() {
+    rafId = requestAnimationFrame(animate);
+    if (paused) return;
     const dt = Math.min(clock.getDelta(), 0.05);
     walkTick(dt);
     if (mode === "orbit") controls.update();
     renderer.render(scene, camera);
-    requestAnimationFrame(animate);
   }
   animate();
+
+  function setPaused(value) {
+    paused = Boolean(value);
+    if (controls) controls.enabled = !paused && mode === "orbit";
+  }
+
+  function setFinish(id) {
+    if (!FINISH_PRESETS[id]) return finishId;
+    finishId = id;
+    rebuildShell();
+    return finishId;
+  }
+
+  function applyRoomPreset(id) {
+    const preset = ROOM_PRESETS[id] || ROOM_PRESETS.living;
+    rebuildShell(preset);
+    return preset;
+  }
 
   function screenshot() {
     renderer.render(scene, camera);
@@ -933,6 +1026,13 @@ export function initRoomBuilder(canvas, options = {}) {
     await autoFurnish(DEFAULT_LAYOUT);
   }
 
+  async function loadDesign(state) {
+    const rows = Array.isArray(state) ? state : state?.items;
+    if (!rows || !rows.length) return false;
+    await restore(rows);
+    return true;
+  }
+
   function projectSelected() {
     const mesh = items.get(selectedId);
     if (!mesh) return null;
@@ -960,6 +1060,8 @@ export function initRoomBuilder(canvas, options = {}) {
     summary,
     exportDesign,
     applyReconstruction: rebuildShell,
+    setListingPhotos: mountListingPhotos,
+    loadDesign,
     beginPlace,
     cancelPlace,
     setMode,
@@ -967,6 +1069,30 @@ export function initRoomBuilder(canvas, options = {}) {
     setTimeOfDay,
     autoFurnish,
     resetRoom,
+    setPaused,
+    get paused() {
+      return paused;
+    },
+    setFinish,
+    get finish() {
+      return finishId;
+    },
+    applyRoomPreset,
+    dispose() {
+      cancelAnimationFrame(rafId);
+      clearGhost();
+      for (const id of [...items.keys()]) removeItem(id, true);
+      disposeObjectResources(shellGroup, {
+        geometries: true,
+        retainedTextures: new Set([floorTex, wallTex]),
+      });
+      while (shellGroup.children.length) shellGroup.remove(shellGroup.children[0]);
+      floorTex.dispose();
+      wallTex.dispose();
+      controls.dispose();
+      renderer.renderLists?.dispose();
+      renderer.dispose();
+    },
     placedList,
     roomTotal,
     projectSelected,
