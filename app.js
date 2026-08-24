@@ -2,11 +2,11 @@
    Smart Realty USA — Interactive Application
    ============================================ */
 
-// Inventory lives in js/properties.js (single source of truth)
+// Inventory lives in data/listings.json (loaded by js/listings.js)
 const PROPERTIES = window.SRU_PROPERTIES || [];
 const DEFAULT_COORDS = window.SRU_DEFAULT_COORDS || {};
 if (!PROPERTIES.length) {
-  console.warn("[Smart Realty] js/properties.js missing or empty — load it before app.js");
+  console.warn("[Smart Realty] js/listings.js missing or empty — load it before app.js");
 }
 
 
@@ -35,17 +35,42 @@ const AMENITY_POOL = {
   waterfront: ["Water views", "Dock access", "Balcony", "Elevator", "Concierge", "Gym"],
 };
 
+function isUsableListingPhoto(src, p) {
+  if (!src) return false;
+  if (/maps\.googleapis\.com\/maps\/api\/streetview/i.test(src)) return false;
+  if (/NoImage|placeholder|photo-unavailable/i.test(src)) return false;
+  if (p && p.imageSource === "street_view" && src === p.image) return false;
+  return true;
+}
+
 function propertyGallery(p) {
   const list = Array.isArray(p.images) && p.images.length ? p.images.slice() : [];
   if (p.image && !list.includes(p.image)) list.unshift(p.image);
   if (!list.length && p.image) list.push(p.image);
-  // de-dupe while preserving order
   const seen = new Set();
   return list.filter((src) => {
-    if (!src || seen.has(src)) return false;
+    if (!src || seen.has(src) || !isUsableListingPhoto(src, p)) return false;
     seen.add(src);
     return true;
   });
+}
+
+function displayPhoto(p) {
+  if (p.displayImage && p.displayImage.src) return p.displayImage;
+  const photos = propertyGallery(p);
+  if (photos.length) {
+    return { src: photos[0], source: p.primaryImageSource || "listing", label: "", attribution: "" };
+  }
+  if (p.streetViewAvailable || p.primaryImageSource === "street_view") {
+    const base = (window.SRU_AUTH && window.SRU_AUTH.apiBase && window.SRU_AUTH.apiBase()) || "";
+    return {
+      src: `${base}/api/listings/${encodeURIComponent(p.id)}/street-view`,
+      source: "street_view",
+      label: "Street View",
+      attribution: "© Google",
+    };
+  }
+  return { src: "/images/photo-unavailable.svg", source: "placeholder", label: "Photo unavailable", attribution: "" };
 }
 
 function enrichProperty(p) {
@@ -81,27 +106,32 @@ function enrichProperty(p) {
 
 PROPERTIES.forEach(enrichProperty);
 
-// Live BTC pricing — multi-stream WebSocket + fast REST (display always tracks LIVE spot)
-let btcRate = 0; // live spot used everywhere (updates every tick)
-let btcRateGecko = 0; // reference only (24h change)
-let btcRateCoinbase = 0;
-let btcRateBinance = 0;
-let btcRatePrev = 0;
-let btcChange24h = null;
-let btcLastUpdated = null;
-let btcStreamMode = "connecting"; // live | polling | offline
-let btcTickCount = 0;
-let btcSessionOpen = null;
-let btcLastSource = "";
-const btcPriceHistory = [];
-const BTC_HISTORY_MAX = 120;
-const QUOTE_SECONDS = 15 * 60;
-const FAST_POLL_MS = 900; // ~1s REST so UI always ticks even if WS blocked
-const GECKO_REFRESH_MS = 60 * 1000;
-const WS_COINBASE = "wss://ws-feed.exchange.coinbase.com";
-const WS_BINANCE = "wss://stream.binance.com:9443/ws/btcusdt@trade";
-
 const DEMO_GATE_KEY = "sru_demo_unlocked";
+
+function getBtcRate() {
+  return (window.SRU_BTC && window.SRU_BTC.getSpot && window.SRU_BTC.getSpot()) || 0;
+}
+
+function formatBTC(n) {
+  if (window.SRU_BTC && window.SRU_BTC.formatBTC) return window.SRU_BTC.formatBTC(n);
+  return `${Number(n).toFixed(6)} BTC`;
+}
+
+function formatUsdPrecise(n) {
+  if (window.SRU_BTC && window.SRU_BTC.formatUsdPrecise) return window.SRU_BTC.formatUsdPrecise(n);
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 2,
+  }).format(n);
+}
+
+function btcForOffer(offer) {
+  if (window.SRU_BTC && window.SRU_BTC.btcForOffer) return window.SRU_BTC.btcForOffer(offer);
+  const rate = getBtcRate();
+  if (!rate) return null;
+  return offer / rate;
+}
 
 // ---------- Utilities ----------
 const $ = (sel, root = document) => root.querySelector(sel);
@@ -113,11 +143,6 @@ function formatUSD(n) {
     currency: "USD",
     maximumFractionDigits: 0,
   }).format(n);
-}
-
-function formatBTC(n) {
-  // Extra precision so live USD ticks visibly change home-in-BTC amounts
-  return `${n.toFixed(6)} BTC`;
 }
 
 function savings(p) {
@@ -146,8 +171,11 @@ let searchState = {
   priceMin: 0,
   priceMax: 0,
   beds: 0,
+  baths: 0,
   rentableOnly: false,
   sort: "featured",
+  page: 1,
+  origin: { lat: 38.2527, lng: -85.7585 },
 };
 
 const MAX_COMPARE = 3;
@@ -177,13 +205,9 @@ function pricePerSqft(p) {
 }
 
 function getCoords(p) {
-  if (p.lat != null && p.lng != null) return { lat: p.lat, lng: p.lng };
-  return DEFAULT_COORDS[p.id] || { lat: 36.1, lng: -115.1 };
-}
-
-function btcForOffer(offer) {
-  if (!btcRate) return null;
-  return offer / btcRate;
+  if (p.lat != null && p.lng != null) return { lat: Number(p.lat), lng: Number(p.lng) };
+  if (p.latitude != null && p.longitude != null) return { lat: Number(p.latitude), lng: Number(p.longitude) };
+  return DEFAULT_COORDS[p.id] || { lat: 38.194, lng: -85.564 };
 }
 
 function listingMarketName(p) {
@@ -218,35 +242,58 @@ function queryMatchesListing(p, q) {
 }
 
 function getFilteredProperties() {
-  const q = searchState.query.trim().toLowerCase();
-  let list = PROPERTIES.filter((p) => {
-    if (activeFilter === "rentable") {
-      if (!p.rentable) return false;
-    } else if (activeFilter !== "all" && !p.tags.includes(activeFilter)) {
-      return false;
-    }
-    if (searchState.rentableOnly && !p.rentable) return false;
-    if (searchState.beds && p.beds < searchState.beds) return false;
-    if (searchState.priceMin && p.offer < searchState.priceMin) return false;
-    if (searchState.priceMax && p.offer > searchState.priceMax) return false;
-    if (q && !queryMatchesListing(p, q)) return false;
-    return true;
-  });
+  const parsed = window.SRUSearch ? SRUSearch.parseQuery(searchState.query) : { text: searchState.query.toLowerCase(), priceMin: 0, priceMax: 0, beds: 0, baths: 0, rentable: false };
+  const extra = {
+    tag: activeFilter,
+    rentable: searchState.rentableOnly || activeFilter === "rentable",
+    priceMin: searchState.priceMin || parsed.priceMin,
+    priceMax: searchState.priceMax || parsed.priceMax,
+    beds: searchState.beds || parsed.beds,
+    baths: searchState.baths || parsed.baths,
+  };
+  let list = window.SRUSearch
+    ? SRUSearch.filterListings(PROPERTIES, parsed, extra)
+    : PROPERTIES.filter((p) => {
+        if (activeFilter === "rentable") {
+          if (!p.rentable) return false;
+        } else if (activeFilter === "deals") {
+          if (!(p.deals && p.deals.length)) return false;
+        } else if (activeFilter !== "all" && !(p.tags || []).includes(activeFilter)) {
+          return false;
+        }
+        if (searchState.rentableOnly && !p.rentable) return false;
+        if (searchState.beds && p.beds < searchState.beds) return false;
+        if (searchState.priceMin && p.offer < searchState.priceMin) return false;
+        if (searchState.priceMax && p.offer > searchState.priceMax) return false;
+        if (searchState.query && !queryMatchesListing(p, searchState.query)) return false;
+        return true;
+      });
 
-  const sort = searchState.sort;
-  list = [...list].sort((a, b) => {
-    if (sort === "price-asc") return a.offer - b.offer;
-    if (sort === "price-desc") return b.offer - a.offer;
-    if (sort === "savings") return savings(b) - savings(a);
-    if (sort === "sqft") return b.sqft - a.sqft;
-    if (sort === "btc") {
-      if (!btcRate) return a.offer - b.offer;
-      return btcForOffer(a.offer) - btcForOffer(b.offer);
-    }
-    // featured: savings % then price
-    return savingsPct(b) - savingsPct(a) || a.offer - b.offer;
-  });
+  if (window.SRUScore) {
+    list = list.map((p) => (p.smartScore ? p : SRUScore.decorate(p, PROPERTIES)));
+  }
+  if (activeFilter === "deals") {
+    list = list.filter((p) => p.deals && p.deals.length);
+  }
 
+  if (window.SRUSearch && (!searchState.sort || searchState.sort === "featured")) {
+    const city = parsed.city && SRUSearch.cityCoords(parsed.city);
+    const origin = parsed.nearMe || city ? { lat: (city && city.lat) || searchState.origin.lat, lng: (city && city.lng) || searchState.origin.lng } : searchState.origin;
+    list = SRUSearch.rankListings(list, parsed, origin);
+  } else {
+    const sort = searchState.sort;
+    list = [...list].sort((a, b) => {
+      if (sort === "price-asc") return (a.offer || a.listPrice || 0) - (b.offer || b.listPrice || 0);
+      if (sort === "price-desc") return (b.offer || b.listPrice || 0) - (a.offer || a.listPrice || 0);
+      if (sort === "beds") return (b.beds || 0) - (a.beds || 0);
+      if (sort === "baths") return (b.baths || 0) - (a.baths || 0);
+      if (sort === "sqft") return (b.sqft || 0) - (a.sqft || 0);
+      if (sort === "newest") return Date.parse(b.listingDate || 0) - Date.parse(a.listingDate || 0);
+      if (sort === "distance") return (a._searchDist || 0) - (b._searchDist || 0);
+      if (sort === "savings") return savings(b) - savings(a);
+      return savingsPct(b) - savingsPct(a) || a.offer - b.offer;
+    });
+  }
   return list;
 }
 
@@ -262,13 +309,22 @@ function listingCardHtml(p) {
     : `<div class="price-row btc-live"><span>Pay in Bitcoin (live)</span><strong class="btc-loading">loading…</strong></div>`;
 
   const photoCount = propertyGallery(p).length;
+  const photo = displayPhoto(p);
   return `
       <article class="listing-card reveal" data-id="${p.id}">
         <div class="listing-media">
-          <img src="${p.image}" alt="${p.title}" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='/images/photo-unavailable.svg'" />
+          <img src="${photo.src}" alt="${p.address || p.title || "Home"}" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='/images/photo-unavailable.svg'" />
+          ${
+            photo.source === "street_view"
+              ? `<span class="sv-badge">Street View</span><span class="sv-attr">${photo.attribution || "© Google"}</span>`
+              : photo.source === "placeholder"
+                ? `<span class="sv-badge">${photo.label}</span>`
+                : ""
+          }
           <div class="listing-badges">
             <span class="badge gold">Blue Book</span>
-            <span class="badge btc">₿ BTC OK</span>
+            ${p.smartScore ? `<span class="badge">Score ${p.smartScore.score}</span>` : ""}
+            ${(p.deals || []).slice(0, 2).map((d) => `<span class="badge rent">${d.label}</span>`).join("")}
             ${p.rentable ? `<span class="badge rent">Try Before Buy</span>` : ""}
             <span class="badge save">Save ${pct}%</span>
           </div>
@@ -304,7 +360,16 @@ function listingCardHtml(p) {
           </div>
           <div class="listing-actions">
             <button class="btn btn-ghost" type="button" data-view="${p.id}">View Details</button>
-            <a class="btn btn-outline" href="${roomBuilderHref(p.id, propertyGallery(p)[0])}">View in 3D</a>
+            ${
+              window.SRUSearch && SRUSearch.hasUsableRoomPhoto(p) && propertyGallery(p).length
+                ? `<a class="btn btn-outline" href="/room-builder/?listing=${encodeURIComponent(p.id)}&photo=${encodeURIComponent(propertyGallery(p)[0])}">View in 3D</a>`
+                : ""
+            }
+            ${
+              Array.isArray(p.publicRecords) && p.publicRecords.length
+                ? `<span class="badge">Public records attached</span>`
+                : ""
+            }
             <button class="btn btn-btc" type="button" data-btc="${p.id}">₿ Buy with BTC</button>
           </div>
         </div>
@@ -451,7 +516,7 @@ function openCompareModal() {
     ["List", (p) => formatUSD(p.listPrice)],
     ["Blue Book", (p) => formatUSD(p.blueBook)],
     ["You save", (p) => `${formatUSD(savings(p))} (${savingsPct(p)}%)`],
-    ["BTC (live)", (p) => (btcRate ? formatBTC(p.offer / btcRate) : "…")],
+    ["BTC (live)", (p) => (getBtcRate() ? formatBTC(p.offer / getBtcRate()) : "…")],
     ["Beds / Baths", (p) => `${p.beds} / ${p.baths}`],
     ["Sqft", (p) => p.sqft.toLocaleString()],
     ["$/sqft", (p) => formatUSD(pricePerSqft(p))],
@@ -487,8 +552,8 @@ function openCompareModal() {
 async function shareListing(p, channel) {
   const cfg = getConfig();
   const base = (cfg.siteUrl || window.location.href.split("#")[0]).replace(/\/$/, "");
-  const url = `${base}/?home=${encodeURIComponent(p.id)}#listings`;
-  const btc = btcRate ? ` · ${formatBTC(p.offer / btcRate)}` : "";
+  const url = p.slug ? `${base}/property/${p.id}-${p.slug}/` : `${base}/?home=${encodeURIComponent(p.id)}#listings`;
+  const btc = getBtcRate() ? ` · ${formatBTC(p.offer / getBtcRate())}` : "";
   const text = `${p.title} — ${formatUSD(p.offer)}${btc}\n${p.location}\nBlue Book ${formatUSD(p.blueBook)} · Save ${savingsPct(p)}%\n${url}`;
   const intent = channel || "auto";
   track("share_listing", { id: p.id, channel: intent });
@@ -533,7 +598,7 @@ function initGrowthMarkets() {
   const kpis = $("#growthKpis");
   if (!chips || !kpis) return;
 
-  const featured = ["Louisville", "Lexington", "Las Vegas", "Austin"];
+  const featured = ["Louisville", "Jeffersonville", "New Albany", "Utica", "Lexington"];
   const rest = [
     ...new Set(PROPERTIES.map(listingMarketName).filter(Boolean)),
   ].filter((c) => !featured.includes(c));
@@ -665,6 +730,14 @@ function renderMap(filtered) {
   const sub = $("#mapSub");
   if (!canvas) return;
 
+  if (sruMapLayerMode === "earth3d") {
+    showEarth3d(filtered);
+    return;
+  }
+  const earthHost = document.getElementById("earthHost");
+  if (earthHost) earthHost.classList.add("hidden");
+  canvas.classList.remove("hidden");
+
   if (!filtered.length) {
     destroyLeafletMap();
     canvas.innerHTML = `<div class="map-empty">No homes match — adjust filters.</div>`;
@@ -706,6 +779,11 @@ function renderMap(filtered) {
   if (sub) sub.textContent = `${filtered.length} pin${filtered.length === 1 ? "" : "s"} · offline plot`;
 }
 
+let sruMapLayerMode = "streets";
+let sruStreetTiles = null;
+let sruSatTiles = null;
+let sruEarthView = null;
+
 function renderLeafletMap(filtered, canvas, sub) {
   // Ensure map host div
   let host = canvas.querySelector("#leafletHost");
@@ -720,10 +798,49 @@ function renderLeafletMap(filtered, canvas, sub) {
       scrollWheelZoom: false,
       attributionControl: true,
     });
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    if (!host.querySelector("#searchThisArea")) {
+      const btn = document.createElement("button");
+      btn.id = "searchThisArea";
+      btn.type = "button";
+      btn.className = "btn btn-ghost btn-sm";
+      btn.textContent = "Search this map area";
+      btn.style.cssText = "position:absolute;z-index:500;top:10px;left:50%;transform:translateX(-50%)";
+      host.appendChild(btn);
+      btn.addEventListener("click", async () => {
+        const b = sruLeafletMap.getBounds();
+        const qs = new URLSearchParams({
+          west: b.getWest(),
+          south: b.getSouth(),
+          east: b.getEast(),
+          north: b.getNorth(),
+          limit: "40",
+        });
+        try {
+          const base = window.SRU_AUTH?.apiBase?.() || "";
+          const res = await fetch(`${base}/api/listings?${qs}`);
+          const data = await res.json();
+          if (data.ok && Array.isArray(data.listings) && typeof renderListings === "function") {
+            window.SRU_MAP_RESULTS = data.listings;
+            searchState.query = searchState.query || "map area";
+            renderListings();
+          }
+        } catch {
+          /* keep current pins */
+        }
+      });
+    }
+    sruStreetTiles = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 18,
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>',
-    }).addTo(sruLeafletMap);
+    });
+    sruSatTiles = L.tileLayer(
+      "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+      {
+        maxZoom: 19,
+        attribution: "Tiles © Esri, Maxar, Earthstar Geographics",
+      }
+    );
+    (sruMapLayerMode === "satellite" ? sruSatTiles : sruStreetTiles).addTo(sruLeafletMap);
     // Enable wheel zoom after click (desktop UX)
     host.addEventListener("click", () => {
       if (sruLeafletMap && !sruLeafletMap.scrollWheelZoom.enabled()) {
@@ -788,8 +905,61 @@ function renderLeafletMap(filtered, canvas, sub) {
   }, 120);
 
   if (sub) {
-    sub.textContent = `${filtered.length} pin${filtered.length === 1 ? "" : "s"} · live OSM tiles`;
+    sub.textContent =
+      sruMapLayerMode === "satellite"
+        ? `${filtered.length} pin${filtered.length === 1 ? "" : "s"} · satellite`
+        : `${filtered.length} pin${filtered.length === 1 ? "" : "s"} · streets`;
   }
+}
+
+async function showEarth3d(filtered) {
+  const canvas = $("#mapCanvas");
+  const earthHost = document.getElementById("earthHost");
+  const sub = $("#mapSub");
+  const foot = document.getElementById("mapFootnote");
+  if (!earthHost) return;
+  canvas.classList.add("hidden");
+  earthHost.classList.remove("hidden");
+  const first = filtered[0];
+  const coords = first ? getCoords(first) : { lat: 38.194, lng: -85.564 };
+  try {
+    const { initEarthOverhead } = await import("/js/earth-overhead.js");
+    if (!sruEarthView) {
+      sruEarthView = await initEarthOverhead(earthHost, {
+        lat: coords.lat,
+        lng: coords.lng,
+        title: first ? first.title : "Louisville, KY",
+        height: 520,
+        pitch: -68,
+      });
+    } else {
+      sruEarthView.flyTo(coords.lat, coords.lng, first ? first.title : "Listings");
+    }
+    if (sub) sub.textContent = `${filtered.length} listing${filtered.length === 1 ? "" : "s"} · ${sruEarthView.credit}`;
+    if (foot) foot.textContent = sruEarthView.credit;
+  } catch {
+    if (sub) sub.textContent = "Earth 3D failed to load";
+  }
+}
+
+function initMapLayers() {
+  document.querySelectorAll("[data-map-layer]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll("[data-map-layer]").forEach((b) => b.classList.remove("is-active"));
+      btn.classList.add("is-active");
+      sruMapLayerMode = btn.getAttribute("data-map-layer") || "streets";
+      if (sruLeafletMap && sruStreetTiles && sruSatTiles && sruMapLayerMode !== "earth3d") {
+        if (sruMapLayerMode === "satellite") {
+          if (sruLeafletMap.hasLayer(sruStreetTiles)) sruLeafletMap.removeLayer(sruStreetTiles);
+          if (!sruLeafletMap.hasLayer(sruSatTiles)) sruSatTiles.addTo(sruLeafletMap);
+        } else {
+          if (sruLeafletMap.hasLayer(sruSatTiles)) sruLeafletMap.removeLayer(sruSatTiles);
+          if (!sruLeafletMap.hasLayer(sruStreetTiles)) sruStreetTiles.addTo(sruLeafletMap);
+        }
+      }
+      renderMap(getFilteredProperties());
+    });
+  });
 }
 
 function renderListings() {
@@ -797,9 +967,17 @@ function renderListings() {
   if (!grid) return;
 
   const filtered = getFilteredProperties();
+  const pageSize = (window.SRUSearch && SRUSearch.PAGE_SIZE) || 12;
+  const page = Math.max(1, searchState.page || 1);
+  const visible = filtered.slice(0, page * pageSize);
   const countEl = $("#resultsCount");
   if (countEl) {
     countEl.textContent = `${filtered.length} home${filtered.length === 1 ? "" : "s"}`;
+  }
+  const more = $("#loadMoreListings");
+  if (more) {
+    more.hidden = visible.length >= filtered.length;
+    more.textContent = `Load more homes (${visible.length}/${filtered.length})`;
   }
 
   if (!filtered.length) {
@@ -818,8 +996,8 @@ function renderListings() {
     return;
   }
 
-  grid.innerHTML = filtered.map(listingCardHtml).join("");
-  renderMap(filtered);
+  grid.innerHTML = visible.map(listingCardHtml).join("");
+  renderMap(visible);
   renderMarketStats(filtered);
   renderActiveFilters();
   updateFavBadge();
@@ -833,8 +1011,11 @@ function clearMarketFilters() {
     priceMin: 0,
     priceMax: 0,
     beds: 0,
+    baths: 0,
     rentableOnly: false,
     sort: "featured",
+    page: 1,
+    origin: searchState.origin || { lat: 38.2527, lng: -85.7585 },
   };
   activeFilter = "all";
   const q = $("#searchQuery");
@@ -842,6 +1023,7 @@ function clearMarketFilters() {
   if ($("#filterPriceMin")) $("#filterPriceMin").value = "0";
   if ($("#filterPriceMax")) $("#filterPriceMax").value = "0";
   if ($("#filterBeds")) $("#filterBeds").value = "0";
+  if ($("#filterBaths")) $("#filterBaths").value = "0";
   if ($("#sortBy")) $("#sortBy").value = "featured";
   if ($("#filterRentable")) $("#filterRentable").checked = false;
   $$("#styleFilters .filter-btn").forEach((b) => b.classList.toggle("active", b.dataset.filter === "all"));
@@ -939,6 +1121,7 @@ function renderActiveFilters() {
   if (searchState.priceMin) pills.push({ key: "min", label: `Min ${formatUSD(searchState.priceMin)}` });
   if (searchState.priceMax) pills.push({ key: "max", label: `Max ${formatUSD(searchState.priceMax)}` });
   if (searchState.beds) pills.push({ key: "beds", label: `${searchState.beds}+ beds` });
+  if (searchState.baths) pills.push({ key: "baths", label: `${searchState.baths}+ baths` });
   if (searchState.rentableOnly) pills.push({ key: "rent", label: "Try Before Buy" });
   if (searchState.sort && searchState.sort !== "featured") {
     const sortLabels = {
@@ -946,6 +1129,10 @@ function renderActiveFilters() {
       "price-desc": "Price ↓",
       savings: "Biggest savings",
       sqft: "Largest",
+      beds: "Beds",
+      baths: "Baths",
+      newest: "Newest",
+      distance: "Distance",
       btc: "Lowest BTC",
     };
     pills.push({ key: "sort", label: sortLabels[searchState.sort] || searchState.sort });
@@ -978,6 +1165,9 @@ function removeActiveFilter(key) {
   } else if (key === "beds") {
     searchState.beds = 0;
     if ($("#filterBeds")) $("#filterBeds").value = "0";
+  } else if (key === "baths") {
+    searchState.baths = 0;
+    if ($("#filterBaths")) $("#filterBaths").value = "0";
   } else if (key === "rent") {
     searchState.rentableOnly = false;
     if ($("#filterRentable")) $("#filterRentable").checked = false;
@@ -1085,285 +1275,80 @@ function applySearchValue(value, { filter, openId, save } = {}) {
   if (openId) openProperty(openId);
 }
 
-function flashPriceEl(el, direction) {
-  if (!el) return;
-  el.classList.remove("flash-up", "flash-down", "flash-tick");
-  void el.offsetWidth;
-  if (direction === "up") el.classList.add("flash-up");
-  else if (direction === "down") el.classList.add("flash-down");
-  else el.classList.add("flash-tick");
-}
-
-/** Write a live price into an element and force a visible flash whenever digits change */
-function setLivePriceText(el, text, direction) {
-  if (!el) return;
-  const prev = el.textContent;
-  el.textContent = text;
-  if (prev !== text && prev && prev !== "—" && prev !== "Loading…") {
-    flashPriceEl(el, direction || "up");
-  } else if (direction) {
-    flashPriceEl(el, direction);
-  }
-}
-
-function pushPriceHistory(price) {
-  if (!price || price <= 0) return;
-  const last = btcPriceHistory[btcPriceHistory.length - 1];
-  // throttle tiny noise for sparkline density
-  if (last && Math.abs(last - price) < 0.05 && btcPriceHistory.length > 5) {
-    btcPriceHistory[btcPriceHistory.length - 1] = price;
-  } else {
-    btcPriceHistory.push(price);
-  }
-  while (btcPriceHistory.length > BTC_HISTORY_MAX) btcPriceHistory.shift();
-  drawSparkline("#btcSpark", 120, 28);
-  drawSparkline("#btcSparkLg", 280, 64);
-}
-
-function drawSparkline(sel, w, h) {
-  const svg = $(sel);
-  if (!svg || btcPriceHistory.length < 2) return;
-  const data = btcPriceHistory;
-  const min = Math.min(...data);
-  const max = Math.max(...data);
-  const range = max - min || 1;
-  const pad = 2;
-  const pts = data.map((v, i) => {
-    const x = pad + (i / (data.length - 1)) * (w - pad * 2);
-    const y = h - pad - ((v - min) / range) * (h - pad * 2);
-    return `${x.toFixed(1)},${y.toFixed(1)}`;
-  });
-  const up = data[data.length - 1] >= data[0];
-  const color = up ? "#3ecf8e" : "#ff6b7a";
-  const fill = up ? "rgba(62,207,142,0.15)" : "rgba(255,107,122,0.12)";
-  const area = `${pad},${h - pad} ${pts.join(" ")} ${w - pad},${h - pad}`;
-  svg.innerHTML = `
-    <polyline points="${area}" fill="${fill}" stroke="none" />
-    <polyline points="${pts.join(" ")}" fill="none" stroke="${color}" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" />
-    <circle cx="${pts[pts.length - 1].split(",")[0]}" cy="${pts[pts.length - 1].split(",")[1]}" r="2.4" fill="${color}" />
-  `;
-}
-
-function pushTickFeed(price, delta) {
-  const feed = $("#btcTickFeed");
-  if (!feed) return;
-  const up = delta >= 0;
-  const row = document.createElement("div");
-  row.className = `tick-row ${up ? "up" : "down"}`;
-  row.innerHTML = `<span>${new Date().toLocaleTimeString()}</span>
-    <strong>${formatUsdPrecise(price)}</strong>
-    <span>${up ? "▲" : "▼"} ${formatUsdPrecise(Math.abs(delta))}</span>`;
-  feed.prepend(row);
-  while (feed.children.length > 8) feed.lastChild.remove();
-}
-
-function updateStreamBadge() {
-  const badge = $("#streamBadge");
-  const label = $("#btcLiveLabel");
-  const map = {
-    live: "LIVE",
-    polling: "POLLING",
-    connecting: "CONNECTING",
-    offline: "OFFLINE",
-  };
-  if (badge) {
-    badge.textContent = map[btcStreamMode] || "…";
-    badge.className = `stream-badge mode-${btcStreamMode}`;
-  }
-  if (label) {
-    label.textContent =
-      btcStreamMode === "live"
-        ? "Coinbase stream live"
-        : btcStreamMode === "polling"
-          ? "REST polling"
-          : btcStreamMode === "offline"
-            ? "Offline fallback"
-            : "Connecting stream…";
-  }
-  $("#btcTicker")?.classList.toggle("is-live", btcStreamMode === "live");
-}
-
-/**
- * Apply a new LIVE spot price. Always drives btcRate (display),
- * never freezes on a higher stale CoinGecko max.
- */
-function applyLiveSpot(price, source = "stream") {
-  const next = Number(price);
-  if (!Number.isFinite(next) || next <= 0) return;
-
-  if (source === "binance") btcRateBinance = next;
-  if (source === "coinbase" || source === "rest" || source === "stream") btcRateCoinbase = next;
-  if (source === "gecko") {
-    btcRateGecko = next;
-    // Gecko is reference only — do not override live spot if we already have one
-    if (btcRate > 0 && (btcStreamMode === "live" || btcRateCoinbase > 0 || btcRateBinance > 0)) {
-      btcLastUpdated = new Date();
-      updateBtcTicker({ direction: null, delta: 0, source: "gecko" });
-      return;
-    }
-  }
-
-  const prev = btcRate;
-  // Prefer freshest live venues for the number users see
-  if (source === "binance" || source === "coinbase" || source === "stream" || source === "rest") {
-    btcRate = next;
-  } else if (!btcRate) {
-    btcRate = next;
-  }
-
-  btcLastUpdated = new Date();
-  btcLastSource = source;
-  if (btcSessionOpen == null) btcSessionOpen = btcRate;
-
-  const delta = prev ? btcRate - prev : 0;
-  // Flash on any visible cent move (or first paint)
-  let direction = null;
-  if (!prev) direction = null;
-  else if (delta > 0.005) direction = "up";
-  else if (delta < -0.005) direction = "down";
-  else if (Math.abs(delta) > 0) direction = delta > 0 ? "up" : "down";
-
-  // Always refresh UI when digits change OR it's a stream tick
-  const prevText = formatUsdPrecise(prev || 0);
-  const nextText = formatUsdPrecise(btcRate);
-  const changed = prevText !== nextText || Math.abs(delta) >= 0.01;
-
-  if (source === "binance" || source === "coinbase" || source === "stream") {
-    btcStreamMode = "live";
-    lastStreamAt = Date.now();
-  } else if (btcStreamMode !== "live") {
-    btcStreamMode = "polling";
-  }
-
-  if (changed || source === "stream" || source === "binance" || source === "coinbase") {
-    pushPriceHistory(btcRate);
-    updateBtcTicker({
-      direction: direction || (changed ? "up" : null),
-      delta,
-      source,
-      forceFlash: changed,
+function initDealFinder() {
+  const box = $("#dealFinder");
+  const chips = $("#dealFinderChips");
+  if (!box || !chips) return;
+  const all = PROPERTIES.map((p) => (window.SRUScore && !p.smartScore ? SRUScore.decorate(p, PROPERTIES) : p));
+  const groups = {};
+  all.forEach((p) => {
+    (p.deals || []).forEach((d) => {
+      if (!groups[d.id]) groups[d.id] = { id: d.id, label: d.label, n: 0 };
+      groups[d.id].n += 1;
     });
-    updateBtcQuote({ direction: direction || (changed ? "up" : null) });
-    updateAffordCalculator();
-    updateLiveListingBtc(direction || (changed ? "up" : null));
-    updateLiveModalBtc(direction);
-    updateLiveMapBtc();
-
-    if (changed && Math.abs(delta) >= 0.01) {
-      pushTickFeed(btcRate, delta);
-      btcTickCount += 1;
-    }
-  } else {
-    // still bump "updated" clock
-    const updated = $("#tickerUpdated");
-    if (updated) {
-      updated.textContent = `${btcStreamMode} · ${btcLastUpdated.toLocaleTimeString()} · ${btcTickCount} ticks · ${btcLastSource}`;
-    }
+  });
+  const items = Object.values(groups);
+  if (!items.length) {
+    box.hidden = true;
+    return;
   }
-
-  btcRatePrev = btcRate;
-  updateStreamBadge();
-}
-
-// Back-compat alias used by older call sites
-function onBtcPriceTick({ source = "stream" } = {}) {
-  if (btcRateCoinbase > 0) applyLiveSpot(btcRateCoinbase, source === "rest" ? "rest" : "coinbase");
-  else if (btcRateBinance > 0) applyLiveSpot(btcRateBinance, "binance");
-  else if (btcRateGecko > 0) applyLiveSpot(btcRateGecko, "gecko");
-}
-
-function updateLiveListingBtc(direction) {
-  $$(".price-row.btc-live strong").forEach((el) => {
-    const card = el.closest(".listing-card");
-    if (!card || !btcRate) return;
-    const p = PROPERTIES.find((x) => x.id === card.dataset.id);
-    if (!p) return;
-    // 6 decimals so micro moves in USD show up as BTC amount flicker
-    const next = `₿ ${(p.offer / btcRate).toFixed(6)}`;
-    const prev = el.textContent;
-    el.classList.remove("btc-loading");
-    if (prev !== next) {
-      el.textContent = next;
-      flashPriceEl(el, direction || "up");
-      card.classList.add("btc-pulse");
-      setTimeout(() => card.classList.remove("btc-pulse"), 400);
-    }
+  box.hidden = false;
+  chips.innerHTML = items
+    .map((g) => `<button type="button" class="chip" data-deal="${g.id}">${g.label} (${g.n})</button>`)
+    .join("");
+  chips.querySelectorAll("[data-deal]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      activeFilter = "deals";
+      searchState.query = "";
+      $$("#styleFilters .filter-btn").forEach((b) => b.classList.toggle("active", b.dataset.filter === "deals"));
+      renderListings();
+      toast(`${btn.textContent} — catalog signals only.`);
+    });
   });
 }
 
-function updateLiveModalBtc(direction) {
-  const modal = document.getElementById("propertyModal");
-  if (!modal || modal.classList.contains("hidden") || !btcRate) return;
-  const modalBtc = modal.querySelector(".btc-line strong");
-  const title = modal.querySelector("h2")?.textContent;
-  const p = PROPERTIES.find((x) => x.title === title);
-  if (!p || !modalBtc) return;
-  const next = formatBTC(p.offer / btcRate);
-  if (modalBtc.textContent !== next) {
-    modalBtc.textContent = next;
-    if (direction) flashPriceEl(modalBtc, direction);
-  }
-}
-
-function updateLiveMapBtc() {
-  if (!btcRate) return;
-  $$(".map-pin-label").forEach((el) => {
-    const btn = el.closest("[data-view]");
-    if (!btn) return;
-    const p = PROPERTIES.find((x) => x.id === btn.dataset.view);
-    if (p) el.textContent = `₿${(p.offer / btcRate).toFixed(3)}`;
-  });
-}
-
-function updateBtcTicker({ direction = null, delta = 0, source = "", forceFlash = false } = {}) {
-  const price = $("#tickerBtcPrice");
-  const change = $("#tickerBtcChange");
-  const gecko = $("#tickerGecko");
-  const coinbase = $("#tickerCoinbase");
-  const updated = $("#tickerUpdated");
-  const tickDelta = $("#tickerTickDelta");
-  const board = $("#boardBtcPrice");
-  const session = $("#boardSession");
-
-  const text = btcRate ? formatUsdPrecise(btcRate) : "Loading…";
-  if (price) setLivePriceText(price, text, forceFlash || direction ? direction || "up" : null);
-  if (board) setLivePriceText(board, btcRate ? formatUsdPrecise(btcRate) : "—", forceFlash || direction ? direction || "up" : null);
-
-  // Always re-apply flash class when forced (even same direction spam)
-  if (forceFlash && direction) {
-    flashPriceEl(price, direction);
-    flashPriceEl(board, direction);
-  }
-
-  if (gecko) gecko.textContent = btcRateGecko ? formatUsdPrecise(btcRateGecko) : "—";
-  if (coinbase) {
-    const live = btcRateBinance || btcRateCoinbase || btcRate;
-    setLivePriceText(coinbase, live ? formatUsdPrecise(live) : "—", direction);
-  }
-  if (change) {
-    if (btcChange24h != null) {
-      const up = btcChange24h >= 0;
-      change.textContent = `${up ? "▲" : "▼"} ${Math.abs(btcChange24h).toFixed(2)}% 24h`;
-      change.className = `ticker-change ${up ? "up" : "down"}`;
-    } else {
-      change.textContent = "—";
-      change.className = "ticker-change";
+function initAlertsBar() {
+  const emailEl = $("#alertEmail");
+  if (emailEl && !emailEl.value) {
+    try {
+      emailEl.value = localStorage.getItem("sru_alert_email") || "";
+    } catch {
+      /* ignore */
     }
   }
-  if (tickDelta && direction && Math.abs(delta) >= 0.01) {
-    tickDelta.textContent = `${direction === "up" ? "+" : "−"}${formatUsdPrecise(Math.abs(delta))}`;
-    tickDelta.className = `ticker-tick ${direction}`;
-    flashPriceEl(tickDelta, direction);
-  }
-  if (session && btcSessionOpen && btcRate) {
-    const pct = ((btcRate - btcSessionOpen) / btcSessionOpen) * 100;
-    session.textContent = `session ${pct >= 0 ? "+" : ""}${pct.toFixed(3)}%`;
-    session.className = `board-session ${pct >= 0 ? "up" : "down"}`;
-  }
-  if (updated && btcLastUpdated) {
-    updated.textContent = `${btcStreamMode} · ${btcLastSource || source} · ${btcLastUpdated.toLocaleTimeString()} · ${btcTickCount} ticks`;
-  }
-  updateStreamBadge();
+  $("#saveSearchBtn")?.addEventListener("click", async () => {
+    const email = ($("#alertEmail")?.value || "").trim();
+    const q = ($("#searchQuery")?.value || "").trim() || "active homes";
+    const msg = $("#alertMsg");
+    try {
+      localStorage.setItem("sru_alert_email", email);
+      const res = await fetch("/api/alerts/search", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, query: q }),
+      });
+      const data = await res.json();
+      if (msg) msg.textContent = data.message || data.error || "Saved.";
+    } catch {
+      if (msg) msg.textContent = "Could not reach the alerts API. Start the Smart Realty server locally.";
+    }
+  });
+  $("#viewAlertsBtn")?.addEventListener("click", async () => {
+    const email = ($("#alertEmail")?.value || "").trim();
+    const msg = $("#alertMsg");
+    try {
+      const res = await fetch("/api/alerts?email=" + encodeURIComponent(email));
+      const data = await res.json();
+      const notes = data.notifications || [];
+      if (msg) {
+        msg.textContent = notes.length
+          ? notes.slice(0, 3).map((n) => n.message).join(" · ")
+          : "No alerts yet. Hourly sync writes new matches here.";
+      }
+    } catch {
+      if (msg) msg.textContent = "Alerts API offline.";
+    }
+  });
 }
 
 function initMarketplace() {
@@ -1373,14 +1358,29 @@ function initMarketplace() {
   renderQuickCities();
   renderRecentSearches();
   renderActiveFilters();
+  initDealFinder();
+  initAlertsBar();
 
   const syncFromForm = () => {
     searchState.query = $("#searchQuery")?.value || "";
     searchState.priceMin = Number($("#filterPriceMin")?.value || 0);
     searchState.priceMax = Number($("#filterPriceMax")?.value || 0);
     searchState.beds = Number($("#filterBeds")?.value || 0);
+    searchState.baths = Number($("#filterBaths")?.value || 0);
     searchState.rentableOnly = Boolean($("#filterRentable")?.checked);
     searchState.sort = $("#sortBy")?.value || "featured";
+    searchState.page = 1;
+    const parsed = window.SRUSearch ? SRUSearch.parseQuery(searchState.query) : {};
+    if (parsed.nearMe && navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          searchState.origin = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+          renderListings();
+        },
+        () => {},
+        { maximumAge: 600000, timeout: 4000 },
+      );
+    }
   };
 
   form.addEventListener("submit", (e) => {
@@ -1393,7 +1393,12 @@ function initMarketplace() {
     toast(`Showing homes for “${searchState.query || "all markets"}”.`);
   });
 
-  ["filterPriceMin", "filterPriceMax", "filterBeds", "sortBy", "filterRentable"].forEach((id) => {
+  $("#loadMoreListings")?.addEventListener("click", () => {
+    searchState.page = (searchState.page || 1) + 1;
+    renderListings();
+  });
+
+  ["filterPriceMin", "filterPriceMax", "filterBeds", "filterBaths", "sortBy", "filterRentable"].forEach((id) => {
     $(`#${id}`)?.addEventListener("change", () => {
       syncFromForm();
       renderActiveFilters();
@@ -1500,13 +1505,15 @@ function renderRentals() {
 }
 
 // ---------- Property modal + multi-photo gallery ----------
-function roomBuilderHref(listingId, photoUrl) {
-  return `/room-builder/?listing=${encodeURIComponent(listingId || "")}&photo=${encodeURIComponent(photoUrl || "")}`;
-}
-
 function galleryHeroHtml(p) {
-  const gallery = propertyGallery(p);
+  const listingPhotos = propertyGallery(p);
+  const photo = displayPhoto(p);
+  const gallery = listingPhotos.length ? listingPhotos : photo.src ? [photo.src] : [];
   const n = gallery.length;
+  const svLabel =
+    !listingPhotos.length && photo.source === "street_view"
+      ? `<span class="sv-badge">Street View</span><span class="sv-attr">${photo.attribution || "© Google"}</span>`
+      : "";
   const slides = gallery
     .map(
       (src, i) => `
@@ -1548,7 +1555,7 @@ function galleryHeroHtml(p) {
       : "";
 
   return `
-    <div class="modal-hero gallery-hero" data-gallery-root data-gallery-count="${n}" data-listing-id="${escapeHtml(p.id)}">
+    <div class="modal-hero gallery-hero" data-gallery-root data-gallery-count="${n}">
       <div class="gallery-stage">
         ${slides}
       </div>
@@ -1556,8 +1563,8 @@ function galleryHeroHtml(p) {
         <span class="badge gold">Save ${savingsPct(p)}%</span>
         <span class="badge btc">₿ ready</span>
         ${n > 1 ? `<span class="badge gallery-badge">${n} photos</span>` : ""}
-        <a class="badge gallery-3d-cta" data-gallery-3d href="${roomBuilderHref(p.id, gallery[0])}">Stage this photo in 3D</a>
       </div>
+      ${svLabel}
       ${controls}
       ${thumbs}
     </div>`;
@@ -1583,9 +1590,6 @@ function wirePropertyGallery(root) {
     });
     const cur = root.querySelector("[data-gallery-current]");
     if (cur) cur.textContent = String(index + 1);
-    const activePhoto = root.querySelector(`.gallery-slide[data-gallery-index="${index}"] img`)?.getAttribute("src") || "";
-    const roomLink = root.querySelector("[data-gallery-3d]");
-    if (roomLink) roomLink.href = roomBuilderHref(root.dataset.listingId || "", activePhoto);
   };
 
   root.addEventListener("click", (e) => {
@@ -1661,6 +1665,8 @@ function openProperty(id) {
         <span class="badge btc">Bitcoin Ready</span>
         ${p.rentable ? `<span class="badge rent">Try Before Buy</span>` : ""}
         <span class="badge">${escapeHtml(p.propertyType)}</span>
+        ${p.smartScore ? `<span class="badge gold">Smart Realty Score ${p.smartScore.score}</span>` : ""}
+        ${(p.deals || []).map((d) => `<span class="badge rent">${escapeHtml(d.label)}</span>`).join("")}
       </div>
       <h2>${p.title}</h2>
       <p class="modal-loc">📍 ${p.location} · ${p.beds} bed · ${p.baths} bath · ${p.sqft.toLocaleString()} sqft · ${formatUSD(pricePerSqft(p))}/ft²</p>
@@ -1675,16 +1681,31 @@ function openProperty(id) {
         <div><span>HOA</span><strong>${p.hoaMonthly ? formatUSD(p.hoaMonthly) + "/mo" : "None"}</strong></div>
         <div><span>You save</span><strong style="color:var(--success)">${formatUSD(savings(p))}</strong></div>
       </div>
+      ${
+        p.smartScore
+          ? `<div class="modal-desc"><h4>Smart Realty Score ${p.smartScore.score}/100</h4><ul>${(p.smartScore.reasons || []).map((r) => `<li>${escapeHtml(r)}</li>`).join("")}</ul><p class="g-fine">${escapeHtml(p.smartScore.disclaimer || "")}</p></div>`
+          : ""
+      }
       <p class="modal-desc">${p.desc}</p>
+      ${
+        Array.isArray(p.publicRecords) && p.publicRecords.length
+          ? `<div class="modal-desc"><h4>Public records (secondary)</h4><ul>${p.publicRecords.map((r) => `<li>${escapeHtml(r)}</li>`).join("")}</ul></div>`
+          : ""
+      }
+      ${
+        window.SRUSearch && SRUSearch.hasUsableRoomPhoto(p) && propertyGallery(p).length
+          ? `<p><a class="btn btn-outline" href="/room-builder/?listing=${encodeURIComponent(p.id)}&photo=${encodeURIComponent(propertyGallery(p)[0])}">View in 3D</a></p>`
+          : ""
+      }
       <div class="amenity-block">
         <h4>Highlights</h4>
         <ul class="amenity-list">${amenityHtml}</ul>
       </div>
       <p class="modal-desc btc-line">
         BTC equivalent (live): <strong style="color:var(--btc)">${
-          btcRate ? formatBTC(p.offer / btcRate) : "loading…"
+          getBtcRate() ? formatBTC(p.offer / getBtcRate()) : "loading…"
         }</strong>
-        ${btcRate ? `at ${formatUsdPrecise(btcRate)} / BTC (best live rate)` : "· fetching market rates…"}
+        ${getBtcRate() ? `at ${formatUsdPrecise(getBtcRate())} / BTC (best live rate)` : "· fetching market rates…"}
       </p>
       <div class="pay-estimator glass" id="payEstimator" data-price="${p.offer}">
         <h4>Payment estimator <span class="pay-est-tag">demo</span></h4>
@@ -1712,21 +1733,31 @@ function openProperty(id) {
         </div>
         <p class="pay-est-note">*Illustrative P&amp;I only — not a loan offer. Taxes/insurance extra.</p>
       </div>
+      <div class="signin-gate modal-contact-gate" data-requires-auth data-gate-title="Unlock listing contact tools" data-gate-copy="Sign in free to contact Smart Realty about this home and watch its price.">
+        <div class="signin-gate-content modal-actions">
+          <a class="btn btn-primary" href="showing/?property=${encodeURIComponent(p.title + " · " + p.location)}&amp;city=${encodeURIComponent((p.location || "").split(",")[0] || "")}">Request a showing</a>
+          <a class="btn btn-outline" href="buy/?property=${encodeURIComponent(p.title)}&amp;city=${encodeURIComponent((p.location || "").split(",")[0] || "")}">Buy inquiry</a>
+          <button class="btn btn-outline" type="button" id="watchPriceBtn">Watch price</button>
+          <button class="btn btn-ghost" type="button" id="askAboutProperty">Ask about this home</button>
+        </div>
+      </div>
       <div class="modal-actions">
+        <a class="btn btn-ghost" href="invest/?property=${encodeURIComponent(p.title)}">Analyze</a>
         <button class="btn btn-btc" type="button" data-btc="${p.id}">₿ Purchase with Bitcoin</button>
         ${
           p.rentable
             ? `<button class="btn btn-outline" type="button" data-rent="${p.id}">Book Try-Before-Buy Stay</button>`
             : ""
         }
+        ${p.slug ? `<a class="btn btn-ghost" href="property/${p.id}-${p.slug}/">View full page</a>` : ""}
         <button class="btn btn-ghost" type="button" id="shareProperty">Share</button>
         <button class="btn btn-ghost" type="button" id="sharePropertyX" title="Share on X">Share 𝕏</button>
         <button class="btn btn-ghost" type="button" id="sharePropertyLink" title="Copy link">Copy link</button>
         <button class="btn btn-ghost" type="button" id="favFromModal" data-fav="${p.id}">${fav ? "♥ Saved" : "♡ Save"}</button>
         <button class="btn btn-ghost" type="button" id="compareFromModal" data-compare-btn="${p.id}">${compareSet.has(p.id) ? "✓ In compare" : "＋ Compare"}</button>
-        <button class="btn btn-ghost" type="button" id="askAboutProperty">Ask about this home</button>
       </div>
     </div>`;
+  window.SRU_SUPABASE?.decorateGates(body);
   $("#propertyModal").classList.remove("hidden");
   document.body.style.overflow = "hidden";
 
@@ -1734,6 +1765,22 @@ function openProperty(id) {
   wirePayEstimator(p.offer);
   wirePropertyGallery(body.querySelector("[data-gallery-root]"));
 
+  $("#watchPriceBtn")?.addEventListener("click", async () => {
+    const email = ($("#alertEmail")?.value || prompt("Email for price-drop notices") || "").trim();
+    if (!email) return;
+    try {
+      localStorage.setItem("sru_alert_email", email);
+      const res = await fetch("/api/alerts/watch", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, listingId: p.id, listingTitle: p.title, listPrice: p.listPrice || p.offer }),
+      });
+      const data = await res.json();
+      toast(data.message || data.error || "Watch saved.");
+    } catch {
+      toast("Alerts API offline. Start the Smart Realty server to store watches.");
+    }
+  });
   $("#askAboutProperty")?.addEventListener("click", () => {
     closeModals();
     openChat(`I'm interested in ${p.title}. Can you walk me through Blue Book pricing and Bitcoin checkout?`);
@@ -1765,8 +1812,8 @@ function wirePayEstimator(price) {
     $("#payDownAmt").textContent = formatUSD(downAmt);
     $("#payLoanAmt").textContent = formatUSD(loan);
     $("#payMonthly").textContent = formatUSD(monthly);
-    if (btcRate && monthly > 0) {
-      $("#payMonthlyBtc").textContent = formatBTC(monthly / btcRate);
+    if (getBtcRate() && monthly > 0) {
+      $("#payMonthlyBtc").textContent = formatBTC(monthly / getBtcRate());
     } else {
       $("#payMonthlyBtc").textContent = "—";
     }
@@ -1856,7 +1903,10 @@ function initContactLeadForm() {
           email,
           name,
           source: "support_contact",
-          interest: interestLabel,
+          interest,
+          intent: interest,
+          message: note,
+          consent: true,
         });
         msg.textContent = data.message || "Sent — we’ll be in touch.";
       } else {
@@ -1883,6 +1933,42 @@ function initContactLeadForm() {
     } finally {
       btn.disabled = false;
     }
+  });
+}
+
+// ---------- Partner offers (referral revenue) ----------
+function renderPartnerOffers() {
+  const section = $("#partners");
+  const box = $("#partnerCards");
+  if (!section || !box) return;
+
+  const partners = (window.SRU_CONFIG && window.SRU_CONFIG.referralPartners) || {};
+  const cards = Object.keys(partners)
+    .map((key) => partners[key])
+    .filter((p) => p && p.enabled && p.url);
+
+  if (!cards.length) {
+    section.classList.add("hidden");
+    box.innerHTML = "";
+    return;
+  }
+
+  box.innerHTML = cards
+    .map(
+      (p) => `
+    <div class="biz-card glass">
+      <strong>${escapeHtml(p.name || "Partner")}</strong>
+      <p>${escapeHtml(p.blurb || "")}</p>
+      <a class="btn btn-outline btn-sm partner-card-cta" href="${escapeHtml(p.url)}" target="_blank" rel="noopener sponsored" data-partner="${escapeHtml(p.name || "")}">Get started</a>
+      <p class="partner-disclosure">${escapeHtml(p.disclosure || "Smart Realty USA may be compensated if you use this partner.")}</p>
+    </div>`
+    )
+    .join("");
+
+  section.classList.remove("hidden");
+
+  box.querySelectorAll("[data-partner]").forEach((a) => {
+    a.addEventListener("click", () => track("partner_click", { partner: a.dataset.partner }));
   });
 }
 
@@ -2009,563 +2095,30 @@ function initDunsGuide() {
   });
 }
 
-// ---------- Blue Book ----------
+// ---------- Blue Book + Bitcoin (js/bluebook.js, js/bitcoin.js) ----------
 function initBlueBook() {
-  $("#blueBookForm").addEventListener("submit", (e) => {
-    e.preventDefault();
-    const address = $("#bbAddress").value.trim();
-    const beds = $("#bbBeds").value;
-    const baths = $("#bbBaths").value;
-    const sqft = Number($("#bbSqft").value) || 4000;
-
-    // Deterministic demo valuation from inputs
-    const base = 420 + (sqft % 180);
-    const bedMult = { 3: 0.92, 4: 1, 5: 1.12, "6+": 1.28 }[beds] || 1;
-    const bathMult = { 2: 0.95, 3: 1, 4: 1.08, "5+": 1.18 }[baths] || 1;
-    const locBoost = /vegas|nv|las/i.test(address) ? 1.18 : /beverly|atherton|malibu|ca/i.test(address) ? 1.45 : 1.05;
-    const blueBook = Math.round(sqft * base * bedMult * bathMult * locBoost);
-    const list = Math.round(blueBook * 1.08);
-    const offer = Math.round(blueBook * 0.96);
-    const save = list - offer;
-
-    const result = $("#bbResult");
-    result?.classList.remove("hidden");
-    // Animate count-up for interactivity
-    animateCount($("#bbValue"), blueBook, formatUSD);
-    animateCount($("#bbOffer"), offer, formatUSD);
-    animateCount($("#bbSavings"), save, formatUSD);
-    result?.classList.add("bb-pop");
-    setTimeout(() => result?.classList.remove("bb-pop"), 600);
-    toast("Your free House Blue Book estimate is ready.");
-    // Live BTC for this estimate
-    if (btcRate) {
-      const btcLine = document.getElementById("bbBtcLine");
-      if (btcLine) {
-        btcLine.textContent = `≈ ${formatBTC(offer / btcRate)} at live rate ${formatUsdPrecise(btcRate)}/BTC`;
-        btcLine.classList.remove("hidden");
-      }
-    }
+  window.SRU_BLUEBOOK?.init({
+    toast,
+    formatUSD,
+    getBtcRate,
+    formatBTC,
+    formatUsdPrecise,
   });
-}
-
-function animateCount(el, target, formatter, ms = 650) {
-  if (!el) return;
-  const start = performance.now();
-  const from = 0;
-  const step = (now) => {
-    const t = Math.min(1, (now - start) / ms);
-    const eased = 1 - Math.pow(1 - t, 3);
-    const val = Math.round(from + (target - from) * eased);
-    el.textContent = formatter(val);
-    if (t < 1) requestAnimationFrame(step);
-    else el.textContent = formatter(target);
-  };
-  requestAnimationFrame(step);
-}
-
-// ---------- Bitcoin checkout (WebSocket stream + REST) ----------
-let quoteSecondsLeft = QUOTE_SECONDS;
-let quoteTimerId = null;
-let rateRefreshId = null;
-let geckoRefreshId = null;
-let btcSocket = null;
-let btcWsRetries = 0;
-let lastStreamAt = 0;
-
-function populateBtcSelect() {
-  const sel = $("#btcProperty");
-  if (!sel) return;
-  sel.innerHTML = PROPERTIES.map(
-    (p) => `<option value="${p.id}">${p.title} — ${formatUSD(p.offer)}</option>`
-  ).join("");
-}
-
-function formatUsdPrecise(n) {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 2,
-  }).format(n);
-}
-
-function updateBtcQuote({ direction = null } = {}) {
-  const id = $("#btcProperty")?.value;
-  const p = PROPERTIES.find((x) => x.id === id);
-  if (!p) return;
-
-  if ($("#btcUsd")) $("#btcUsd").textContent = formatUSD(p.offer);
-
-  if (!btcRate) {
-    if ($("#btcRateGecko")) $("#btcRateGecko").textContent = "Loading…";
-    if ($("#btcRateCoinbase")) $("#btcRateCoinbase").textContent = "Loading…";
-    if ($("#btcSpread")) $("#btcSpread").textContent = "—";
-    if ($("#btcRate")) $("#btcRate").textContent = "Fetching…";
-    if ($("#btcChange")) $("#btcChange").textContent = "—";
-    if ($("#btcAmount")) $("#btcAmount").textContent = "—";
-    if ($("#btcUsdCheck")) $("#btcUsdCheck").textContent = "—";
-    return;
-  }
-
-  const btcAmount = p.offer / btcRate;
-  const usdCheck = btcAmount * btcRate;
-  const spreadAbs = Math.abs((btcRateGecko || btcRate) - (btcRateCoinbase || btcRate));
-  const spreadPct =
-    btcRateGecko && btcRateCoinbase
-      ? (spreadAbs / ((btcRateGecko + btcRateCoinbase) / 2)) * 100
-      : 0;
-
-  if ($("#btcRateGecko")) {
-    $("#btcRateGecko").textContent = btcRateGecko
-      ? `${formatUsdPrecise(btcRateGecko)} / BTC`
-      : "Waiting…";
-  }
-  if ($("#btcRateCoinbase")) {
-    const el = $("#btcRateCoinbase");
-    el.textContent = btcRateCoinbase
-      ? `${formatUsdPrecise(btcRateCoinbase)} / BTC`
-      : "Streaming…";
-    if (direction) flashPriceEl(el, direction);
-  }
-  if ($("#btcSpread")) {
-    $("#btcSpread").textContent =
-      btcRateGecko && btcRateCoinbase
-        ? `${formatUsdPrecise(spreadAbs)} (${spreadPct.toFixed(3)}%)`
-        : "—";
-  }
-  if ($("#btcRate")) {
-    setLivePriceText($("#btcRate"), `${formatUsdPrecise(btcRate)} / BTC`, direction);
-  }
-  if ($("#btcAmount")) {
-    setLivePriceText($("#btcAmount"), formatBTC(btcAmount), direction || "up");
-  }
-  if ($("#btcUsdCheck")) $("#btcUsdCheck").textContent = formatUsdPrecise(usdCheck);
-
-  if (btcChange24h != null && $("#btcChange")) {
-    const up = btcChange24h >= 0;
-    const el = $("#btcChange");
-    el.textContent = `${up ? "▲" : "▼"} ${Math.abs(btcChange24h).toFixed(2)}% (24h)`;
-    el.style.color = up ? "var(--success)" : "var(--danger)";
-  } else if ($("#btcChange")) {
-    $("#btcChange").textContent = "—";
-  }
-
-  const note = $("#btcSourceNote");
-  if (note && btcLastUpdated) {
-    note.textContent =
-      btcStreamMode === "live"
-        ? `Coinbase WebSocket live · CoinGecko reference · ${btcLastUpdated.toLocaleTimeString()}`
-        : `Market rates · ${btcStreamMode} · ${btcLastUpdated.toLocaleTimeString()}`;
-  }
-}
-
-function updateAffordCalculator() {
-  const input = $("#affordBtc");
-  const usdEl = $("#affordUsd");
-  const homesEl = $("#affordHomes");
-  if (!input || !usdEl || !homesEl) return;
-  const btcAmt = Math.max(0, Number(input.value) || 0);
-  if (!btcRate) {
-    usdEl.textContent = "Waiting for live rate…";
-    homesEl.innerHTML = "";
-    return;
-  }
-  const power = btcAmt * btcRate;
-  usdEl.textContent = formatUSD(power);
-  const affordable = PROPERTIES.filter((p) => p.offer <= power)
-    .sort((a, b) => b.offer - a.offer)
-    .slice(0, 4);
-  if (!affordable.length) {
-    homesEl.innerHTML = `<p class="afford-empty">No listings fully covered yet — try more BTC or a lower-priced market.</p>`;
-    return;
-  }
-  homesEl.innerHTML = affordable
-    .map((p) => {
-      const need = p.offer / btcRate;
-      return `<button type="button" class="afford-chip" data-view="${p.id}" data-btc="${p.id}">
-        <img src="${p.image}" alt="" />
-        <span>
-          <strong>${p.title}</strong>
-          <small>${formatUSD(p.offer)} · needs ₿ ${need.toFixed(3)}</small>
-        </span>
-      </button>`;
-    })
-    .join("");
-}
-
-let restPollIndex = 0;
-
-async function fetchPriceCoinbase() {
-  const res = await fetch("https://api.coinbase.com/v2/prices/BTC-USD/spot", { cache: "no-store" });
-  if (!res.ok) return null;
-  const data = await res.json();
-  return Number(data?.data?.amount) || null;
-}
-
-async function fetchPriceKraken() {
-  const res = await fetch("https://api.kraken.com/0/public/Ticker?pair=XBTUSD", { cache: "no-store" });
-  if (!res.ok) return null;
-  const data = await res.json();
-  const key = data?.result && Object.keys(data.result)[0];
-  const last = key ? Number(data.result[key]?.c?.[0]) : null;
-  return last || null;
-}
-
-async function fetchPriceBlockchain() {
-  const res = await fetch("https://blockchain.info/ticker", { cache: "no-store" });
-  if (!res.ok) return null;
-  const data = await res.json();
-  return Number(data?.USD?.last) || null;
-}
-
-async function fetchPriceCoinbaseExchange() {
-  try {
-    const res = await fetch("https://api.exchange.coinbase.com/products/BTC-USD/ticker", {
-      cache: "no-store",
-    });
-    if (!res.ok) return null;
-    const data = await res.json();
-    const last = Number(data.price);
-    const bid = Number(data.bid);
-    const ask = Number(data.ask);
-    if (bid > 0 && ask > 0) return (bid + ask) / 2;
-    return last || null;
-  } catch (_) {
-    return null;
-  }
-}
-
-const PRICE_FETCHERS = [
-  { name: "coinbase", fn: fetchPriceCoinbase },
-  { name: "kraken", fn: fetchPriceKraken },
-  { name: "blockchain", fn: fetchPriceBlockchain },
-  { name: "coinbase", fn: fetchPriceCoinbaseExchange },
-];
-
-/** Rotate venues so the displayed number keeps moving (~1/sec) */
-async function pollCoinbaseSpot() {
-  // If a WebSocket just ticked, skip one REST cycle to avoid fighting the stream
-  if (btcStreamMode === "live" && Date.now() - lastStreamAt < 800) return true;
-
-  const n = PRICE_FETCHERS.length;
-  for (let i = 0; i < n; i++) {
-    const fetcher = PRICE_FETCHERS[(restPollIndex + i) % n];
-    try {
-      const price = await fetcher.fn();
-      if (price > 0) {
-        restPollIndex = (restPollIndex + i + 1) % n;
-        applyLiveSpot(price, "rest");
-        btcLastSource = fetcher.name;
-        return true;
-      }
-    } catch (_) {
-      /* try next */
-    }
-  }
-  return false;
-}
-
-async function fetchLiveBtcRates({ silent = false, geckoOnly = false } = {}) {
-  const note = $("#btcSourceNote");
-  if (note && !silent) note.textContent = "Fetching market prices…";
-
-  if (!geckoOnly) {
-    const ok = await pollCoinbaseSpot();
-    if (!ok && !btcRate) {
-      try {
-        const res = await fetch("https://blockchain.info/ticker", { cache: "no-store" });
-        if (res.ok) {
-          const data = await res.json();
-          const price = Number(data?.USD?.last);
-          if (price > 0) applyLiveSpot(price, "rest");
-        }
-      } catch (_) {
-        /* ignore */
-      }
-    }
-  }
-
-  try {
-    const res = await fetch(
-      "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true",
-      { cache: "no-store" }
-    );
-    if (res.ok) {
-      const data = await res.json();
-      const gecko = Number(data?.bitcoin?.usd);
-      const change = data?.bitcoin?.usd_24h_change;
-      if (change != null) btcChange24h = Number(change);
-      if (gecko > 0) applyLiveSpot(gecko, "gecko");
-    }
-  } catch (_) {
-    /* ignore */
-  }
-
-  if (!btcRate) {
-    applyLiveSpot(97450, "rest");
-    btcStreamMode = "offline";
-    updateStreamBadge();
-    if (note) note.textContent = "Offline fallback rate — check network.";
-    if (!silent) toast("Could not reach market APIs — using fallback rate.");
-  } else if (!silent) {
-    toast("Market rates refreshed.");
-  }
-}
-
-let btcSocketBinance = null;
-
-function connectCoinbaseWs() {
-  if (btcSocket && (btcSocket.readyState === WebSocket.OPEN || btcSocket.readyState === WebSocket.CONNECTING)) {
-    return;
-  }
-  try {
-    btcSocket = new WebSocket(WS_COINBASE);
-  } catch (_) {
-    return;
-  }
-
-  btcSocket.addEventListener("open", () => {
-    btcWsRetries = 0;
-    btcSocket.send(
-      JSON.stringify({
-        type: "subscribe",
-        product_ids: ["BTC-USD"],
-        channels: ["ticker"],
-      })
-    );
-    const note = $("#btcSourceNote");
-    if (note) note.textContent = "Coinbase + Binance streams connecting…";
-  });
-
-  btcSocket.addEventListener("message", (ev) => {
-    try {
-      const msg = JSON.parse(ev.data);
-      if (msg.type === "ticker" && (msg.product_id === "BTC-USD" || msg.product_id === "BTC-USDT")) {
-        const price = Number(msg.price || msg.best_bid || msg.best_ask);
-        if (price > 0) {
-          if (btcStreamMode !== "live") {
-            btcStreamMode = "live";
-            updateStreamBadge();
-          }
-          applyLiveSpot(price, "coinbase");
-        }
-      }
-    } catch (_) {
-      /* ignore */
-    }
-  });
-
-  btcSocket.addEventListener("close", () => {
-    const delay = Math.min(20000, 1000 * Math.pow(1.5, btcWsRetries++));
-    setTimeout(connectCoinbaseWs, delay);
-  });
-
-  btcSocket.addEventListener("error", () => {
-    try {
-      btcSocket.close();
-    } catch (_) {
-      /* ignore */
-    }
-  });
-}
-
-function connectBinanceWs() {
-  if (
-    btcSocketBinance &&
-    (btcSocketBinance.readyState === WebSocket.OPEN || btcSocketBinance.readyState === WebSocket.CONNECTING)
-  ) {
-    return;
-  }
-  try {
-    btcSocketBinance = new WebSocket(WS_BINANCE);
-  } catch (_) {
-    return;
-  }
-
-  // Throttle UI to ~8 fps max so it flickers but doesn't melt the tab
-  let lastUi = 0;
-  let pending = null;
-
-  btcSocketBinance.addEventListener("open", () => {
-    btcWsRetries = 0;
-    const note = $("#btcSourceNote");
-    if (note) note.textContent = "Binance trade stream live — prices tick per trade.";
-    if (btcStreamMode !== "live") {
-      btcStreamMode = "live";
-      updateStreamBadge();
-      toast("₿ Live trade stream connected.");
-    }
-  });
-
-  btcSocketBinance.addEventListener("message", (ev) => {
-    try {
-      const msg = JSON.parse(ev.data);
-      // trade stream: { p: "price", ... }
-      const price = Number(msg.p || msg.price || msg.c);
-      if (!(price > 0)) return;
-      pending = price;
-      const now = performance.now();
-      if (now - lastUi < 120) return; // ~8 updates/sec — visible flicker
-      lastUi = now;
-      const p = pending;
-      pending = null;
-      applyLiveSpot(p, "binance");
-    } catch (_) {
-      /* ignore */
-    }
-  });
-
-  btcSocketBinance.addEventListener("close", () => {
-    setTimeout(connectBinanceWs, 2000);
-  });
-
-  btcSocketBinance.addEventListener("error", () => {
-    try {
-      btcSocketBinance.close();
-    } catch (_) {
-      /* ignore */
-    }
-  });
-}
-
-function connectBtcWebSocket() {
-  btcStreamMode = "connecting";
-  updateStreamBadge();
-  connectBinanceWs();
-  connectCoinbaseWs();
-}
-
-function formatTimer(sec) {
-  const m = Math.floor(sec / 60).toString().padStart(2, "0");
-  const s = (sec % 60).toString().padStart(2, "0");
-  return `${m}:${s}`;
-}
-
-function startQuoteTimer() {
-  clearInterval(quoteTimerId);
-  quoteSecondsLeft = QUOTE_SECONDS;
-  if ($("#btcTimer")) $("#btcTimer").textContent = formatTimer(quoteSecondsLeft);
-  quoteTimerId = setInterval(() => {
-    quoteSecondsLeft -= 1;
-    if (quoteSecondsLeft <= 0) {
-      quoteSecondsLeft = QUOTE_SECONDS;
-      // lock rolls — rate already live; soft toast
-      toast("15-min quote window rolled — still on live stream rate.");
-    }
-    if ($("#btcTimer")) $("#btcTimer").textContent = formatTimer(quoteSecondsLeft);
-  }, 1000);
 }
 
 function initBitcoin() {
-  populateBtcSelect();
-  updateBtcQuote();
-  updateAffordCalculator();
-  updateStreamBadge();
-  fetchLiveBtcRates({ silent: true });
-  connectBtcWebSocket();
-  startQuoteTimer();
-
-  clearInterval(rateRefreshId);
-  clearInterval(geckoRefreshId);
-
-  // Fast REST poll — keeps cents moving even when WebSockets are blocked
-  rateRefreshId = setInterval(() => {
-    pollCoinbaseSpot();
-  }, FAST_POLL_MS);
-
-  geckoRefreshId = setInterval(() => fetchLiveBtcRates({ silent: true, geckoOnly: true }), GECKO_REFRESH_MS);
-
-  // Heartbeat: re-flash last price every 2s so UI feels alive even on quiet markets
-  setInterval(() => {
-    if (!btcRate) return;
-    const el = $("#tickerBtcPrice");
-    if (el && btcStreamMode === "live") {
-      el.classList.remove("flash-tick");
-      void el.offsetWidth;
-      el.classList.add("flash-tick");
-    }
-    const updated = $("#tickerUpdated");
-    if (updated && btcLastUpdated) {
-      const age = Math.round((Date.now() - btcLastUpdated.getTime()) / 1000);
-      updated.textContent = `${btcStreamMode} · ${btcLastSource} · ${age}s ago · ${btcTickCount} ticks`;
-    }
-  }, 2000);
-
-  $("#btcProperty")?.addEventListener("change", () => {
-    updateBtcQuote();
-    quoteSecondsLeft = QUOTE_SECONDS;
-  });
-
-  $("#refreshBtcRates")?.addEventListener("click", () => {
-    fetchLiveBtcRates({ silent: false });
-    connectBtcWebSocket();
-    quoteSecondsLeft = QUOTE_SECONDS;
-  });
-
-  $("#tickerRefresh")?.addEventListener("click", () => {
-    pollCoinbaseSpot();
-    fetchLiveBtcRates({ silent: false });
-    connectBtcWebSocket();
-  });
-
-  $("#affordBtc")?.addEventListener("input", updateAffordCalculator);
-
-  // Preset buttons via double-click on board price → scroll already there
-  $("#boardBtcPrice")?.addEventListener("click", () => {
-    const a = $("#affordBtc");
-    if (a) {
-      a.value = "1";
-      updateAffordCalculator();
-      a.focus();
-    }
-  });
-
-  $("#copyBtcAddr")?.addEventListener("click", async () => {
-    const addr = $("#btcAddress")?.textContent;
-    try {
-      await navigator.clipboard.writeText(addr);
-      toast("Demo escrow address copied.");
-    } catch {
-      toast("Copy failed — select the address manually.");
-    }
-  });
-
-  $("#simulateBtcPay")?.addEventListener("click", () => {
-    requireSoftAuth("btc", () => {
-      const id = $("#btcProperty")?.value;
-      const p = PROPERTIES.find((x) => x.id === id);
-      if (!p) {
-        toast("Pick a home for Bitcoin checkout first.");
-        return;
-      }
-      if (!btcRate) {
-        toast("Waiting for live BTC rate…");
-        return;
-      }
-      const amount = p.offer / btcRate;
-      const btc = formatBTC(amount);
-      $("#btcCheckout")?.classList.add("pay-flash");
-      setTimeout(() => $("#btcCheckout")?.classList.remove("pay-flash"), 800);
-      toast(`Demo payment initiated: ${btc} for ${p.title} @ ${formatUsdPrecise(btcRate)}/BTC.`);
-      track("btc_pay_simulate", { id: p.id });
-      openChat(
-        `I just simulated a Bitcoin payment of ${btc} (live rate ${formatUsdPrecise(btcRate)}/BTC, stream=${btcStreamMode}) for ${p.title}. Can a settlement specialist confirm next steps?`
-      );
-    });
-  });
-
-  // Clicking top ticker scrolls to checkout
-  $("#btcTicker")?.addEventListener("click", (e) => {
-    if (e.target.closest("button, a")) return;
-    document.getElementById("bitcoin")?.scrollIntoView({ behavior: "smooth" });
+  window.SRU_BTC?.init({
+    toast,
+    requireSoftAuth,
+    openChat,
+    track,
+    formatUSD,
+    getProperties: () => PROPERTIES,
   });
 }
 
 function jumpToBtc(id) {
-  if ($("#btcProperty")) $("#btcProperty").value = id;
-  updateBtcQuote();
-  quoteSecondsLeft = QUOTE_SECONDS;
-  document.getElementById("bitcoin")?.scrollIntoView({ behavior: "smooth" });
-  toast("Bitcoin checkout loaded with live stream rates.");
+  if (window.SRU_BTC && window.SRU_BTC.jumpTo) window.SRU_BTC.jumpTo(id);
 }
 
 // ---------- Analytics helper ----------
@@ -2609,7 +2162,14 @@ function softGateConfig() {
 }
 
 function isSignedInUser() {
-  return !!(window.SRU_AUTH && window.SRU_AUTH.isSignedIn && window.SRU_AUTH.isSignedIn());
+  return !!(
+    window.SRU_SUPABASE?.session ||
+    (window.SRU_AUTH && window.SRU_AUTH.isSignedIn && window.SRU_AUTH.isSignedIn())
+  );
+}
+
+function isMemberAccount() {
+  return !!window.SRU_SUPABASE?.session;
 }
 
 function isSoftGuestOk() {
@@ -2748,10 +2308,15 @@ function updateHeaderUser() {
   const nav = $("#signInNav");
   const signUp = $("#signUpNav");
   const nameEl = $("#headerUserName");
-  const user =
+  const supabaseUser = window.SRU_SUPABASE?.session?.user || null;
+  const legacyUser =
     (window.SRU_AUTH && window.SRU_AUTH.getUser && window.SRU_AUTH.getUser()) || null;
+  const user = supabaseUser || legacyUser;
   if (user && box && nameEl) {
-    const first = (user.name || "Member").split(" ")[0];
+    const label = supabaseUser
+      ? window.SRU_SUPABASE.userLabel(supabaseUser)
+      : user.name || "Member";
+    const first = label.split(" ")[0];
     nameEl.textContent = first;
     box.classList.remove("hidden");
     if (nav) nav.classList.add("hidden");
@@ -2854,7 +2419,7 @@ const AGENT_REPLIES = [
   "Bitcoin quotes use live Coinbase/CoinGecko prices. The pay button does not move real funds.",
   "Try-Before-Buy is a product idea on this demo: stay first, then apply eligible nights toward a purchase.",
   "SMART REALTY.US LLC is owner-operated in Louisville. Phone 1-800-762-7879 · ai@smartrealty.us.",
-  "This site is a static public demo on GitHub Pages. Account requests email Andrew. It is not a licensed brokerage.",
+  "This site runs on GitHub Pages, built solo by Andrew in Louisville. Free member access uses passwordless email magic links — we're in public demo now, ahead of full brokerage licensing.",
   "Want a Blue Book, a BTC quote, or a waitlist invite? I can point you to those sections — or email Andrew.",
 ];
 
@@ -2929,8 +2494,8 @@ function initChat() {
       const lower = text.toLowerCase();
       if (lower.includes("bitcoin") || lower.includes("btc") || lower.includes("crypto")) {
         reply =
-          btcRate
-            ? `Live Bitcoin is about ${formatUsdPrecise(btcRate)}/BTC (CoinGecko + Coinbase). Checkout can show a quote. No real funds move on this demo.`
+          getBtcRate()
+            ? `Live Bitcoin is about ${formatUsdPrecise(getBtcRate())}/BTC (CoinGecko + Coinbase). Checkout can show a quote. No real funds move on this demo.`
             : "Bitcoin quotes are live market data. Pick a listing and open checkout to see the quote. This demo does not move real funds.";
       } else if (lower.includes("rent") || lower.includes("stay") || lower.includes("airbnb") || lower.includes("try")) {
         reply =
@@ -2951,7 +2516,7 @@ function initChat() {
 
 // ---------- Header / nav / filters ----------
 function initScrollSpy() {
-  const sections = ["home", "listings", "bluebook", "bitcoin", "rentals", "security", "support"]
+  const sections = ["home", "tools", "listings", "bluebook", "bitcoin", "rentals", "business", "security", "support"]
     .map((id) => document.getElementById(id))
     .filter(Boolean);
   const links = $$(".nav-link");
@@ -2987,8 +2552,22 @@ function initUI() {
     $("#nav")?.classList.toggle("open");
   });
 
-  $$(".nav-link").forEach((link) => {
+  $$("#nav a").forEach((link) => {
     link.addEventListener("click", () => $("#nav")?.classList.remove("open"));
+  });
+
+  const toolsBtn = $("#navToolsBtn");
+  const toolsMenu = $("#navToolsMenu");
+  toolsBtn?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const open = toolsBtn.getAttribute("aria-expanded") === "true";
+    toolsBtn.setAttribute("aria-expanded", open ? "false" : "true");
+    if (toolsMenu) toolsMenu.hidden = open;
+  });
+  document.addEventListener("click", () => {
+    if (!toolsBtn || !toolsMenu) return;
+    toolsBtn.setAttribute("aria-expanded", "false");
+    toolsMenu.hidden = true;
   });
 
   $$("#styleFilters .filter-btn").forEach((btn) => {
@@ -3010,25 +2589,31 @@ function initUI() {
   $("#closeFavDrawer")?.addEventListener("click", closeFavDrawer);
   $("#drawerBackdrop")?.addEventListener("click", closeFavDrawer);
 
-  document.addEventListener("click", (e) => {
+  document.addEventListener("click", async (e) => {
     const fav = e.target.closest("[data-fav]");
     if (fav) {
       e.preventDefault();
       const id = fav.dataset.fav;
-      if (favorites.has(id)) {
-        favorites.delete(id);
-        toast("Removed from saved.");
-        track("unsave_listing", { id });
-      } else {
-        favorites.add(id);
-        toast("Saved to your shortlist.");
-        track("save_listing", { id });
-        maybeSaveHint();
+      if (!isMemberAccount()) {
+        window.SRU_SUPABASE?.openSignIn({
+          title: "Sign in to save this home",
+          copy: "Your shortlist will sync across your signed-in devices.",
+          next: location.href,
+        });
+        return;
       }
+      const shouldSave = !favorites.has(id);
+      try {
+        await window.SRU_SUPABASE.setSavedListing(id, shouldSave);
+      } catch (error) {
+        toast(error.message || "Could not update saved homes.");
+        return;
+      }
+      if (shouldSave) favorites.add(id);
+      else favorites.delete(id);
+      toast(shouldSave ? "Saved to your shortlist." : "Removed from saved.");
+      track(shouldSave ? "save_listing" : "unsave_listing", { id });
       localStorage.setItem("sru_favs", JSON.stringify([...favorites]));
-      if (window.SRU_AUTH && window.SRU_AUTH.isMemberAccount && window.SRU_AUTH.isMemberAccount()) {
-        window.SRU_AUTH.saveFavorites([...favorites]).catch(() => {});
-      }
       updateFavBadge();
       renderListings();
       if ($("#favDrawer")?.classList.contains("open")) renderFavoritesDrawer();
@@ -3248,7 +2833,7 @@ function applyDomainConfig() {
       url: siteUrl || "https://smartrealty.us",
       email,
       telephone: cfg.phoneTel || "+1-800-762-7879",
-      description: "Kentucky LLC. Public demo of transparent home pricing and Bitcoin-ready checkout. Not a licensed brokerage.",
+      description: "Kentucky LLC building a transparent home-pricing and Bitcoin-ready checkout platform. Public demo ahead of full brokerage licensing.",
       areaServed: "US",
       numberOfEmployees: 1,
       address: cfg.businessAddress
@@ -3405,39 +2990,15 @@ function initDomainPanel() {
 }
 
 // ---------- Boot ----------
-function initListingImageFallback() {
-  const grid = $("#listingsGrid");
-  if (!grid) return;
-  const applyFallback = (root = grid) => {
-    const images = root.matches?.(".listing-media img") ? [root] : [...root.querySelectorAll?.(".listing-media img") || []];
-    images.forEach((img) => {
-      const src = img.getAttribute("src") || "";
-      img.onerror = () => {
-        img.onerror = null;
-        img.src = "/images/photo-unavailable.svg";
-      };
-      if (!src || /NoImage|placeholder|courthouse|circuit.?court/i.test(src)) {
-        img.src = "/images/photo-unavailable.svg";
-      }
-    });
-  };
-  applyFallback();
-  new MutationObserver((mutations) => {
-    mutations.forEach((mutation) => mutation.addedNodes.forEach((node) => {
-      if (node.nodeType === Node.ELEMENT_NODE) applyFallback(node);
-    }));
-  }).observe(grid, { childList: true, subtree: true });
-}
-
 document.addEventListener("DOMContentLoaded", () => {
   applyDomainConfig();
   initDemoGate();
   initHeroPanel();
   initDunsGuide();
   initMarketplace();
+  initMapLayers();
   setViewMode("grid");
   renderListings();
-  initListingImageFallback();
   renderRentals();
   initUI();
   initBlueBook();
@@ -3454,6 +3015,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initGrowthMarkets();
   initWaitlist();
   initContactLeadForm();
+  renderPartnerOffers();
   renderRecentViews();
   $("#clearRecentViews")?.addEventListener("click", () => {
     localStorage.removeItem(RECENT_VIEWS_KEY);
@@ -3461,6 +3023,14 @@ document.addEventListener("DOMContentLoaded", () => {
     toast("Recent views cleared.");
   });
   openDeepLinkedHome();
+
+  document.addEventListener("sru:saved-listings", (event) => {
+    favorites = new Set(event.detail?.listingIds || []);
+    updateFavBadge();
+    renderListings();
+    if ($("#favDrawer")?.classList.contains("open")) renderFavoritesDrawer();
+  });
+  document.addEventListener("sru:auth-change", updateHeaderUser);
 
   // Show DUNS in footer if configured
   const cfg = getConfig();

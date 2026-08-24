@@ -1,6 +1,4 @@
-/* Generated from data/listings.json — alias of js/listings.js. Do not edit. Run: node scripts/sync-listings.js */
-(function (w) {
-  var data = {
+{
   "listings": [
     {
       "provider": "demo",
@@ -805,8 +803,4 @@
       "lng": -84.5
     }
   }
-};
-  w.SRU_LISTINGS = data;
-  w.SRU_PROPERTIES = data.listings;
-  w.SRU_DEFAULT_COORDS = data.defaultCoords || {};
-})(window);
+}

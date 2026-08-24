@@ -1,4 +1,4 @@
-/* Generated from data/listings.json — alias of js/listings.js. Do not edit. Run: node scripts/sync-listings.js */
+/* Generated from data/listings.json — do not edit. Run: node scripts/sync-listings.js */
 (function (w) {
   var data = {
   "listings": [
