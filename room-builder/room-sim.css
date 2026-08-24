@@ -9,6 +9,12 @@ body.room-sim {
   color: #f3f5f9;
 }
 
+.room-sim *,
+.room-sim *::before,
+.room-sim *::after {
+  box-sizing: border-box;
+}
+
 .sim-root {
   position: relative;
   width: 100%;
@@ -68,6 +74,9 @@ body.room-sim {
 .sim-mode-btn:hover {
   border-color: rgba(232, 200, 122, 0.45);
 }
+.sim-top > .sim-back {
+  justify-self: start;
+}
 
 .sim-title {
   justify-self: center;
@@ -87,6 +96,9 @@ body.room-sim {
   display: flex;
   gap: 6px;
   flex-wrap: wrap;
+}
+.sim-full-short {
+  display: none;
 }
 .sim-mode-btn.is-active {
   background: #e8c87a;
@@ -533,17 +545,45 @@ body.room-sim {
 }
 
 @media (max-width: 720px) {
+  .sim-root {
+    height: 100dvh;
+  }
   .sim-top {
     grid-template-columns: 1fr;
     justify-items: start;
+    top: max(10px, env(safe-area-inset-top));
+    left: 10px;
+    right: 10px;
+    gap: 6px;
   }
   .sim-title {
     display: none;
   }
   .sim-modes {
     justify-self: start;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 4px;
+    width: 100%;
+  }
+  .sim-back,
+  .sim-mode-btn,
+  .sim-chip {
+    min-height: 44px;
+  }
+  .sim-mode-btn {
+    justify-content: center;
+    padding: 0.4rem 0.25rem;
+    font-size: 0.68rem;
+  }
+  .sim-full-wide {
+    display: none;
+  }
+  .sim-full-short {
+    display: inline;
   }
   .sim-listing {
+    top: calc(max(10px, env(safe-area-inset-top)) + 100px);
     max-width: calc(100% - 28px);
     right: 14px;
   }
@@ -556,13 +596,59 @@ body.room-sim {
   .sim-hint {
     left: 10px;
     right: 10px;
-    bottom: 108px;
+    bottom: calc(140px + env(safe-area-inset-bottom));
     font-size: 0.7rem;
   }
   .sim-side {
+    left: 10px;
+    right: 10px;
     top: auto;
-    bottom: 118px;
-    max-height: 28vh;
+    bottom: calc(72px + env(safe-area-inset-bottom));
+    max-height: none;
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    overscroll-behavior-x: contain;
+  }
+  .sim-side::-webkit-scrollbar {
+    display: none;
+  }
+  .sim-side > *,
+  .sim-side .sim-chip {
+    flex: 0 0 auto;
+  }
+  .sim-total {
+    min-height: 44px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .sim-presets {
+    display: contents;
+  }
+  .sim-time {
+    flex: 0 0 170px;
+    min-height: 44px;
+  }
+  .sim-catalog {
+    bottom: max(8px, env(safe-area-inset-bottom));
+    max-height: min(65dvh, 430px);
+    transform: translateY(calc(100% - 48px));
+  }
+  .sim-cat-toggle,
+  .sim-cats button,
+  .sim-groups button,
+  .sim-vendors button {
+    min-height: 44px;
+  }
+  .sim-onboard-card {
+    max-height: calc(100dvh - 32px);
     overflow: auto;
+  }
+  .sim-onboard-card .sim-mode-btn {
+    width: 100%;
   }
 }
