@@ -46,6 +46,20 @@
     .nl-detail.hidden { display: none; }
     .nl-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.45rem; margin: 0.8rem 0; }
     .nl-gallery img { width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: 8px; background: var(--bg-elevated); }
+    @media (max-width: 640px) {
+      .nl-grid { grid-template-columns: minmax(0, 1fr); }
+      .nl-filters label { flex: 1 1 9rem; }
+      .nl-filters input,
+      .nl-filters select { width: 100% !important; min-height: 44px; }
+      .nl-filters .btn,
+      .nl-chip,
+      .nl-chip-btn { min-height: 44px; }
+      .nl-filters > p:nth-of-type(2) label,
+      .nl-filters > p:nth-of-type(2) .btn { flex-basis: 100%; width: 100%; }
+      .nl-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; }
+      .nl-actions .btn { min-height: 44px; padding: 0.6rem 0.55rem; white-space: normal; line-height: 1.2; text-align: center; }
+      .nl-detail .nl-actions { grid-template-columns: minmax(0, 1fr); }
+    }
   </style>
 </head>
 <body class="g-page" data-growth="new-listings">
