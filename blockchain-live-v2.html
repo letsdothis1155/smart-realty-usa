@@ -1,0 +1,1489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="referrer" content="no-referrer" />
+  <!--
+    Smart Realty USA — 3D Blockchain Explorer V2 (Development)
+    ===========================================================
+    CHANGE LOG (development only)
+    - 2026-08-16: Phase 1 foundation
+      • Clean single-file page (no srcdoc iframe)
+      • Network switcher: Bitcoin | Lightning | Ethereum (Bitcoin first)
+      • States: CONNECTING → LIVE / DEGRADED / DEMO
+      • BitcoinAdapter with provenance, cache, expiration
+      • Consistent tip-block fetch (height + hash + tx_count from same block)
+      • Raw snapshot proof area before any 3D rendering
+      • Conservative CSP allowlist (will be tightened further)
+      • Production blockchain-live.html remains untouched
+
+    Architecture notes:
+    - Data adapters are independent of Three.js
+    - Snapshot provenance prevents accidental mixing of synthetic/real data
+    - Cache expires; ancient data falls back to DEMO rather than silent DEGRADED
+  -->
+  <title>Smart Realty USA — 3D Blockchain (V2 Dev)</title>
+
+  <!-- Inline SVG favicon — no external 404 -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23090b10'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-size='16' fill='%23f7931a'%3E%E2%82%BF%3C/text%3E%3C/svg%3E" />
+
+  <!--
+    CSP strategy:
+    - Meta tag = fallback for GitHub Pages (cannot set response headers).
+    - HTTP header via repo root _headers = primary on Cloudflare Pages.
+    - Same policy both places. Cloudflare Insights beacon NOT allowlisted.
+  -->
+  <meta http-equiv="Content-Security-Policy" content="
+    default-src 'none';
+    script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;
+    style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+    font-src https://fonts.gstatic.com;
+    img-src 'self' data: blob:;
+    connect-src 'self' https://mempool.smartrealty.us https://mempool.space wss://mempool.smartrealty.us wss://mempool.space;
+    worker-src blob:;
+    frame-src 'none';
+    object-src 'none';
+    base-uri 'none';
+    form-action 'none';
+  ">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <!-- Pinned exact version — never use @latest. Orbit is implemented minimally in-page. -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #090b10;
+      --bg-elevated: #12151e;
+      --border: rgba(255,255,255,0.10);
+      --text: #f2f4f8;
+      --muted: #9aa3b5;
+      --accent: #f7931a;          /* Bitcoin orange */
+      --accent-dim: rgba(247,147,26,0.18);
+      --live: #22c55e;
+      --degraded: #eab308;
+      --demo: #38bdf8;
+      --connecting: #94a3b8;
+      --danger: #ef4444;
+      --panel: rgba(18,21,30,0.92);
+      --radius: 12px;
+      font-family: Inter, system-ui, -apple-system, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); }
+    body {
+      display: flex;
+      flex-direction: column;
+      min-height: 100dvh;
+      background:
+        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(247,147,26,0.08), transparent),
+        var(--bg);
+    }
+
+    /* ---------- Header ---------- */
+    .site-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.75rem clamp(1rem, 3vw, 2rem);
+      border-bottom: 1px solid var(--border);
+      background: rgba(9,11,16,0.85);
+      backdrop-filter: blur(12px);
+      flex-shrink: 0;
+    }
+    .brand {
+      color: #fff;
+      text-decoration: none;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      font-size: 0.95rem;
+    }
+    .back {
+      color: #9ec5ff;
+      text-decoration: none;
+      font-size: 0.85rem;
+    }
+    .dev-badge {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      padding: 0.2rem 0.5rem;
+      border-radius: 999px;
+      background: rgba(56,189,248,0.15);
+      color: #7dd3fc;
+      border: 1px solid rgba(56,189,248,0.25);
+    }
+
+    /* ---------- Controls ---------- */
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.75rem 1.25rem;
+      padding: 0.85rem clamp(1rem, 3vw, 2rem);
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-elevated);
+      flex-shrink: 0;
+    }
+
+    .network-switcher {
+      display: flex;
+      background: rgba(0,0,0,0.35);
+      border-radius: 999px;
+      padding: 3px;
+      border: 1px solid var(--border);
+    }
+    .network-btn {
+      appearance: none;
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      font: inherit;
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 0.4rem 0.9rem;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: 0.15s ease;
+    }
+    .network-btn:hover { color: var(--text); }
+    .network-btn.active {
+      background: var(--accent);
+      color: #111;
+      box-shadow: 0 0 0 1px rgba(247,147,26,0.4);
+    }
+    .network-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      padding: 0.35rem 0.7rem;
+      border-radius: 999px;
+      border: 1px solid transparent;
+    }
+    .status-pill .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+    .status-pill.connecting { color: var(--connecting); background: rgba(148,163,184,0.12); border-color: rgba(148,163,184,0.25); }
+    .status-pill.live       { color: var(--live);       background: rgba(34,197,94,0.12);  border-color: rgba(34,197,94,0.3); }
+    .status-pill.degraded   { color: var(--degraded);   background: rgba(234,179,8,0.12);  border-color: rgba(234,179,8,0.3); }
+    .status-pill.demo       { color: var(--demo);       background: rgba(56,189,248,0.12); border-color: rgba(56,189,248,0.3); }
+
+    .metrics {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem 1.5rem;
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-left: auto;
+    }
+    .metric strong {
+      color: var(--text);
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+    }
+    .metric .label { margin-right: 0.35rem; }
+
+    /* ---------- Main layout ---------- */
+    .main {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr minmax(280px, 340px);
+      min-height: 0;
+      height: 100%;
+    }
+    @media (max-width: 900px) {
+      .main { grid-template-columns: 1fr; grid-template-rows: minmax(360px, 1fr) auto; }
+    }
+
+    .canvas-wrap {
+      position: relative;
+      background: #0a0c12;
+      min-height: 420px;
+      height: 100%;
+    }
+    #scene {
+      display: block;
+      width: 100%;
+      height: 100%;
+      min-height: 420px;
+      touch-action: none;
+    }
+    .canvas-overlay {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: flex-start;
+      padding: 0.7rem;
+      gap: 0.45rem;
+    }
+    .proof-box {
+      pointer-events: auto;
+      max-width: 280px;
+      background: rgba(0,0,0,0.82);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.5rem 0.65rem;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.62rem;
+      line-height: 1.35;
+      color: #cbd5e1;
+      overflow: auto;
+      max-height: 18vh;
+      opacity: 0.85;
+    }
+    .proof-box h3 {
+      margin: 0 0 0.5rem;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--accent);
+      font-family: Inter, sans-serif;
+      cursor: pointer;
+      user-select: none;
+    }
+    .proof-box h3::after {
+      content: ' ▾';
+      opacity: 0.6;
+      font-size: 0.65rem;
+    }
+    .proof-box.collapsed {
+      max-height: none;
+      opacity: 0.7;
+    }
+    .proof-box.collapsed pre,
+    .proof-box.collapsed .hint-inline {
+      display: none;
+    }
+    .proof-box.collapsed h3::after {
+      content: ' ▸';
+    }
+    .proof-box pre {
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    .hint {
+      font-size: 0.75rem;
+      color: var(--muted);
+      background: rgba(0,0,0,0.55);
+      padding: 0.4rem 0.7rem;
+      border-radius: 8px;
+      align-self: flex-start;
+    }
+    /* Soften proof box on small screens — collapsed by default */
+    @media (max-width: 900px) {
+      .proof-box {
+        max-width: min(260px, 85vw);
+        max-height: 14vh;
+        opacity: 0.75;
+      }
+      .proof-box:not(.collapsed) {
+        max-height: 22vh;
+      }
+      .hint { display: none; }
+    }
+
+    /* ---------- Inspector ---------- */
+    .inspector {
+      background: var(--panel);
+      border-left: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      min-width: 0;
+    }
+    @media (max-width: 900px) {
+      .inspector {
+        border-left: 0;
+        border-top: 1px solid var(--border);
+        max-height: 38vh;
+        min-height: 160px;
+      }
+    }
+    /* Landscape phones / short viewports */
+    @media (max-height: 500px) and (orientation: landscape) {
+      .inspector {
+        max-height: 48vh;
+        min-height: 120px;
+      }
+      .canvas-wrap {
+        min-height: 200px;
+      }
+    }
+    .inspector-header {
+      padding: 0.9rem 1.1rem;
+      border-bottom: 1px solid var(--border);
+      font-weight: 600;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .inspector-body {
+      padding: 1rem 1.1rem;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      flex: 1;
+      min-height: 0;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+    .inspector-body .empty {
+      opacity: 0.7;
+      font-size: 0.85rem;
+    }
+    .kv {
+      display: grid;
+      grid-template-columns: 110px 1fr;
+      gap: 0.35rem 0.75rem;
+      margin-bottom: 0.65rem;
+    }
+    .kv .k { color: var(--muted); }
+    .kv .v {
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+      word-break: break-all;
+    }
+    .kv .v.hash { font-family: ui-monospace, monospace; font-size: 0.78rem; }
+
+    .footer-note {
+      padding: 0.6rem 1rem;
+      font-size: 0.72rem;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <header class="site-bar">
+    <div style="display:flex;align-items:center;gap:0.75rem;">
+      <a class="brand" href="index.html">Smart Realty USA</a>
+      <span class="dev-badge">V2 DEV</span>
+    </div>
+    <a class="back" href="index.html#bitcoin">← Back to Bitcoin-ready real estate</a>
+  </header>
+
+  <div class="controls">
+    <div class="network-switcher" role="tablist" aria-label="Network">
+      <button class="network-btn active" data-network="bitcoin" role="tab" aria-selected="true">Bitcoin</button>
+      <button class="network-btn" data-network="lightning" role="tab" aria-selected="false" disabled title="Coming next">Lightning</button>
+      <button class="network-btn" data-network="ethereum" role="tab" aria-selected="false" disabled title="Coming next">Ethereum</button>
+    </div>
+
+    <div id="statusPill" class="status-pill connecting" aria-live="polite">
+      <span class="dot"></span>
+      <span id="statusText">CONNECTING</span>
+    </div>
+    <div class="metric" title="Live data source"><span class="label">API</span><strong id="srcPill">probing…</strong></div>
+
+    <div class="metrics" id="metricsBar" aria-live="polite">
+      <div class="metric"><span class="label">Height</span><strong id="mHeight">—</strong></div>
+      <div class="metric"><span class="label">Txs</span><strong id="mTx">—</strong></div>
+      <div class="metric"><span class="label">Fee</span><strong id="mFee">—</strong></div>
+      <div class="metric"><span class="label">Mempool</span><strong id="mMempool">—</strong></div>
+      <div class="metric"><span class="label">Updated</span><strong id="mAge">—</strong></div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="canvas-wrap">
+      <canvas id="scene"></canvas>
+      <div class="canvas-overlay">
+        <div class="proof-box collapsed" id="proofBox">
+          <h3 id="proofToggle">Raw snapshot (proof)</h3>
+          <pre id="proofPre">Waiting for BitcoinAdapter…</pre>
+        </div>
+        <div class="hint">Tap a block to inspect · Drag to orbit</div>
+      </div>
+    </div>
+
+    <aside class="inspector">
+      <div class="inspector-header">
+        <span>Inspector</span>
+        <span style="font-size:0.75rem;color:var(--muted);font-weight:500;" id="inspectorNetwork">Bitcoin</span>
+      </div>
+      <div class="inspector-body" id="inspectorBody">
+        <p class="empty">Select a block or wait for the first live snapshot.</p>
+      </div>
+      <div class="footer-note">
+        Read-only visualization · No wallets · No transactions
+      </div>
+    </aside>
+  </div>
+
+  <script>
+  // ============================================================
+  //  DATA LAYER — completely independent of Three.js
+  // ============================================================
+
+  const CACHE_MAX_AGE_MS = 90_000;          // 90s soft freshness
+  const CACHE_HARD_EXPIRE_MS = 10 * 60_000; // 10 min → force DEMO
+  const REQUEST_TIMEOUT_MS = 14_000;      // slightly longer under load
+
+  /** @typedef {'CONNECTING'|'LIVE'|'DEGRADED'|'DEMO'} AppStatus */
+
+  /**
+   * Shared snapshot shape every adapter must return.
+   * @typedef {Object} ChainSnapshot
+   * @property {string} network
+   * @property {string} source
+   * @property {number} fetchedAt
+   * @property {number|null} dataTimestamp
+   * @property {boolean} synthetic
+   * @property {boolean} stale
+   * @property {number|null} height
+   * @property {string|null} hash
+   * @property {number|null} txCount
+   * @property {number|null} feeEstimate   // sat/vB for Bitcoin
+   * @property {string} [error]
+   */
+
+  // ---------- Utility ----------
+  function withTimeout(promise, ms, label = 'request') {
+    return Promise.race([
+      promise,
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms)
+      )
+    ]);
+  }
+
+  const MempoolEndpoint = (() => {
+    const BASE = 'https://mempool.smartrealty.us';
+    const FALLBACK = 'https://mempool.space';
+    let active = BASE;
+    let usingFallback = false;
+    const srcEl = () => document.getElementById('srcPill');
+    function show() {
+      const el = srcEl();
+      if (!el) return;
+      el.textContent = usingFallback ? 'mempool.space (fallback)' : 'mempool.smartrealty.us';
+    }
+    function api(path) {
+      const p = path.startsWith('/') ? path : '/' + path;
+      return active.replace(/\/$/, '') + '/api' + p;
+    }
+    async function probe(base) {
+      const ctrl = new AbortController();
+      const t = setTimeout(() => ctrl.abort(), 3000);
+      try {
+        const res = await fetch(base.replace(/\/$/, '') + '/api/blocks/tip/height', {
+          cache: 'no-store', signal: ctrl.signal
+        });
+        if (!res.ok) throw new Error('bad tip');
+        return true;
+      } catch (_) {
+        return false;
+      } finally {
+        clearTimeout(t);
+      }
+    }
+    async function choose() {
+      if (await probe(BASE)) {
+        active = BASE;
+        usingFallback = false;
+      } else {
+        active = FALLBACK;
+        usingFallback = true;
+      }
+      show();
+      return { active, usingFallback };
+    }
+    choose();
+    setInterval(choose, 60000);
+    return { BASE, FALLBACK, api, choose, isFallback: () => usingFallback, host: () => usingFallback ? 'mempool.space' : 'mempool.smartrealty.us' };
+  })();
+
+  async function fetchJson(url, label) {
+    if (!navigator.onLine) throw new Error(`${label} offline`);
+    const res = await withTimeout(fetch(url, { cache: 'no-store' }), REQUEST_TIMEOUT_MS, label);
+    if (res.status === 429) throw new Error(`${label} rate-limited (HTTP 429)`);
+    if (!res.ok) throw new Error(`${label} HTTP ${res.status}`);
+    return res.json();
+  }
+
+  async function fetchText(url, label) {
+    if (!navigator.onLine) throw new Error(`${label} offline`);
+    const res = await withTimeout(fetch(url, { cache: 'no-store' }), REQUEST_TIMEOUT_MS, label);
+    if (res.status === 429) throw new Error(`${label} rate-limited (HTTP 429)`);
+    if (!res.ok) throw new Error(`${label} HTTP ${res.status}`);
+    return (await res.text()).trim();
+  }
+
+  // ---------- Bitcoin Adapter ----------
+  const BitcoinAdapter = (() => {
+    let cached = null;           // last good real snapshot
+    let lastError = null;
+    let status = /** @type {AppStatus} */ ('CONNECTING');
+
+    function makeSynthetic() {
+      const now = Date.now();
+      // Deliberately obvious fake values so they can never be mistaken for live
+      return {
+        network: 'bitcoin',
+        source: 'local-demo',
+        fetchedAt: now,
+        dataTimestamp: now,
+        synthetic: true,
+        stale: false,
+        height: 900000 + Math.floor(Math.random() * 50),
+        hash: '0000000000000000000demo' + Math.random().toString(16).slice(2, 10),
+        txCount: 1800 + Math.floor(Math.random() * 900),
+        feeEstimate: 3 + Math.floor(Math.random() * 12),
+        error: null
+      };
+    }
+
+    function isExpired(snap) {
+      if (!snap || snap.synthetic) return true;
+      return (Date.now() - snap.fetchedAt) > CACHE_HARD_EXPIRE_MS;
+    }
+
+    function isStale(snap) {
+      if (!snap || snap.synthetic) return false;
+      return (Date.now() - snap.fetchedAt) > CACHE_MAX_AGE_MS;
+    }
+
+    /**
+     * Fetch recent real blocks (own instance first; public API only as labeled fallback).
+     * Every block in the array is real and carries its own height/hash/tx_count/timestamp.
+     * Fees are best-effort.
+     */
+    async function fetchLive() {
+      const now = Date.now();
+      const source = MempoolEndpoint.host();
+
+      // Recent blocks — single call, all real
+      const rawBlocks = await fetchJson(MempoolEndpoint.api('/blocks'), 'recent-blocks');
+      if (!Array.isArray(rawBlocks) || rawBlocks.length === 0) {
+        throw new Error('No recent blocks returned');
+      }
+
+      // Normalize each block with provenance
+      const blocks = rawBlocks.slice(0, 12).map(b => ({
+        height: b.height,
+        hash: b.id,
+        txCount: b.tx_count,
+        timestamp: b.timestamp ? b.timestamp * 1000 : null,
+        size: b.size ?? null,
+        weight: b.weight ?? null,
+        previousHash: b.previousblockhash ?? null,
+        synthetic: false,
+        source
+      }));
+
+      // Tip = first element (newest)
+      const tip = blocks[0];
+
+      // Fees + mempool pressure (best-effort, non-fatal)
+      let feeEstimate = null;
+      let mempool = null;
+      try {
+        const fees = await fetchJson(MempoolEndpoint.api('/v1/fees/recommended'), 'fees');
+        feeEstimate = fees.halfHourFee ?? fees.hourFee ?? fees.fastestFee ?? null;
+      } catch (_) { /* non-fatal */ }
+      try {
+        const mp = await fetchJson(MempoolEndpoint.api('/mempool'), 'mempool');
+        mempool = {
+          count: mp.count ?? null,
+          vsize: mp.vsize ?? null,
+          totalFee: mp.total_fee ?? null
+        };
+      } catch (_) { /* non-fatal */ }
+
+      return {
+        network: 'bitcoin',
+        source,
+        fetchedAt: now,
+        dataTimestamp: tip.timestamp || now,
+        synthetic: false,
+        stale: false,
+        height: tip.height,
+        hash: tip.hash,
+        txCount: tip.txCount,
+        feeEstimate,
+        mempool,                // optional pressure data
+        blocks,                 // real recent blocks only
+        error: null
+      };
+    }
+
+    function makeSyntheticWithBlocks() {
+      const base = makeSynthetic();
+      const blocks = [];
+      for (let i = 0; i < 8; i++) {
+        blocks.push({
+          height: base.height - i,
+          hash: '0000000000000000000demo' + Math.random().toString(16).slice(2, 12),
+          txCount: 1200 + Math.floor(Math.random() * 2000),
+          timestamp: Date.now() - i * 600000,
+          size: null,
+          weight: null,
+          previousHash: null,
+          synthetic: true,
+          source: 'local-demo'
+        });
+      }
+      base.blocks = blocks;
+      return base;
+    }
+
+    async function getSnapshot() {
+      try {
+        const live = await fetchLive();
+        cached = live;
+        lastError = null;
+        status = 'LIVE';
+        return { ...live };
+      } catch (err) {
+        lastError = err?.message || String(err);
+
+        if (cached && !isExpired(cached)) {
+          const age = Date.now() - cached.fetchedAt;
+          status = age > CACHE_MAX_AGE_MS ? 'DEGRADED' : 'LIVE';
+          return {
+            ...cached,
+            stale: isStale(cached),
+            error: lastError
+          };
+        }
+
+        status = 'DEMO';
+        const demo = makeSyntheticWithBlocks();
+        demo.error = lastError;
+        return demo;
+      }
+    }
+
+    function getStatus() {
+      return status;
+    }
+
+    function getCachedSnapshot() {
+      return cached ? { ...cached } : null;
+    }
+
+    // Force a clean start
+    status = 'CONNECTING';
+
+    return { getSnapshot, getStatus, getCachedSnapshot };
+  })();
+
+  // Placeholder adapters (disabled in UI for now)
+  const LightningAdapter = {
+    async getSnapshot() {
+      return {
+        network: 'lightning', source: 'none', fetchedAt: Date.now(),
+        dataTimestamp: null, synthetic: true, stale: false,
+        height: null, hash: null, txCount: null, feeEstimate: null,
+        error: 'Not implemented yet'
+      };
+    },
+    getStatus() { return 'DEMO'; },
+    getCachedSnapshot() { return null; }
+  };
+
+  const EthereumAdapter = {
+    async getSnapshot() {
+      return {
+        network: 'ethereum', source: 'none', fetchedAt: Date.now(),
+        dataTimestamp: null, synthetic: true, stale: false,
+        height: null, hash: null, txCount: null, feeEstimate: null,
+        error: 'Not implemented yet'
+      };
+    },
+    getStatus() { return 'DEMO'; },
+    getCachedSnapshot() { return null; }
+  };
+
+  const adapters = {
+    bitcoin: BitcoinAdapter,
+    lightning: LightningAdapter,
+    ethereum: EthereumAdapter
+  };
+
+  // ============================================================
+  //  UI + STATE MACHINE
+  // ============================================================
+
+  let currentNetwork = 'bitcoin';
+  let currentSnapshot = null;
+  let refreshTimer = null;
+
+  const el = {
+    statusPill: document.getElementById('statusPill'),
+    statusText: document.getElementById('statusText'),
+    mHeight: document.getElementById('mHeight'),
+    mTx: document.getElementById('mTx'),
+    mFee: document.getElementById('mFee'),
+    mMempool: document.getElementById('mMempool'),
+    mAge: document.getElementById('mAge'),
+    proofPre: document.getElementById('proofPre'),
+    inspectorBody: document.getElementById('inspectorBody'),
+    inspectorNetwork: document.getElementById('inspectorNetwork')
+  };
+
+  function setStatus(status) {
+    el.statusPill.className = 'status-pill ' + status.toLowerCase();
+    el.statusText.textContent = status;
+  }
+
+  function formatAge(ms) {
+    if (ms == null) return '—';
+    const s = Math.round(ms / 1000);
+    if (s < 5) return 'just now';
+    if (s < 60) return s + 's ago';
+    const m = Math.floor(s / 60);
+    return m + 'm ago';
+  }
+
+  function renderMetrics(snap) {
+    if (!snap) {
+      el.mHeight.textContent = '—';
+      el.mTx.textContent = '—';
+      el.mFee.textContent = '—';
+      if (el.mMempool) el.mMempool.textContent = '—';
+      el.mAge.textContent = '—';
+      return;
+    }
+    el.mHeight.textContent = snap.height != null ? snap.height.toLocaleString() : '—';
+    el.mTx.textContent = snap.txCount != null ? snap.txCount.toLocaleString() : '—';
+    el.mFee.textContent = snap.feeEstimate != null ? snap.feeEstimate + ' sat/vB' : '—';
+    if (el.mMempool) {
+      el.mMempool.textContent = (snap.mempool && snap.mempool.count != null)
+        ? snap.mempool.count.toLocaleString()
+        : '—';
+    }
+    el.mAge.textContent = formatAge(Date.now() - snap.fetchedAt);
+  }
+
+  function renderProof(snap) {
+    // Pretty-print the exact object the 3D layer will later consume
+    const pretty = JSON.stringify(snap, null, 2);
+    el.proofPre.textContent = pretty;
+  }
+
+  function renderInspector(snap) {
+    if (!snap) {
+      el.inspectorBody.innerHTML = '<p class="empty">No data yet.</p>';
+      return;
+    }
+
+    const badge = snap.synthetic
+      ? '<span style="color:var(--demo)">DEMO / synthetic</span>'
+      : (snap.stale
+          ? '<span style="color:var(--degraded)">Real (stale)</span>'
+          : '<span style="color:var(--live)">Real</span>');
+
+    el.inspectorBody.innerHTML = `
+      <div class="kv"><span class="k">Network</span><span class="v">${snap.network}</span></div>
+      <div class="kv"><span class="k">Data</span><span class="v">${badge}</span></div>
+      <div class="kv"><span class="k">Source</span><span class="v">${snap.source}</span></div>
+      <div class="kv"><span class="k">Height</span><span class="v">${snap.height != null ? snap.height.toLocaleString() : '—'}</span></div>
+      <div class="kv"><span class="k">Hash</span><span class="v hash">${snap.hash || '—'}</span></div>
+      <div class="kv"><span class="k">Transactions</span><span class="v">${snap.txCount != null ? snap.txCount.toLocaleString() : '—'}</span></div>
+      <div class="kv"><span class="k">Fee (half-hour)</span><span class="v">${snap.feeEstimate != null ? snap.feeEstimate + ' sat/vB' : '—'}</span></div>
+      <div class="kv"><span class="k">Block time</span><span class="v">${snap.dataTimestamp ? new Date(snap.dataTimestamp).toLocaleString() : '—'}</span></div>
+      <div class="kv"><span class="k">Fetched</span><span class="v">${new Date(snap.fetchedAt).toLocaleTimeString()}</span></div>
+      ${snap.error ? `<div class="kv"><span class="k">Last error</span><span class="v" style="color:var(--danger)">${snap.error}</span></div>` : ''}
+    `;
+  }
+
+  async function refresh() {
+    const adapter = adapters[currentNetwork];
+    if (!adapter) return;
+
+    // Only show CONNECTING on the very first load or after a full reset
+    if (!currentSnapshot) setStatus('CONNECTING');
+
+    try {
+      const snap = await adapter.getSnapshot();
+      currentSnapshot = snap;
+
+      // Derive final UI status from the snapshot itself
+      if (snap.synthetic) {
+        setStatus('DEMO');
+      } else if (snap.stale || snap.error) {
+        setStatus('DEGRADED');
+      } else {
+        setStatus('LIVE');
+      }
+
+      renderMetrics(snap);
+      renderProof(snap);
+      renderInspector(snap);
+      if (window.BlockRenderer) window.BlockRenderer.update(snap);
+    } catch (err) {
+      console.error('Refresh failed', err);
+      setStatus('DEMO');
+    }
+  }
+
+  function startPolling() {
+    if (refreshTimer) clearInterval(refreshTimer);
+    // Bitcoin blocks ~10 min; poll every 25s is plenty for tip height
+    // When tab is hidden, slow to 90s to reduce background work
+    const interval = document.hidden ? 90_000 : 25_000;
+    refreshTimer = setInterval(refresh, interval);
+  }
+
+  // Tab visibility: back off polling + let rAF naturally pause
+  document.addEventListener('visibilitychange', () => {
+    startPolling();
+    if (!document.hidden) {
+      // Resume: refresh once so UI is current
+      refresh();
+    }
+  });
+
+  // Offline / online recovery without full page reload
+  window.addEventListener('offline', () => {
+    if (currentSnapshot && !currentSnapshot.synthetic) {
+      setStatus('DEGRADED');
+    } else {
+      setStatus('DEMO');
+    }
+  });
+  window.addEventListener('online', () => {
+    refresh();
+  });
+
+  // Network switcher (only Bitcoin is live for Phase 1)
+  document.querySelectorAll('.network-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (btn.disabled) return;
+      document.querySelectorAll('.network-btn').forEach(b => {
+        b.classList.toggle('active', b === btn);
+        b.setAttribute('aria-selected', b === btn ? 'true' : 'false');
+      });
+      currentNetwork = btn.dataset.network;
+      el.inspectorNetwork.textContent = currentNetwork.charAt(0).toUpperCase() + currentNetwork.slice(1);
+      currentSnapshot = null;
+      refresh();
+    });
+  });
+
+  // Age ticker (so "Updated Xs ago" stays fresh without new network calls)
+  setInterval(() => {
+    if (currentSnapshot) {
+      el.mAge.textContent = formatAge(Date.now() - currentSnapshot.fetchedAt);
+    }
+  }, 1000);
+
+  // ============================================================
+  //  MINIMAL THREE.JS RENDERER
+  //  Consumes the normalized snapshot only. No network calls.
+  // ============================================================
+  const BlockRenderer = (() => {
+    if (typeof THREE === 'undefined') {
+      console.error('Three.js failed to load');
+      return { update() {} };
+    }
+
+    const canvas = document.getElementById('scene');
+    const wrap = canvas.parentElement;
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x0a0c12);
+
+    const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 500);
+    camera.position.set(0, 6, 18);
+
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.setSize(1, 1);
+
+    // Restrained lighting
+    scene.add(new THREE.AmbientLight(0xffffff, 0.62));
+    const dir = new THREE.DirectionalLight(0xfff0dd, 0.95);
+    dir.position.set(4, 14, 10);
+    scene.add(dir);
+    const fill = new THREE.DirectionalLight(0x88aaff, 0.28);
+    fill.position.set(-8, 6, -4);
+    scene.add(fill);
+    // Soft tip glow (follows newest block area)
+    const tipLight = new THREE.PointLight(0xf7931a, 0.55, 18, 2);
+    tipLight.position.set(-12, 3, 4);
+    scene.add(tipLight);
+    window.__tipLight = tipLight;
+
+    // Shared geometries / materials (reused)
+    const boxGeo = new THREE.BoxGeometry(2.2, 1.4, 2.2);
+    const edgeGeo = new THREE.EdgesGeometry(boxGeo);
+    const matLive = new THREE.MeshStandardMaterial({ color: 0xf7931a, metalness: 0.18, roughness: 0.42, emissive: 0x4a2800, emissiveIntensity: 0.28 });
+    const matLiveTop = new THREE.MeshStandardMaterial({ color: 0xffc266, metalness: 0.22, roughness: 0.32, emissive: 0x6b3a00, emissiveIntensity: 0.42 });
+    const matDemo = new THREE.MeshStandardMaterial({ color: 0x3b82f6, metalness: 0.12, roughness: 0.55, emissive: 0x0a1a40, emissiveIntensity: 0.22 });
+    const matEdge = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.22 });
+    const matLink = new THREE.LineBasicMaterial({ color: 0x94a3b8, transparent: true, opacity: 0.55 });
+    const matHover = new THREE.MeshStandardMaterial({ color: 0xffe4b5, metalness: 0.08, roughness: 0.3, emissive: 0x665533, emissiveIntensity: 0.35 });
+    const matSelected = new THREE.MeshStandardMaterial({ color: 0x34d399, metalness: 0.18, roughness: 0.35, emissive: 0x0d4a2a, emissiveIntensity: 0.45 });
+
+    const blockGroup = new THREE.Group();
+    scene.add(blockGroup);
+
+    const linkGroup = new THREE.Group();
+    scene.add(linkGroup);
+
+    // Mempool activity cloud (informative, not decorative noise)
+    const mempoolGroup = new THREE.Group();
+    scene.add(mempoolGroup);
+    let mempoolPoints = null;
+    let mempoolPositions = null;
+    let mempoolCount = 0;
+
+    // Simple orbit state — frontal view of the chain
+    let target = new THREE.Vector3(0, 0.6, 0);
+    let spherical = { radius: 22, phi: 1.25, theta: 0.15 };
+    let isDragging = false;
+    let prevX = 0, prevY = 0;
+    let selectedMesh = null;
+    let hoveredMesh = null;
+    const raycaster = new THREE.Raycaster();
+    const pointer = new THREE.Vector2();
+    const meshToBlock = new Map();
+
+    // Dev debug
+    let frameCount = 0;
+    let lastFpsTime = performance.now();
+    let fps = 0;
+    const debugEl = document.createElement('div');
+    debugEl.style.cssText = 'position:absolute;left:10px;bottom:10px;font:11px ui-monospace,monospace;color:#64748b;pointer-events:none;z-index:5;';
+    wrap.appendChild(debugEl);
+
+    function disposeGroup(group) {
+      // Proper Three.js cleanup
+      const children = [...group.children];
+      for (const obj of children) {
+        group.remove(obj);
+        if (obj.geometry && obj.geometry !== boxGeo && obj.geometry !== edgeGeo) {
+          obj.geometry.dispose();
+        }
+      }
+    }
+
+    function updateCamera() {
+      const x = spherical.radius * Math.sin(spherical.phi) * Math.sin(spherical.theta);
+      const y = spherical.radius * Math.cos(spherical.phi);
+      const z = spherical.radius * Math.sin(spherical.phi) * Math.cos(spherical.theta);
+      camera.position.set(target.x + x, target.y + y, target.z + z);
+      camera.lookAt(target);
+    }
+
+    function resize() {
+      // Prefer real layout size; fall back so we never render into a 0×0 canvas
+      const w = Math.max(wrap.clientWidth || 0, 400);
+      const h = Math.max(wrap.clientHeight || 0, 360);
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+      renderer.setSize(w, h, false);
+      canvas.style.width = '100%';
+      canvas.style.height = '100%';
+    }
+
+    function onPointerDown(e) {
+      isDragging = true;
+      prevX = e.clientX;
+      prevY = e.clientY;
+    }
+    function onPointerMove(e) {
+      const rect = canvas.getBoundingClientRect();
+      pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+
+      if (isDragging) {
+        const dx = e.clientX - prevX;
+        const dy = e.clientY - prevY;
+        spherical.theta -= dx * 0.008;
+        spherical.phi = Math.max(0.25, Math.min(Math.PI - 0.25, spherical.phi + dy * 0.008));
+        prevX = e.clientX;
+        prevY = e.clientY;
+        return;
+      }
+
+      // Hover
+      raycaster.setFromCamera(pointer, camera);
+      const hits = raycaster.intersectObjects(blockGroup.children, false);
+      const hit = hits.find(h => h.object.userData && h.object.userData.isBlock);
+      if (hoveredMesh && hoveredMesh !== selectedMesh) {
+        hoveredMesh.material = hoveredMesh.userData.baseMat;
+      }
+      hoveredMesh = hit ? hit.object : null;
+      if (hoveredMesh && hoveredMesh !== selectedMesh) {
+        hoveredMesh.material = matHover;
+      }
+      canvas.style.cursor = hit ? 'pointer' : 'grab';
+    }
+    function onPointerUp(e) {
+      isDragging = false;
+      raycaster.setFromCamera(pointer, camera);
+      const hits = raycaster.intersectObjects(blockGroup.children, false);
+      const hit = hits.find(h => h.object.userData && h.object.userData.isBlock);
+      if (hit) {
+        const hash = hit.object.userData.hash;
+        selectByHash(hash);
+        window.__srCameraLocked = true; // user is interacting — stop auto-framing
+      }
+    }
+    function onWheel(e) {
+      e.preventDefault();
+      spherical.radius = Math.max(8, Math.min(60, spherical.radius + e.deltaY * 0.04));
+    }
+
+    canvas.addEventListener('pointerdown', onPointerDown);
+    window.addEventListener('pointermove', onPointerMove);
+    window.addEventListener('pointerup', onPointerUp);
+    canvas.addEventListener('wheel', onWheel, { passive: false });
+    window.addEventListener('resize', resize);
+
+    // Touch
+    canvas.addEventListener('touchstart', (e) => {
+      if (e.touches.length === 1) {
+        isDragging = true;
+        prevX = e.touches[0].clientX;
+        prevY = e.touches[0].clientY;
+      }
+    }, { passive: true });
+    canvas.addEventListener('touchmove', (e) => {
+      if (!isDragging || e.touches.length !== 1) return;
+      const dx = e.touches[0].clientX - prevX;
+      const dy = e.touches[0].clientY - prevY;
+      spherical.theta -= dx * 0.01;
+      spherical.phi = Math.max(0.25, Math.min(Math.PI - 0.25, spherical.phi + dy * 0.01));
+      prevX = e.touches[0].clientX;
+      prevY = e.touches[0].clientY;
+    }, { passive: true });
+    canvas.addEventListener('touchend', () => { isDragging = false; });
+
+    // Stable identity: hash → mesh
+    const meshByHash = new Map();
+    let selectedHash = null;
+
+    function selectByHash(hash) {
+      // Clear previous selection visual
+      if (selectedMesh) {
+        selectedMesh.material = selectedMesh.userData.baseMat;
+        selectedMesh = null;
+      }
+      selectedHash = hash || null;
+      if (!hash) return;
+
+      const mesh = meshByHash.get(hash);
+      if (!mesh) {
+        // Selected block left the window — fall back to newest if available
+        const first = blockGroup.children.find(c => c.userData && c.userData.isBlock);
+        if (first) {
+          selectedHash = first.userData.hash;
+          selectedMesh = first;
+          selectedMesh.material = matSelected;
+          const block = meshToBlock.get(selectedMesh);
+          if (block) showBlockInInspector(block);
+        } else {
+          selectedHash = null;
+        }
+        return;
+      }
+      selectedMesh = mesh;
+      selectedMesh.material = matSelected;
+      const block = meshToBlock.get(mesh);
+      if (block) showBlockInInspector(block);
+    }
+
+    function showBlockInInspector(block) {
+      const snapLike = {
+        network: currentSnapshot?.network || 'bitcoin',
+        source: block.source,
+        fetchedAt: currentSnapshot?.fetchedAt || Date.now(),
+        dataTimestamp: block.timestamp,
+        synthetic: !!block.synthetic,
+        stale: currentSnapshot?.stale || false,
+        height: block.height,
+        hash: block.hash,
+        txCount: block.txCount,
+        feeEstimate: currentSnapshot?.feeEstimate ?? null,
+        error: null
+      };
+      renderInspector(snapLike);
+    }
+
+    function buildScene(snap) {
+      const blocks = Array.isArray(snap.blocks) ? snap.blocks : [];
+      const incomingHashes = new Set(blocks.map(b => b.hash));
+
+      // Remove meshes for blocks that left the window
+      for (const [hash, mesh] of [...meshByHash.entries()]) {
+        if (!incomingHashes.has(hash)) {
+          blockGroup.remove(mesh);
+          // Also remove its edge line if we stored a reference
+          if (mesh.userData.edge) {
+            blockGroup.remove(mesh.userData.edge);
+          }
+          meshByHash.delete(hash);
+          meshToBlock.delete(mesh);
+        }
+      }
+
+      // Clear old link lines (cheap; rebuilt each time)
+      disposeGroup(linkGroup);
+
+      if (blocks.length === 0) {
+        selectedMesh = null;
+        selectedHash = null;
+        return;
+      }
+
+      const spacing = 3.6;
+      const startX = -((blocks.length - 1) * spacing) / 2;
+      const positions = [];
+
+      blocks.forEach((b, i) => {
+        const x = startX + i * spacing;
+        const isNewest = i === 0;
+        const baseMat = b.synthetic ? matDemo : (isNewest ? matLiveTop : matLive);
+        const scaleY = b.synthetic ? 1 : Math.min(1.8, 0.7 + (b.txCount || 0) / 8000);
+        const y = (scaleY - 1) * 0.55;
+
+        let mesh = meshByHash.get(b.hash);
+        if (mesh) {
+          // Update existing mesh in place (preserve identity) — targets drive soft lerp
+          mesh.userData.baseMat = baseMat;
+          mesh.userData.index = i;
+          mesh.userData.hash = b.hash;
+          mesh.userData.targetX = x;
+          mesh.userData.targetY = y;
+          mesh.userData.targetScaleY = scaleY;
+          if (mesh !== selectedMesh) mesh.material = baseMat;
+          meshToBlock.set(mesh, b);
+        } else {
+          // Create new mesh with arrival animation (scale + slight lift)
+          mesh = new THREE.Mesh(boxGeo, baseMat);
+          mesh.position.set(x, y + 1.2, 0);
+          mesh.scale.set(0.05, 0.05, 0.05);
+          mesh.userData = {
+            isBlock: true,
+            baseMat,
+            index: i,
+            hash: b.hash,
+            // Arrival animation state
+            arriving: true,
+            arriveT: 0,
+            targetY: y,
+            targetScaleY: scaleY,
+            startX: x,
+            targetX: x
+          };
+          blockGroup.add(mesh);
+          meshByHash.set(b.hash, mesh);
+          meshToBlock.set(mesh, b);
+
+          const edges = new THREE.LineSegments(edgeGeo, matEdge);
+          edges.position.copy(mesh.position);
+          edges.scale.copy(mesh.scale);
+          blockGroup.add(edges);
+          mesh.userData.edge = edges;
+        }
+
+        // Smooth position shift for existing blocks (when chain slides)
+        if (mesh.userData && !mesh.userData.arriving) {
+          mesh.userData.targetX = x;
+          mesh.userData.targetY = y;
+          mesh.userData.targetScaleY = scaleY;
+          if (mesh.userData.targetX === undefined) {
+            mesh.position.x = x;
+          }
+        }
+        positions.push(new THREE.Vector3(x, 0, 0));
+      });
+
+      // Connecting lines
+      for (let i = 0; i < positions.length - 1; i++) {
+        const pts = [positions[i], positions[i + 1]];
+        const geo = new THREE.BufferGeometry().setFromPoints(pts);
+        const line = new THREE.Line(geo, matLink);
+        linkGroup.add(line);
+      }
+
+      // Re-apply selection by hash (survives updates)
+      if (selectedHash && meshByHash.has(selectedHash)) {
+        selectByHash(selectedHash);
+      } else if (selectedHash && !meshByHash.has(selectedHash)) {
+        // Block left the window → select newest
+        selectByHash(blocks[0].hash);
+      }
+
+      // Gentle camera framing (only on first load or large changes)
+      target.set(0, 0.6, 0);
+      if (!window.__srCameraLocked) {
+        spherical.radius = Math.max(16, Math.min(32, blocks.length * 2.4));
+        spherical.phi = 1.25;
+        spherical.theta = 0.15;
+      }
+      // Tip glow follows newest block
+      if (window.__tipLight && positions.length) {
+        window.__tipLight.position.set(positions[0].x, 2.5, 3);
+      }
+
+      // Mempool cloud — density reflects pending tx pressure
+      updateMempoolCloud(snap, positions[0] || new THREE.Vector3(0, 0, 0));
+    }
+
+    function updateMempoolCloud(snap, tipPos) {
+      // Clear previous
+      while (mempoolGroup.children.length) {
+        const c = mempoolGroup.children.pop();
+        mempoolGroup.remove(c);
+        if (c.geometry) c.geometry.dispose();
+      }
+      mempoolPoints = null;
+      mempoolPositions = null;
+
+      if (snap.synthetic || !snap.mempool || !snap.mempool.count) return;
+
+      // Scale particle count by pending txs (capped for performance)
+      const pending = snap.mempool.count;
+      const particleCount = Math.min(120, Math.max(12, Math.floor(pending / 800)));
+      mempoolCount = particleCount;
+
+      const positions = new Float32Array(particleCount * 3);
+      const colors = new Float32Array(particleCount * 3);
+      // Fee pressure: higher fee → warmer color
+      const fee = snap.feeEstimate || 1;
+      const feeT = Math.min(1, fee / 20); // 0–20 sat/vB maps to cool→warm
+
+      for (let i = 0; i < particleCount; i++) {
+        // Cloud clustered just before the tip (waiting to confirm)
+        const angle = Math.random() * Math.PI * 2;
+        const radius = 1.5 + Math.random() * 3.5;
+        const height = (Math.random() - 0.5) * 3.5;
+        positions[i * 3]     = tipPos.x - 4.5 + Math.cos(angle) * radius * 0.4;
+        positions[i * 3 + 1] = height + 1.2;
+        positions[i * 3 + 2] = Math.sin(angle) * radius;
+
+        // Color: cool blue (low fee) → orange (high fee)
+        colors[i * 3]     = 0.2 + feeT * 0.7;
+        colors[i * 3 + 1] = 0.35 + (1 - feeT) * 0.25;
+        colors[i * 3 + 2] = 0.85 - feeT * 0.7;
+      }
+
+      const geo = new THREE.BufferGeometry();
+      geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+      mempoolPositions = positions;
+
+      const mat = new THREE.PointsMaterial({
+        size: 0.18,
+        vertexColors: true,
+        transparent: true,
+        opacity: 0.75,
+        depthWrite: false,
+        sizeAttenuation: true
+      });
+      mempoolPoints = new THREE.Points(geo, mat);
+      mempoolGroup.add(mempoolPoints);
+    }
+
+    function update(snap) {
+      if (!snap) return;
+      buildScene(snap);
+      resize();
+      updateCamera();
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+
+      // Arrival animation + soft position/scale lerp (keeps hash-stable meshes)
+      const dt = 0.016;
+      for (const mesh of blockGroup.children) {
+        if (!mesh.userData || !mesh.userData.isBlock) continue;
+        const u = mesh.userData;
+
+        if (u.arriving) {
+          u.arriveT = Math.min(1, (u.arriveT || 0) + dt * 1.8);
+          const t = 1 - Math.pow(1 - u.arriveT, 3); // ease-out cubic
+          const sY = u.targetScaleY || 1;
+          mesh.scale.set(t, t * sY, t);
+          mesh.position.y = (u.targetY || 0) + (1 - t) * 1.2;
+          if (u.targetX != null) mesh.position.x = u.targetX;
+          if (u.edge) {
+            u.edge.scale.copy(mesh.scale);
+            u.edge.position.copy(mesh.position);
+          }
+          if (u.arriveT >= 1) {
+            u.arriving = false;
+            mesh.scale.set(1, sY, 1);
+            mesh.position.y = u.targetY || 0;
+          }
+        } else {
+          if (u.targetX != null) mesh.position.x += (u.targetX - mesh.position.x) * 0.12;
+          if (u.targetY != null) mesh.position.y += (u.targetY - mesh.position.y) * 0.12;
+          if (u.targetScaleY != null) {
+            const next = mesh.scale.y + (u.targetScaleY - mesh.scale.y) * 0.12;
+            mesh.scale.set(1, next, 1);
+          }
+          if (u.edge) {
+            u.edge.position.copy(mesh.position);
+            u.edge.scale.copy(mesh.scale);
+          }
+        }
+      }
+
+      // Subtle mempool drift (activity feel without chaos)
+      if (mempoolPoints && mempoolPositions) {
+        const pos = mempoolPoints.geometry.attributes.position;
+        const t = performance.now() * 0.001;
+        for (let i = 0; i < mempoolCount; i++) {
+          const base = i * 3;
+          pos.array[base + 1] = mempoolPositions[base + 1] + Math.sin(t * 1.2 + i * 0.7) * 0.15;
+          pos.array[base + 2] = mempoolPositions[base + 2] + Math.cos(t * 0.9 + i * 0.5) * 0.12;
+        }
+        pos.needsUpdate = true;
+      }
+
+      updateCamera();
+      renderer.render(scene, camera);
+
+      frameCount++;
+      const now = performance.now();
+      if (now - lastFpsTime > 1000) {
+        fps = frameCount;
+        frameCount = 0;
+        lastFpsTime = now;
+        const objs = blockGroup.children.length + linkGroup.children.length + mempoolGroup.children.length;
+        const mem = renderer.info.memory;
+        const mpLabel = currentSnapshot?.mempool?.count
+          ? ` · mempool ${currentSnapshot.mempool.count.toLocaleString()}`
+          : '';
+        debugEl.textContent = `FPS ${fps} · objects ${objs} · geo ${mem.geometries}${mpLabel} · ${currentSnapshot?.synthetic ? 'DEMO' : 'LIVE'}`;
+        window.__threeInfo = {
+          fps,
+          objects: objs,
+          geometries: mem.geometries,
+          textures: mem.textures,
+          calls: renderer.info.render.calls,
+          synthetic: !!currentSnapshot?.synthetic,
+          mempoolCount: currentSnapshot?.mempool?.count ?? null
+        };
+      }
+    }
+
+    resize();
+    // Ensure layout has settled before first size
+    requestAnimationFrame(() => {
+      resize();
+      updateCamera();
+    });
+    setTimeout(() => { resize(); updateCamera(); }, 120);
+
+    animate();
+
+    return { update, getInfo: () => window.__threeInfo };
+  })();
+
+  window.BlockRenderer = BlockRenderer;
+
+  // Proof box toggle (collapsed by default on mobile-friendly layout)
+  (function () {
+    const box = document.getElementById('proofBox');
+    const toggle = document.getElementById('proofToggle');
+    if (box && toggle) {
+      // Start collapsed on narrow screens
+      if (window.matchMedia('(max-width: 900px)').matches) {
+        box.classList.add('collapsed');
+      } else {
+        box.classList.remove('collapsed');
+      }
+      toggle.addEventListener('click', () => {
+        box.classList.toggle('collapsed');
+      });
+    }
+  })();
+
+  // Boot
+  setStatus('CONNECTING');
+  refresh().then(startPolling);
+
+  // Expose for console debugging / verification + reliability tests
+  // Keep only under ?debug=1 or localhost for production later
+  window.__SR = {
+    BitcoinAdapter,
+    getCurrentSnapshot: () => currentSnapshot,
+    forceRefresh: refresh,
+    BlockRenderer,
+    // Force DEMO for state-transition testing
+    forceDemo() {
+      const cached = BitcoinAdapter.getCachedSnapshot();
+      if (!cached || !cached.blocks) {
+        // Pure synthetic if nothing cached
+        const demo = {
+          network: 'bitcoin', source: 'local-demo', fetchedAt: Date.now(),
+          dataTimestamp: Date.now(), synthetic: true, stale: false,
+          height: 900010, hash: '0000000000000000000demoFORCE', txCount: 2100,
+          feeEstimate: 5, error: 'forced demo',
+          blocks: Array.from({length: 8}, (_, i) => ({
+            height: 900010 - i,
+            hash: '0000000000000000000demo' + i + Math.random().toString(16).slice(2,8),
+            txCount: 1500 + i * 100, timestamp: Date.now() - i * 600000,
+            synthetic: true, source: 'local-demo'
+          }))
+        };
+        currentSnapshot = demo;
+        setStatus('DEMO');
+        renderMetrics(demo); renderProof(demo); renderInspector(demo);
+        if (window.BlockRenderer) window.BlockRenderer.update(demo);
+        return;
+      }
+      const demo = {
+        ...cached,
+        synthetic: true,
+        source: 'local-demo',
+        blocks: cached.blocks.map((b, i) => ({
+          ...b,
+          synthetic: true,
+          source: 'local-demo',
+          hash: 'demo' + String(i) + b.hash.slice(5)
+        }))
+      };
+      currentSnapshot = demo;
+      setStatus('DEMO');
+      renderMetrics(demo);
+      renderProof(demo);
+      renderInspector(demo);
+      if (window.BlockRenderer) window.BlockRenderer.update(demo);
+    },
+    forceLive() { refresh(); },
+    // Renderer resource snapshot for memory tests
+    rendererInfo() {
+      try {
+        const r = document.getElementById('scene')?.__threeRenderer
+          || (window.BlockRenderer && window.__threeRenderer);
+        // Access via the closure if needed
+        return window.__threeInfo || 'Open console and inspect after enabling debug';
+      } catch (e) { return String(e); }
+    }
+  };
+  </script>
+</body>
+</html>
