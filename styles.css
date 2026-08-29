@@ -5954,6 +5954,23 @@ body.has-sec-banner {
   text-underline-offset: 2px;
 }
 
+.hero-honest-note {
+  margin: 0;
+  padding: 0.35rem 0.15rem;
+  text-align: center;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.hero-panel-media--copy {
+  aspect-ratio: auto;
+  min-height: 4.5rem;
+  display: flex;
+  align-items: flex-end;
+  background:
+    linear-gradient(135deg, rgba(91, 140, 255, 0.22), rgba(12, 14, 20, 0.4));
+}
+
 .home-rail-section .section-head {
   display: flex;
   justify-content: space-between;

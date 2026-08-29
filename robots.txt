@@ -1,9 +1,15 @@
 # Smart Realty USA — public SEO (domain-config.js seo.index = true)
 User-agent: *
 Allow: /
+Allow: /copy/
+Allow: /advertise/
+Allow: /services/
+Allow: /apps/
 Disallow: /api/
+Disallow: /property/
 Disallow: /account.html
 Disallow: /admin.html
+Disallow: /admin/
 Disallow: /CUSTOM-DOMAIN-WALKTHROUGH.md
 Disallow: /GODADDY-ORGANIZER.md
 Disallow: /GO-LIVE-CHECKLIST.md

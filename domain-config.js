@@ -22,8 +22,8 @@ window.SRU_CONFIG = {
   canonicalHost: "smartrealty.us",
 
   contactEmail: "ai@smartrealty.us",
-  phoneDisplay: "1-800-762-7879",
-  phoneTel: "+18007627879",
+  phoneDisplay: "502-539-1090",
+  phoneTel: "+15025391090",
 
   /**
    * Company identity — match KY Articles exactly.

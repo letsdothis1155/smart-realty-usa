@@ -2235,6 +2235,8 @@ function closeModals() {
 }
 
 function initHeroPanel() {
+  const panel = $("#heroPanel");
+  if (panel && panel.getAttribute("data-locked") === "copy") return;
   const p = PROPERTIES[0];
   if (!p) return;
   if ($("#heroPanelImg")) {
@@ -2950,8 +2952,8 @@ function getConfig() {
       siteUrl: "https://smartrealty.us",
       canonicalHost: "smartrealty.us",
       contactEmail: "ai@smartrealty.us",
-      phoneDisplay: "1-800-762-7879",
-      phoneTel: "+18007627879",
+      phoneDisplay: "502-539-1090",
+      phoneTel: "+15025391090",
       isPrivateDemo: false,
       presenterMode: false,
     }
@@ -2976,8 +2978,8 @@ function applyDomainConfig() {
   $$("[data-contact-email-text]").forEach((el) => {
     el.textContent = email;
   });
-  const phoneDisplay = cfg.phoneDisplay || "1-800-762-7879";
-  const phoneTel = cfg.phoneTel || "+18007627879";
+  const phoneDisplay = cfg.phoneDisplay || "502-539-1090";
+  const phoneTel = cfg.phoneTel || "+15025391090";
   $$("[data-phone]").forEach((el) => {
     el.textContent = phoneDisplay;
   });
@@ -3030,8 +3032,8 @@ function applyDomainConfig() {
       alternateName: cfg.siteName || "Smart Realty USA",
       url: siteUrl || "https://smartrealty.us",
       email,
-      telephone: cfg.phoneTel || "+1-800-762-7879",
-      description: "Kentucky LLC building a transparent home-pricing and Bitcoin-ready checkout platform. Public demo ahead of full brokerage licensing.",
+      telephone: cfg.phoneTel || "+1-502-539-1090",
+      description: "Kentucky LLC. Listing copy and software from Louisville. Not a licensed brokerage.",
       areaServed: "US",
       numberOfEmployees: 1,
       address: cfg.businessAddress
