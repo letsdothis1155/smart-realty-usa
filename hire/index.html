@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Listing copy pack — $150 | Smart Realty</title>
+  <meta name="description" content="Request three listing headlines and an edited property description from Smart Realty in Louisville. Starting quote $150. Scope and delivery confirmed before payment." />
+  <link rel="canonical" href="https://smartrealty.us/hire/" />
+  <meta name="theme-color" content="#0a0c10" />
+  <link rel="stylesheet" href="/styles.css" />
+  <style>
+    .offer { max-width: 1020px; }
+    .offer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: start; margin-top: 2rem; }
+    .offer-price { font-size: 3rem; font-weight: 800; margin: .5rem 0; }
+    .offer li { margin-bottom: .8rem; }
+    .offer-form { padding: 1.5rem; min-width: 0; }
+    .offer-form label { display: block; margin: 1rem 0; }
+    .offer-form input:not([type="checkbox"]), .offer-form textarea { display: block; width: 100%; box-sizing: border-box; padding: .8rem; margin-top: .35rem; border: 1px solid var(--border, #526174); border-radius: 8px; background: #151c26; color: #f4f7fb; font: inherit; }
+    .offer-form input:focus-visible, .offer-form textarea:focus-visible { outline: 2px solid #9ed8f6; outline-offset: 2px; }
+    .offer-form .consent { display: flex; align-items: start; gap: .65rem; font-size: .9rem; }
+    .offer-form .consent input { margin-top: .35rem; flex-shrink: 0; }
+    .offer-status { overflow-wrap: anywhere; margin-top: 1rem; }
+    .offer-status:empty { display: none; }
+    .offer-example { padding: 1.25rem; margin-top: 1.5rem; }
+    .offer .honeypot { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+    .offer small { display: block; line-height: 1.6; }
+    @media (max-width: 760px) { .offer-grid { grid-template-columns: 1fr; gap: 1rem; } }
+  </style>
+</head>
+<body class="legal-page">
+  <header class="legal-header"><div class="container legal-header-inner">
+    <a href="/" class="logo"><span class="logo-mark">SR</span><span class="logo-text"><strong>Smart Realty</strong><small>USA</small></span></a>
+    <nav class="legal-nav" aria-label="Main"><a href="/">Home</a><a href="/hire/" aria-current="page">Listing copy</a><a href="mailto:ai@smartrealty.us">Contact Andrew</a></nav>
+  </div></header>
+  <main class="container legal-main offer" id="main">
+    <p class="eyebrow">Listing copy · Louisville / Kentuckiana</p>
+    <h1>Your property facts. Clearer listing copy.</h1>
+    <p>Send Andrew a short brief. Get headlines and a property description written around the facts you supply, ready for your final review.</p>
+    <div class="offer-grid">
+      <section aria-labelledby="offer-title">
+        <h2 id="offer-title">Listing copy pack</h2>
+        <p class="offer-price">$150</p>
+        <p>Starting quote for one property. Andrew confirms the scope, final price and delivery date before you decide to pay.</p>
+        <ul>
+          <li>Three headline options.</li>
+          <li>One edited property description based on your supplied facts.</li>
+          <li>Copy delivered by email for you to review and publish.</li>
+        </ul>
+        <h2>How your request becomes a job</h2>
+        <ol>
+          <li><strong>Request the pack.</strong> Share your contact details and a brief below.</li>
+          <li><strong>Review the quote.</strong> Andrew confirms the work, timing, any revisions and payment instructions by email.</li>
+          <li><strong>Pay the agreed invoice.</strong> Your request itself does not charge you or book work.</li>
+          <li><strong>Review your copy.</strong> Check every property fact before you publish it.</li>
+        </ol>
+        <div class="glass offer-example">
+          <p class="eyebrow">Illustrative example · not a customer result</p>
+          <p><strong>Facts supplied:</strong> Three bedrooms, two baths, updated kitchen, fenced yard.</p>
+          <p><strong>Sample headline:</strong> Three-bedroom home with an updated kitchen and fenced yard.</p>
+          <small>The free <a href="/copy/">draft workshop</a> produces a template in your browser. The paid service adds Andrew's editing of your supplied brief. Trying the workshop does not place an order.</small>
+        </div>
+      </section>
+      <form class="glass offer-form" id="hireForm" aria-labelledby="request-title">
+        <h2 id="request-title">Request the $150 pack</h2>
+        <p>No account needed. No card or bank details on this form.</p>
+        <label for="hireName">Your name<input id="hireName" name="name" required minlength="2" maxlength="80" autocomplete="name" /></label>
+        <label for="hireEmail">Email for the quote<input id="hireEmail" name="email" type="email" required maxlength="120" autocomplete="email" /></label>
+        <label for="hireCity">Property city (optional)<input id="hireCity" name="city" maxlength="80" autocomplete="address-level2" /></label>
+        <label for="hireBrief">Short job brief<textarea id="hireBrief" name="brief" required maxlength="400" rows="5" aria-describedby="brief-help" placeholder="Property type, confirmed features, and where you plan to use the copy."></textarea></label>
+        <small id="brief-help">Up to 400 characters. Share only the property facts needed for the quote; leave out private documents and financial information.</small>
+        <div class="honeypot" aria-hidden="true"><label>Leave this blank<input id="hireWebsite" name="website" tabindex="-1" autocomplete="off" /></label></div>
+        <label class="consent"><input id="hireConsent" type="checkbox" required /><span>Andrew may contact me about this request. I understand this is copywriting, not a brokerage listing or appraisal. <a href="/privacy.html">Privacy policy</a>.</span></label>
+        <button type="submit" class="btn btn-primary" id="hireSubmit">Request a quote — no charge</button>
+        <p class="offer-status" id="hireStatus" role="status" aria-live="polite" tabindex="-1"></p>
+        <p><a id="hireEmailFallback" href="mailto:ai@smartrealty.us?subject=Listing%20copy%20pack%20request">Prefer email? Contact Andrew</a></p>
+        <noscript><p>This form needs JavaScript. Email <a href="mailto:ai@smartrealty.us?subject=Listing%20copy%20pack%20request">ai@smartrealty.us</a> with your name, city and brief to request a quote.</p></noscript>
+      </form>
+    </div>
+    <p style="margin-top:2rem">Copywriting by SMART REALTY.US LLC. Not a licensed brokerage, appraisal or CMA service. No guarantee of a sale, ranking or traffic. You are responsible for confirming property facts and approving the copy before publication.</p>
+  </main>
+  <footer class="legal-footer container"><a href="/">← Home</a><a href="/privacy.html">Privacy</a><a href="/terms.html">Terms</a><span>© 2026 SMART REALTY.US LLC</span></footer>
+  <script src="/js/hire-request.js?v=1" defer></script>
+</body>
+</html>
