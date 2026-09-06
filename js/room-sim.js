@@ -1,4 +1,4 @@
-import { initRoomBuilder } from "/js/room-builder.js?v=20260824k";
+import { initRoomBuilder } from "/js/room-builder.js?v=20260906a";
 import { reconstructRoom } from "/js/room-pipeline.js?v=20260824j";
 import { CATALOG_TREE, SAMPLE_PRODUCTS, VENDOR_OPTIONS, productsInGroup, money } from "/js/room-catalog.js?v=20260824j";
 
@@ -164,17 +164,25 @@ export async function bootRoomSim() {
   let selected = null;
   let replaceMode = false;
   let listingTitle = "Property";
+  let readyToSave = false;
+  const saveStatus = document.getElementById("simSaveStatus");
+
+  function saveDesign() {
+    if (!readyToSave) return;
+    try {
+      localStorage.setItem(persistKey(listingId), JSON.stringify(builder.exportDesign()));
+      if (saveStatus) saveStatus.textContent = "Saved on this device";
+    } catch {
+      if (saveStatus) saveStatus.textContent = "Storage unavailable · save an image";
+    }
+  }
 
   builder.onBusyChange = (busy) => {
     if (hud.loading) hud.loading.hidden = !busy;
   };
   builder.onRoomChange = () => {
     refreshTotal();
-    try {
-      localStorage.setItem(persistKey(listingId), JSON.stringify(builder.exportDesign()));
-    } catch {
-      /* private mode / quota */
-    }
+    saveDesign();
   };
   builder.onTime = (hour) => {
     if (hud.timeVal) hud.timeVal.textContent = hourLabel(hour);
@@ -247,10 +255,17 @@ export async function bootRoomSim() {
     hud.vendors.innerHTML = VENDOR_OPTIONS.map(
       (v) => `<button type="button" class="${v.id === vendor ? "is-active" : ""}" data-vendor="${esc(v.id)}">${esc(v.label)}</button>`
     ).join("");
-    const items = productsInGroup(group, vendor);
+    const query = document.getElementById("simSearch")?.value.trim().toLowerCase() || "";
+    const sort = document.getElementById("simSort")?.value || "recommended";
+    const items = productsInGroup(group, vendor).filter((p) =>
+      `${p.name} ${p.store}`.toLowerCase().includes(query)
+    );
+    if (sort === "price-low") items.sort((a, b) => a.price - b.price);
+    if (sort === "price-high") items.sort((a, b) => b.price - a.price);
+    document.getElementById("simResultCount").textContent = `${items.length} items`;
     if (!items.length) {
       const vendorLabel = VENDOR_OPTIONS.find((v) => v.id === vendor)?.label || "This vendor";
-      hud.items.innerHTML = `<button class="sim-item" disabled><strong>No ${esc(vendorLabel)} items in this category</strong><small>Try another category or All vendors.</small></button>`;
+      hud.items.innerHTML = `<div class="sim-item"><strong>No matching ${esc(vendorLabel)} items</strong><small>Clear your search or try another category or retailer.</small></div>`;
       return;
     }
     hud.items.innerHTML = items
@@ -266,6 +281,20 @@ export async function bootRoomSim() {
       .join("");
     items.forEach((p) => track("product_impression", { sku: p.sku, category: p.group }));
   }
+
+  document.getElementById("simSearch")?.addEventListener("input", renderCatalog);
+  document.getElementById("simSort")?.addEventListener("change", renderCatalog);
+  document.getElementById("simImage")?.addEventListener("click", () => {
+    try {
+      const link = document.createElement("a");
+      link.href = builder.screenshot();
+      link.download = `smart-realty-${slugify(listingTitle)}-room.png`;
+      link.click();
+      hud.hint.textContent = "Room image downloaded";
+    } catch {
+      hud.hint.textContent = "Image export unavailable for this photo. Try your device’s screenshot controls.";
+    }
+  });
 
   hud.cats.addEventListener("click", (e) => {
     const btn = e.target.closest("[data-dept]");
@@ -324,7 +353,10 @@ export async function bootRoomSim() {
   document.getElementById("simAuto")?.addEventListener("click", () => builder.autoFurnish());
   document.getElementById("simUndo")?.addEventListener("click", () => builder.undoLast());
   document.getElementById("simRedo")?.addEventListener("click", () => builder.redoLast());
-  hud.time?.addEventListener("input", () => builder.setTimeOfDay(Number(hud.time.value)));
+  hud.time?.addEventListener("input", () => {
+    builder.setTimeOfDay(Number(hud.time.value));
+    saveDesign();
+  });
 
   document.getElementById("simPause")?.addEventListener("click", () => {
     const next = !builder.paused;
@@ -516,7 +548,7 @@ export async function bootRoomSim() {
   try {
     const raw = localStorage.getItem(persistKey(listingId));
     const saved = raw ? JSON.parse(raw) : null;
-    if (saved && Array.isArray(saved.items) && saved.items.length) {
+    if (saved && Array.isArray(saved.items)) {
       restored = await builder.loadDesign(saved);
       if (restored && hud.hint) hud.hint.textContent = "Restored your last layout for this listing · AUTO FURNISH to start over";
     }
@@ -533,5 +565,10 @@ export async function bootRoomSim() {
   }
   refreshTotal();
   builder.resize();
-  builder.setTimeOfDay(14);
+  if (!restored) builder.setTimeOfDay(14);
+  document.querySelectorAll("[data-finish]").forEach((btn) => {
+    btn.classList.toggle("is-on", btn.dataset.finish === builder.finish);
+  });
+  readyToSave = true;
+  saveDesign();
 }
