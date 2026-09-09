@@ -961,6 +961,7 @@ export function initRoomBuilder(canvas, options = {}) {
     if (!FINISH_PRESETS[id]) return finishId;
     finishId = id;
     rebuildShell();
+    onChange();
     return finishId;
   }
 
@@ -993,7 +994,9 @@ export function initRoomBuilder(canvas, options = {}) {
 
   function exportDesign() {
     return {
-      reconstruction: { width: roomWidth, depth: roomDepth, height: roomHeight, photoUrl },
+      version: 1,
+      reconstruction: { width: roomWidth, depth: roomDepth, height: roomHeight, photoUrl, finish: finishId },
+      hour,
       items: snapshot(),
       total: roomTotal(),
     };
@@ -1028,7 +1031,9 @@ export function initRoomBuilder(canvas, options = {}) {
 
   async function loadDesign(state) {
     const rows = Array.isArray(state) ? state : state?.items;
-    if (!rows || !rows.length) return false;
+    if (!Array.isArray(rows)) return false;
+    if (state?.reconstruction) rebuildShell(state.reconstruction);
+    if (Number.isFinite(state?.hour)) setTimeOfDay(state.hour);
     await restore(rows);
     return true;
   }

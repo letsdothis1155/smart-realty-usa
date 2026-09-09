@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>3D Room · Shop This Room — SMART REALTY.US LLC</title>
   <meta name="description" content="Walk a property-inspired room, place planning models from Best Buy, IKEA, Wayfair, and Home Depot, and estimate the staged space before buying a home." />
-  <link rel="stylesheet" href="/room-builder/room-sim.css?v=20260824r" />
+  <link rel="stylesheet" href="/room-builder/room-sim.css?v=20260906a" />
   <script src="/domain-config.js"></script>
   <script src="/js/analytics.js"></script>
   <script src="/js/listings.js"></script>
@@ -44,6 +44,8 @@
         <button type="button" class="sim-chip" id="simUndo">UNDO</button>
         <button type="button" class="sim-chip" id="simRedo">REDO</button>
         <button type="button" class="sim-chip" id="simShare">COPY LINK</button>
+        <button type="button" class="sim-chip" id="simImage">SAVE IMAGE</button>
+        <span id="simSaveStatus" role="status">Loading saved room…</span>
         <div class="sim-presets" role="group" aria-label="Room type">
           <button type="button" class="sim-chip is-on" data-room="living">Living</button>
           <button type="button" class="sim-chip" data-room="bedroom">Bedroom</button>
@@ -81,6 +83,15 @@
         <div class="sim-cats" id="simCats"></div>
         <div class="sim-groups" id="simGroups"></div>
         <div class="sim-vendors" id="simVendors" aria-label="Retailer filter"></div>
+        <div class="sim-search-row">
+          <input id="simSearch" type="search" placeholder="Search this category…" aria-label="Search furniture in this category" />
+          <select id="simSort" aria-label="Sort furniture">
+            <option value="recommended">Recommended</option>
+            <option value="price-low">Price: low to high</option>
+            <option value="price-high">Price: high to low</option>
+          </select>
+          <span id="simResultCount" role="status"></span>
+        </div>
         <div class="sim-items" id="simItems"></div>
       </div>
     </div>
@@ -110,7 +121,7 @@
   </div>
   <noscript><p class="sim-loading">JavaScript is required for the interactive 3D room.</p></noscript>
   <script type="module">
-    import("/js/room-sim.js?v=20260824q")
+    import("/js/room-sim.js?v=20260906a")
       .then(({ bootRoomSim }) => bootRoomSim())
       .catch((error) => {
         console.error("Room simulator failed to start", error);
