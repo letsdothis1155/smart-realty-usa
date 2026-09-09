@@ -1,4 +1,4 @@
-import { initRoomBuilder } from "/js/room-builder.js?v=20260906a";
+import { initRoomBuilder } from "/js/room-builder.js?v=20260909a";
 import { reconstructRoom } from "/js/room-pipeline.js?v=20260824j";
 import { CATALOG_TREE, SAMPLE_PRODUCTS, VENDOR_OPTIONS, productsInGroup, money } from "/js/room-catalog.js?v=20260824j";
 
@@ -182,6 +182,9 @@ export async function bootRoomSim() {
   };
   builder.onRoomChange = () => {
     refreshTotal();
+    document.querySelectorAll("[data-finish]").forEach((btn) => {
+      btn.classList.toggle("is-on", btn.dataset.finish === builder.finish);
+    });
     saveDesign();
   };
   builder.onTime = (hour) => {
@@ -350,6 +353,31 @@ export async function bootRoomSim() {
     });
   });
   document.getElementById("simReset")?.addEventListener("click", () => builder.resetRoom());
+  document.getElementById("simEmpty")?.addEventListener("click", () => {
+    builder.clearRoom();
+    hud.hint.textContent = "Room cleared · Undo restores your furniture";
+  });
+  const sizeDialog = document.getElementById("simSizeDialog");
+  const sizeForm = document.getElementById("simSizeForm");
+  document.getElementById("simDimensions")?.addEventListener("click", () => {
+    const room = builder.exportDesign().reconstruction;
+    for (const key of ["width", "depth", "height"]) {
+      sizeForm.elements[key].value = (room[key] / 0.3048).toFixed(1);
+    }
+    document.getElementById("simSizeError").textContent = "";
+    sizeDialog.showModal();
+  });
+  document.getElementById("simSizeCancel")?.addEventListener("click", () => sizeDialog.close());
+  sizeForm?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const values = ["width", "depth", "height"].map((key) => Number(sizeForm.elements[key].value) * 0.3048);
+    if (!builder.setRoomDimensions(...values)) {
+      document.getElementById("simSizeError").textContent = "Enter dimensions within the listed limits.";
+      return;
+    }
+    sizeDialog.close();
+    hud.hint.textContent = "Room resized · check furniture clearance · Undo restores the previous size";
+  });
   document.getElementById("simAuto")?.addEventListener("click", () => builder.autoFurnish());
   document.getElementById("simUndo")?.addEventListener("click", () => builder.undoLast());
   document.getElementById("simRedo")?.addEventListener("click", () => builder.redoLast());
