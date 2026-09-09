@@ -39,7 +39,7 @@
       text || "",
       "",
       "I understand this is copywriting, not a brokerage listing, appraisal, or guaranteed sale.",
-      "Pay off-site after Andrew invoices. No cards on the website.",
+      "I can pay securely by Stripe at https://buy.stripe.com/7sY9AVdfx0edbKqfhTebu00.",
     ]
       .filter((line, i, arr) => line !== "" || arr[i - 1] !== "")
       .join("\n");
