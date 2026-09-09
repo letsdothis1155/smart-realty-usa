@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>3D Room · Shop This Room — SMART REALTY.US LLC</title>
   <meta name="description" content="Walk a property-inspired room, place planning models from Best Buy, IKEA, Wayfair, and Home Depot, and estimate the staged space before buying a home." />
-  <link rel="stylesheet" href="/room-builder/room-sim.css?v=20260906a" />
+  <link rel="stylesheet" href="/room-builder/room-sim.css?v=20260909a" />
   <script src="/domain-config.js"></script>
   <script src="/js/analytics.js"></script>
   <script src="/js/listings.js"></script>
@@ -41,6 +41,8 @@
         <div class="sim-total">Planning total <strong id="simTotalValue">~$0</strong></div>
         <button type="button" class="sim-chip" id="simBuyRoom">SHOP THIS ROOM</button>
         <button type="button" class="sim-chip" id="simAuto">✨ AUTO FURNISH</button>
+        <button type="button" class="sim-chip" id="simEmpty">EMPTY ROOM</button>
+        <button type="button" class="sim-chip" id="simDimensions">ROOM SIZE</button>
         <button type="button" class="sim-chip" id="simUndo">UNDO</button>
         <button type="button" class="sim-chip" id="simRedo">REDO</button>
         <button type="button" class="sim-chip" id="simShare">COPY LINK</button>
@@ -109,6 +111,20 @@
       </div>
     </div>
     <div class="sim-loading" id="simLoading" hidden>LOADING 3D</div>
+    <dialog id="simSizeDialog" class="sim-size-dialog" aria-labelledby="simSizeTitle">
+      <form id="simSizeForm">
+        <h2 id="simSizeTitle">Size your room</h2>
+        <p>Enter your measurements in feet. Furniture keeps its size and moves proportionally with the room.</p>
+        <label>Width (ft)<input name="width" type="number" min="6.6" max="49" step="0.1" required /></label>
+        <label>Depth (ft)<input name="depth" type="number" min="6.6" max="49" step="0.1" required /></label>
+        <label>Ceiling (ft)<input name="height" type="number" min="6.6" max="19.6" step="0.1" required /></label>
+        <p id="simSizeError" role="alert"></p>
+        <div class="sim-actions">
+          <button type="submit">Apply dimensions</button>
+          <button type="button" id="simSizeCancel">Cancel</button>
+        </div>
+      </form>
+    </dialog>
     <div class="sim-sheet" id="simSheet" hidden>
       <div class="sim-sheet-card">
         <h2>Shop this room</h2>
@@ -121,7 +137,7 @@
   </div>
   <noscript><p class="sim-loading">JavaScript is required for the interactive 3D room.</p></noscript>
   <script type="module">
-    import("/js/room-sim.js?v=20260906a")
+    import("/js/room-sim.js?v=20260909a")
       .then(({ bootRoomSim }) => bootRoomSim())
       .catch((error) => {
         console.error("Room simulator failed to start", error);
