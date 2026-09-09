@@ -452,7 +452,7 @@ export function initRoomBuilder(canvas, options = {}) {
   }
 
   function pushUndo() {
-    undo.push(snapshot());
+    undo.push(exportDesign());
     if (undo.length > 50) undo.shift();
     redo.length = 0;
   }
@@ -729,14 +729,14 @@ export function initRoomBuilder(canvas, options = {}) {
 
   async function undoLast() {
     if (!undo.length) return;
-    redo.push(snapshot());
-    await restore(undo.pop());
+    redo.push(exportDesign());
+    await loadDesign(undo.pop());
   }
 
   async function redoLast() {
     if (!redo.length) return;
-    undo.push(snapshot());
-    await restore(redo.pop());
+    undo.push(exportDesign());
+    await loadDesign(redo.pop());
   }
 
   function pointerToRay(event) {
@@ -959,6 +959,7 @@ export function initRoomBuilder(canvas, options = {}) {
 
   function setFinish(id) {
     if (!FINISH_PRESETS[id]) return finishId;
+    pushUndo();
     finishId = id;
     rebuildShell();
     onChange();
@@ -969,6 +970,29 @@ export function initRoomBuilder(canvas, options = {}) {
     const preset = ROOM_PRESETS[id] || ROOM_PRESETS.living;
     rebuildShell(preset);
     return preset;
+  }
+
+  function setRoomDimensions(width, depth, height) {
+    if (![width, depth, height].every(Number.isFinite) ||
+        width < 2 || width > 15 || depth < 2 || depth > 15 || height < 2 || height > 6) return false;
+    pushUndo();
+    const sx = width / roomWidth;
+    const sz = depth / roomDepth;
+    for (const mesh of items.values()) {
+      mesh.position.x *= sx;
+      mesh.position.z *= sz;
+    }
+    rebuildShell({ width, depth, height });
+    onChange();
+    return true;
+  }
+
+  function clearRoom() {
+    pushUndo();
+    cancelPlace();
+    for (const id of [...items.keys()]) removeItem(id, true);
+    selectItem(null);
+    onChange();
   }
 
   function screenshot() {
@@ -1083,6 +1107,8 @@ export function initRoomBuilder(canvas, options = {}) {
       return finishId;
     },
     applyRoomPreset,
+    setRoomDimensions,
+    clearRoom,
     dispose() {
       cancelAnimationFrame(rafId);
       clearGhost();
