@@ -134,6 +134,8 @@ export function initRoomBuilder(canvas, options = {}) {
   const roomRoot = new THREE.Group();
   const shellGroup = new THREE.Group();
   const itemsGroup = new THREE.Group();
+  const measurementGroup = new THREE.Group();
+  roomRoot.add(measurementGroup);
   roomRoot.add(shellGroup);
   roomRoot.add(itemsGroup);
   scene.add(roomRoot);
@@ -213,6 +215,43 @@ export function initRoomBuilder(canvas, options = {}) {
     frame.rotation.y = 0;
     shellGroup.add(frame);
     listingPhotoMeshes.push(frame);
+  }
+
+  function rebuildMeasurements() {
+    disposeObjectResources(measurementGroup, { geometries: true });
+    measurementGroup.clear();
+    const points = [];
+    const line = (x1, z1, x2, z2) => points.push(x1, 0.018, z1, x2, 0.018, z2);
+    // One-foot spacing, anchored at the west and north room edges.
+    for (let x = -roomWidth / 2; x <= roomWidth / 2; x += 0.3048) line(x, -roomDepth / 2, x, roomDepth / 2);
+    for (let z = -roomDepth / 2; z <= roomDepth / 2; z += 0.3048) line(-roomWidth / 2, z, roomWidth / 2, z);
+    line(roomWidth / 2, -roomDepth / 2, roomWidth / 2, roomDepth / 2);
+    line(-roomWidth / 2, roomDepth / 2, roomWidth / 2, roomDepth / 2);
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute("position", new THREE.Float32BufferAttribute(points, 3));
+    measurementGroup.add(new THREE.LineSegments(geometry,
+      new THREE.LineBasicMaterial({ color: "#294d48", transparent: true, opacity: 0.45 })));
+    function label(text, x, z) {
+      const surface = document.createElement("canvas");
+      surface.width = 512;
+      surface.height = 96;
+      const ctx = surface.getContext("2d");
+      ctx.fillStyle = "#17251f";
+      ctx.fillRect(0, 0, 512, 96);
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 36px sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(text, 256, 48);
+      const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(surface), depthTest: false }));
+      sprite.position.set(x, 0.06, z);
+      sprite.scale.set(2.6, 0.49, 1);
+      sprite.renderOrder = 10;
+      measurementGroup.add(sprite);
+    }
+    label(`Width ${(roomWidth / 0.3048).toFixed(1)} ft`, 0, roomDepth / 2 + 0.5);
+    label(`Depth ${(roomDepth / 0.3048).toFixed(1)} ft`, 0, -roomDepth / 2 - 0.5);
+    measurementGroup.visible = mode === "plan";
   }
 
   function rebuildShell(opts = {}) {
@@ -340,6 +379,7 @@ export function initRoomBuilder(canvas, options = {}) {
     applyCutaway(cutaway);
     setTimeOfDay(hour);
     if (pendingListingPhotos.length) mountListingPhotos(pendingListingPhotos);
+    rebuildMeasurements();
   }
 
   function applyCutaway(on) {
@@ -376,6 +416,7 @@ export function initRoomBuilder(canvas, options = {}) {
     camera = next === "plan" ? planCamera : perspectiveCamera;
     scene.add(camera);
     controls.object = camera;
+    measurementGroup.visible = next === "plan";
     scene.fog.near = next === "plan" ? 60 : 16;
     scene.fog.far = next === "plan" ? 80 : 36;
     controls.enableRotate = next !== "plan";
@@ -1152,6 +1193,7 @@ export function initRoomBuilder(canvas, options = {}) {
         geometries: true,
         retainedTextures: new Set([floorTex, wallTex]),
       });
+      disposeObjectResources(measurementGroup, { geometries: true });
       while (shellGroup.children.length) shellGroup.remove(shellGroup.children[0]);
       floorTex.dispose();
       wallTex.dispose();
