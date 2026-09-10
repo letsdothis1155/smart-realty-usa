@@ -1,4 +1,4 @@
-import { initRoomBuilder } from "/js/room-builder.js?v=20260909a";
+import { initRoomBuilder } from "/js/room-builder.js?v=20260910a";
 import { reconstructRoom } from "/js/room-pipeline.js?v=20260824j";
 import { CATALOG_TREE, SAMPLE_PRODUCTS, VENDOR_OPTIONS, productsInGroup, money } from "/js/room-catalog.js?v=20260824j";
 
@@ -194,12 +194,15 @@ export async function bootRoomSim() {
   builder.onMode = (mode) => {
     document.querySelectorAll("[data-mode]").forEach((btn) => {
       btn.classList.toggle("is-active", btn.getAttribute("data-mode") === mode);
+      btn.setAttribute("aria-pressed", String(btn.getAttribute("data-mode") === mode));
     });
     if (hud.hint) {
       hud.hint.textContent =
         mode === "walk"
           ? "WASD walk · drag to look · click furniture to inspect"
-          : "Drag to orbit · click furniture to move · scroll to zoom";
+          : mode === "plan"
+            ? "Floor plan · drag empty space to pan · scroll to zoom · drag furniture to move"
+            : "Drag to orbit · click furniture to move · scroll to zoom";
     }
   };
 
@@ -338,7 +341,7 @@ export async function bootRoomSim() {
 
   document.getElementById("simCatToggle")?.addEventListener("click", () => {
     hud.catalog.classList.toggle("is-open");
-    if (hud.catalog.classList.contains("is-open")) builder.setMode("orbit");
+    if (hud.catalog.classList.contains("is-open") && builder.getMode() === "walk") builder.setMode("orbit");
   });
   document.getElementById("simBuild")?.addEventListener("click", () => {
     builder.setMode("orbit");
@@ -349,6 +352,7 @@ export async function bootRoomSim() {
       const mode = btn.getAttribute("data-mode");
       if (mode === "orbit") hud.catalog.classList.add("is-open");
       if (mode === "walk") hud.catalog.classList.remove("is-open");
+      if (mode === "plan") hud.catalog.classList.remove("is-open");
       builder.setMode(mode);
     });
   });

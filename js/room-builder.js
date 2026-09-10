@@ -98,7 +98,10 @@ export function initRoomBuilder(canvas, options = {}) {
   scene.background = new THREE.Color("#c5d4de");
   scene.fog = new THREE.Fog("#c5d4de", 16, 36);
 
-  const camera = new THREE.PerspectiveCamera(50, 1, 0.08, 80);
+  const perspectiveCamera = new THREE.PerspectiveCamera(50, 1, 0.08, 80);
+  const planCamera = new THREE.OrthographicCamera(-5, 5, 5, -5, 0.08, 80);
+  planCamera.up.set(0, 0, -1);
+  let camera = perspectiveCamera;
   camera.position.set(3.4, 3.55, 7.35);
 
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true, powerPreference: "high-performance" });
@@ -369,6 +372,30 @@ export function initRoomBuilder(canvas, options = {}) {
 
   function setMode(next) {
     if (next === mode) return mode;
+    walkPitch.remove(camera);
+    camera = next === "plan" ? planCamera : perspectiveCamera;
+    scene.add(camera);
+    controls.object = camera;
+    scene.fog.near = next === "plan" ? 60 : 16;
+    scene.fog.far = next === "plan" ? 80 : 36;
+    controls.enableRotate = next !== "plan";
+    controls.maxPolarAngle = next === "plan" ? 0 : Math.PI / 2 - 0.04;
+    controls.minZoom = 0.4;
+    controls.maxZoom = 8;
+    controls.mouseButtons.LEFT = next === "plan" ? THREE.MOUSE.PAN : THREE.MOUSE.ROTATE;
+    controls.touches.ONE = next === "plan" ? THREE.TOUCH.PAN : THREE.TOUCH.ROTATE;
+    if (next === "plan") {
+      mode = "plan";
+      camera.position.set(0, 25, 0);
+      camera.zoom = 1;
+      controls.target.set(0, 0, 0);
+      camera.lookAt(controls.target);
+      controls.enabled = !paused;
+      applyCutaway(true);
+      resize();
+      onModeChange(mode);
+      return mode;
+    }
     if (next === "walk") {
       applyCutaway(false);
       controls.enabled = false;
@@ -419,7 +446,13 @@ export function initRoomBuilder(canvas, options = {}) {
     const w = canvas.clientWidth;
     const h = canvas.clientHeight;
     if (!w || !h) return;
-    camera.aspect = w / h;
+    if (camera.isOrthographicCamera) {
+      const halfHeight = Math.max(roomDepth / 2, roomWidth / (2 * w / h)) * 1.5;
+      camera.left = -halfHeight * w / h;
+      camera.right = halfHeight * w / h;
+      camera.top = halfHeight;
+      camera.bottom = -halfHeight;
+    } else camera.aspect = w / h;
     camera.updateProjectionMatrix();
     renderer.setSize(w, h, false);
   }
@@ -775,7 +808,7 @@ export function initRoomBuilder(canvas, options = {}) {
       ghost = null;
     }
     placing = null;
-    if (mode === "orbit") controls.enabled = true;
+    if (mode !== "walk") controls.enabled = !paused;
   }
 
   async function beginPlace(product) {
@@ -870,7 +903,7 @@ export function initRoomBuilder(canvas, options = {}) {
       lookLast = { x: event.clientX, y: event.clientY };
       return;
     }
-    if (placing && ghost && mode === "orbit") {
+    if (placing && ghost && mode !== "walk") {
       const hit = floorHit(event);
       if (!hit) return;
       ghost.position.y = restY(placing, ghost);
@@ -898,7 +931,7 @@ export function initRoomBuilder(canvas, options = {}) {
     dragMoved = false;
     walkLook = false;
     lookLast = null;
-    if (mode === "orbit") controls.enabled = true;
+    if (mode !== "walk") controls.enabled = !paused;
   });
 
   window.addEventListener("keydown", (e) => {
@@ -947,14 +980,14 @@ export function initRoomBuilder(canvas, options = {}) {
     if (paused) return;
     const dt = Math.min(clock.getDelta(), 0.05);
     walkTick(dt);
-    if (mode === "orbit") controls.update();
+    if (mode !== "walk") controls.update();
     renderer.render(scene, camera);
   }
   animate();
 
   function setPaused(value) {
     paused = Boolean(value);
-    if (controls) controls.enabled = !paused && mode === "orbit";
+    if (controls) controls.enabled = !paused && mode !== "walk";
   }
 
   function setFinish(id) {
@@ -983,6 +1016,7 @@ export function initRoomBuilder(canvas, options = {}) {
       mesh.position.z *= sz;
     }
     rebuildShell({ width, depth, height });
+    resize();
     onChange();
     return true;
   }
@@ -1057,6 +1091,7 @@ export function initRoomBuilder(canvas, options = {}) {
     const rows = Array.isArray(state) ? state : state?.items;
     if (!Array.isArray(rows)) return false;
     if (state?.reconstruction) rebuildShell(state.reconstruction);
+    resize();
     if (Number.isFinite(state?.hour)) setTimeOfDay(state.hour);
     await restore(rows);
     return true;
