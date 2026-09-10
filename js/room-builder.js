@@ -376,6 +376,8 @@ export function initRoomBuilder(canvas, options = {}) {
     camera = next === "plan" ? planCamera : perspectiveCamera;
     scene.add(camera);
     controls.object = camera;
+    scene.fog.near = next === "plan" ? 60 : 16;
+    scene.fog.far = next === "plan" ? 80 : 36;
     controls.enableRotate = next !== "plan";
     controls.maxPolarAngle = next === "plan" ? 0 : Math.PI / 2 - 0.04;
     controls.minZoom = 0.4;
