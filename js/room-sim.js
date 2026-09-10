@@ -1,4 +1,4 @@
-import { initRoomBuilder } from "/js/room-builder.js?v=20260910a";
+import { initRoomBuilder } from "/js/room-builder.js?v=20260910b";
 import { reconstructRoom } from "/js/room-pipeline.js?v=20260824j";
 import { CATALOG_TREE, SAMPLE_PRODUCTS, VENDOR_OPTIONS, productsInGroup, money } from "/js/room-catalog.js?v=20260824j";
 
@@ -201,7 +201,7 @@ export async function bootRoomSim() {
         mode === "walk"
           ? "WASD walk · drag to look · click furniture to inspect"
           : mode === "plan"
-            ? "Floor plan · drag empty space to pan · scroll to zoom · drag furniture to move"
+            ? "Grid: 1 ft · dimensions use your room settings · drag to pan · scroll to zoom"
             : "Drag to orbit · click furniture to move · scroll to zoom";
     }
   };
