@@ -1,4 +1,4 @@
-import { initRoomBuilder } from "/js/room-builder.js?v=20260911b";
+import { initRoomBuilder } from "/js/room-builder.js?v=20260911c";
 import { feetAndInches } from "/js/room-distance.mjs?v=20260911b";
 import { reconstructRoom } from "/js/room-pipeline.js?v=20260824j";
 import { CATALOG_TREE, SAMPLE_PRODUCTS, VENDOR_OPTIONS, productsInGroup, money } from "/js/room-catalog.js?v=20260824j";
@@ -568,8 +568,19 @@ export async function bootRoomSim() {
       document.title = `3D Room · ${listingTitle} — Smart Realty USA`;
     }
   }
+  function showPhotoMatch(room) {
+    const matchStatus = document.getElementById("simPhotoMatch");
+    if (!matchStatus) return;
+    matchStatus.dataset.state = room.mode === "vision" ? "vision" : "sample";
+    matchStatus.textContent = room.mode === "vision"
+      ? `AI photo estimate · ${room.analysis?.confidence || "low"} confidence`
+      : "Sample room · photo analysis unavailable";
+    matchStatus.title = room.label || "";
+  }
+
   const room = await reconstructRoom({ photoUrl: absPhoto(photos[0] || ""), listingId, roomType: "living" });
   builder.applyReconstruction(room);
+  showPhotoMatch(room);
   const resolved = photos.map(absPhoto).filter(Boolean);
   const originalImage = document.getElementById("simOriginalImage");
   const originalButton = document.getElementById("simOriginalPhoto");
@@ -600,12 +611,24 @@ export async function bootRoomSim() {
       )
       .join("");
     strip.querySelectorAll("[data-photo]").forEach((btn) => {
-      btn.addEventListener("click", () => {
+      btn.addEventListener("click", async () => {
         const picked = btn.getAttribute("data-photo");
         originalImage.src = picked;
         const next = [picked, ...urls.filter((u) => u !== picked)];
         builder.setListingPhotos(next);
         strip.querySelectorAll(".sim-photo").forEach((b) => b.classList.toggle("is-on", b === btn));
+        const status = document.getElementById("simPhotoMatch");
+        if (status) {
+          status.dataset.state = "loading";
+          status.textContent = "Analyzing selected photo…";
+        }
+        strip.querySelectorAll("button").forEach((button) => { button.disabled = true; });
+        const nextRoom = await reconstructRoom({ photoUrl: picked, listingId, roomType: "living" });
+        builder.applyReconstruction(nextRoom);
+        builder.setListingPhotos(next);
+        showPhotoMatch(nextRoom);
+        saveDesign();
+        strip.querySelectorAll("button").forEach((button) => { button.disabled = false; });
       });
     });
   }

@@ -702,3 +702,6 @@ body.room-sim {
 .sim-distance-panel output { font-size: 1.2rem; color: #f4d28d; }
 .sim-distance-panel small { line-height: 1.5; }
 .sim-distance-panel[hidden] { display: none; }
+.sim-photo-match { display: inline-flex; width: fit-content; padding: 4px 8px; border-radius: 999px; font-size: 11px; background: #5b2f1f; color: #ffe1d4; }
+.sim-photo-match[data-state="vision"] { background: #173f32; color: #c8ffe8; }
+.sim-photo-match[data-state="loading"] { background: #54451d; color: #fff0b9; }
