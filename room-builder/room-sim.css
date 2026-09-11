@@ -690,3 +690,15 @@ body.room-sim {
 .sim-size-dialog input { width: 100%; box-sizing: border-box; padding: 12px; font: inherit; border: 1px solid #87988d; border-radius: 8px; }
 .sim-size-dialog p { line-height: 1.5; }
 .sim-size-dialog :focus-visible { outline: 3px solid #e0c185; outline-offset: 3px; }
+.sim-distance-panel {
+  position: absolute; right: 16px; top: 90px; z-index: 20;
+  width: min(290px, calc(100vw - 32px)); box-sizing: border-box;
+  padding: 16px; border-radius: 14px; border: 1px solid #667169;
+  background: #17251ff5; color: #fff; pointer-events: auto;
+  max-height: calc(100dvh - 220px); overflow-y: auto;
+}
+.sim-distance-panel label, .sim-distance-panel output, .sim-distance-panel small { display: block; margin: 12px 0; }
+.sim-distance-panel select { display: block; width: 100%; min-height: 44px; margin-top: 5px; font: inherit; }
+.sim-distance-panel output { font-size: 1.2rem; color: #f4d28d; }
+.sim-distance-panel small { line-height: 1.5; }
+.sim-distance-panel[hidden] { display: none; }

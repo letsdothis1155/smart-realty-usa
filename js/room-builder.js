@@ -1,6 +1,7 @@
 /* Interactive 3D living room — WebGL, not a static render.
    Listing-3d keeps using initRoomBuilder(); the Sims HUD uses the extra methods. */
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/+esm";
+import { footprintDistance } from "/js/room-distance.mjs?v=20260911a";
 import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js/+esm";
 import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js/+esm";
 import { buildFurnitureMesh, tintPlacement } from "/js/room-furniture.js?v=20260824j";
@@ -1083,6 +1084,17 @@ export function initRoomBuilder(canvas, options = {}) {
     return placedList().reduce((s, p) => s + Number(p.price || 0), 0);
   }
 
+  function measureFurniture(firstId, secondId) {
+    if (firstId === secondId || !items.has(firstId) || !items.has(secondId)) return null;
+    const footprint = id => {
+      const mesh = items.get(id);
+      const fp = mesh.userData.footprint;
+      return { x: mesh.position.x, z: mesh.position.z, width: fp.w * mesh.scale.x,
+        depth: fp.d * mesh.scale.z, rotation: mesh.rotation.y };
+    };
+    return footprintDistance(footprint(firstId), footprint(secondId));
+  }
+
   function summary() {
     const list = placedList();
     if (!list.length) return "No items placed yet.";
@@ -1203,6 +1215,7 @@ export function initRoomBuilder(canvas, options = {}) {
     },
     placedList,
     roomTotal,
+    measureFurniture,
     projectSelected,
     resize,
     get selectedId() {

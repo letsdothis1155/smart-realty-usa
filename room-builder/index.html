@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>3D Room · Shop This Room — SMART REALTY.US LLC</title>
   <meta name="description" content="Walk a property-inspired room, place planning models from Best Buy, IKEA, Wayfair, and Home Depot, and estimate the staged space before buying a home." />
-  <link rel="stylesheet" href="/room-builder/room-sim.css?v=20260909a" />
+  <link rel="stylesheet" href="/room-builder/room-sim.css?v=20260911a" />
   <script src="/domain-config.js"></script>
   <script src="/js/analytics.js"></script>
   <script src="/js/listings.js"></script>
@@ -44,6 +44,7 @@
         <button type="button" class="sim-chip" id="simAuto">✨ AUTO FURNISH</button>
         <button type="button" class="sim-chip" id="simEmpty">EMPTY ROOM</button>
         <button type="button" class="sim-chip" id="simDimensions">ROOM SIZE</button>
+        <button type="button" class="sim-chip" id="simMeasure">MEASURE GAP</button>
         <button type="button" class="sim-chip" id="simUndo">UNDO</button>
         <button type="button" class="sim-chip" id="simRedo">REDO</button>
         <button type="button" class="sim-chip" id="simShare">COPY LINK</button>
@@ -66,6 +67,14 @@
       </div>
 
       <div class="sim-hint" id="simHint">Drag to orbit · pinch or scroll to zoom · tap furniture to inspect</div>
+      <aside id="simMeasurePanel" class="sim-distance-panel" hidden aria-label="Furniture gap measurement">
+        <strong>Measure furniture gap</strong>
+        <label>First piece<select id="simMeasureA"></select></label>
+        <label>Second piece<select id="simMeasureB"></select></label>
+        <output id="simMeasureResult" role="status">Choose two different pieces.</output>
+        <small>Horizontal gap between rectangular planning footprints, rounded to the nearest inch. Updates after moving, rotating or resizing furniture.</small>
+        <button type="button" class="sim-chip" id="simMeasureClose">Close measurement</button>
+      </aside>
 
       <aside class="sim-float" id="simFloat" hidden>
         <h3>Item</h3>
@@ -138,7 +147,7 @@
   </div>
   <noscript><p class="sim-loading">JavaScript is required for the interactive 3D room.</p></noscript>
   <script type="module">
-    import("/js/room-sim.js?v=20260910b")
+    import("/js/room-sim.js?v=20260911a")
       .then(({ bootRoomSim }) => bootRoomSim())
       .catch((error) => {
         console.error("Room simulator failed to start", error);
