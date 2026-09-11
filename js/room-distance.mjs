@@ -8,6 +8,10 @@ export function footprintCorners({ x, z, width, depth, rotation = 0 }) {
 }
 
 export function footprintDistance(a, b) {
+  return footprintMeasurement(a, b).distance;
+}
+
+export function footprintMeasurement(a, b) {
   const p = footprintCorners(a), q = footprintCorners(b);
   let separated = false;
   for (const polygon of [p, q]) {
@@ -19,17 +23,24 @@ export function footprintDistance(a, b) {
       if (Math.max(...ap) < Math.min(...bp) || Math.max(...bp) < Math.min(...ap)) separated = true;
     }
   }
-  if (!separated) return 0;
+  if (!separated) return { distance: 0, start: null, end: null };
   let closest = Infinity;
+  let start = null, end = null;
   for (const [points, edges] of [[p, q], [q, p]]) {
     for (const point of points) for (let i = 0; i < 4; i++) {
       const u = edges[i], v = edges[(i + 1) % 4];
       const dx = v.x - u.x, dz = v.z - u.z;
       const t = Math.max(0, Math.min(1, ((point.x - u.x) * dx + (point.z - u.z) * dz) / (dx * dx + dz * dz)));
-      closest = Math.min(closest, Math.hypot(point.x - u.x - t * dx, point.z - u.z - t * dz));
+      const projected = { x: u.x + t * dx, z: u.z + t * dz };
+      const distance = Math.hypot(point.x - projected.x, point.z - projected.z);
+      if (distance < closest) {
+        closest = distance;
+        start = points === p ? point : projected;
+        end = points === p ? projected : point;
+      }
     }
   }
-  return closest;
+  return { distance: closest, start, end };
 }
 
 export function feetAndInches(meters) {

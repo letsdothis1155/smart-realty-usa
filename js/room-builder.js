@@ -1,7 +1,7 @@
 /* Interactive 3D living room — WebGL, not a static render.
    Listing-3d keeps using initRoomBuilder(); the Sims HUD uses the extra methods. */
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/+esm";
-import { footprintDistance } from "/js/room-distance.mjs?v=20260911a";
+import { footprintMeasurement } from "/js/room-distance.mjs?v=20260911b";
 import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js/+esm";
 import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js/+esm";
 import { buildFurnitureMesh, tintPlacement } from "/js/room-furniture.js?v=20260824j";
@@ -137,6 +137,12 @@ export function initRoomBuilder(canvas, options = {}) {
   const itemsGroup = new THREE.Group();
   const measurementGroup = new THREE.Group();
   roomRoot.add(measurementGroup);
+  const gapGeometry = new THREE.BufferGeometry();
+  gapGeometry.setAttribute("position", new THREE.Float32BufferAttribute(new Float32Array(18), 3));
+  const gapLine = new THREE.LineSegments(gapGeometry, new THREE.LineBasicMaterial({ color: "#ffcc43", depthTest: false, depthWrite: false }));
+  gapLine.renderOrder = 20;
+  gapLine.visible = false;
+  roomRoot.add(gapLine);
   roomRoot.add(shellGroup);
   roomRoot.add(itemsGroup);
   scene.add(roomRoot);
@@ -418,6 +424,7 @@ export function initRoomBuilder(canvas, options = {}) {
     scene.add(camera);
     controls.object = camera;
     measurementGroup.visible = next === "plan";
+    gapLine.visible = false;
     scene.fog.near = next === "plan" ? 60 : 16;
     scene.fog.far = next === "plan" ? 80 : 36;
     controls.enableRotate = next !== "plan";
@@ -1085,6 +1092,7 @@ export function initRoomBuilder(canvas, options = {}) {
   }
 
   function measureFurniture(firstId, secondId) {
+    gapLine.visible = false;
     if (firstId === secondId || !items.has(firstId) || !items.has(secondId)) return null;
     const footprint = id => {
       const mesh = items.get(id);
@@ -1092,7 +1100,19 @@ export function initRoomBuilder(canvas, options = {}) {
       return { x: mesh.position.x, z: mesh.position.z, width: fp.w * mesh.scale.x,
         depth: fp.d * mesh.scale.z, rotation: mesh.rotation.y };
     };
-    return footprintDistance(footprint(firstId), footprint(secondId));
+    const result = footprintMeasurement(footprint(firstId), footprint(secondId));
+    if (mode === "plan" && result.start && result.end) {
+      const { start: a, end: b, distance } = result;
+      const nx = -(b.z - a.z) / distance * 0.1;
+      const nz = (b.x - a.x) / distance * 0.1;
+      const positions = gapGeometry.attributes.position;
+      [[a.x, a.z], [b.x, b.z], [a.x - nx, a.z - nz], [a.x + nx, a.z + nz],
+        [b.x - nx, b.z - nz], [b.x + nx, b.z + nz]].forEach(([x, z], i) => positions.setXYZ(i, x, 0.04, z));
+      positions.needsUpdate = true;
+      gapGeometry.computeBoundingSphere();
+      gapLine.visible = true;
+    }
+    return result.distance;
   }
 
   function summary() {
@@ -1208,6 +1228,8 @@ export function initRoomBuilder(canvas, options = {}) {
       disposeObjectResources(measurementGroup, { geometries: true });
       while (shellGroup.children.length) shellGroup.remove(shellGroup.children[0]);
       floorTex.dispose();
+      gapGeometry.dispose();
+      gapLine.material.dispose();
       wallTex.dispose();
       controls.dispose();
       renderer.renderLists?.dispose();
@@ -1216,6 +1238,7 @@ export function initRoomBuilder(canvas, options = {}) {
     placedList,
     roomTotal,
     measureFurniture,
+    clearGapLine: () => { gapLine.visible = false; },
     projectSelected,
     resize,
     get selectedId() {

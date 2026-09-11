@@ -45,6 +45,7 @@
         <button type="button" class="sim-chip" id="simEmpty">EMPTY ROOM</button>
         <button type="button" class="sim-chip" id="simDimensions">ROOM SIZE</button>
         <button type="button" class="sim-chip" id="simMeasure">MEASURE GAP</button>
+        <button type="button" class="sim-chip" id="simOriginalPhoto" disabled>ORIGINAL PHOTO</button>
         <button type="button" class="sim-chip" id="simUndo">UNDO</button>
         <button type="button" class="sim-chip" id="simRedo">REDO</button>
         <button type="button" class="sim-chip" id="simShare">COPY LINK</button>
@@ -121,6 +122,11 @@
       </div>
     </div>
     <div class="sim-loading" id="simLoading" hidden>LOADING 3D</div>
+    <dialog id="simPhotoDialog" aria-label="Original listing photo" style="width:min(1000px,90vw);background:#17251f;color:white;border:0;border-radius:16px;padding:16px">
+      <form method="dialog"><button class="sim-chip">Back to builder</button></form>
+      <p>Original listing photo · the 3D room is a separate planning approximation.</p>
+      <img id="simOriginalImage" alt="Selected original listing photo" style="display:block;width:100%;max-height:70vh;object-fit:contain" />
+    </dialog>
     <dialog id="simSizeDialog" class="sim-size-dialog" aria-labelledby="simSizeTitle">
       <form id="simSizeForm">
         <h2 id="simSizeTitle">Size your room</h2>
@@ -147,7 +153,7 @@
   </div>
   <noscript><p class="sim-loading">JavaScript is required for the interactive 3D room.</p></noscript>
   <script type="module">
-    import("/js/room-sim.js?v=20260911a")
+    import("/js/room-sim.js?v=20260911b")
       .then(({ bootRoomSim }) => bootRoomSim())
       .catch((error) => {
         console.error("Room simulator failed to start", error);
