@@ -1,4 +1,5 @@
-import { initRoomBuilder } from "/js/room-builder.js?v=20260910b";
+import { initRoomBuilder } from "/js/room-builder.js?v=20260911a";
+import { feetAndInches } from "/js/room-distance.mjs?v=20260911a";
 import { reconstructRoom } from "/js/room-pipeline.js?v=20260824j";
 import { CATALOG_TREE, SAMPLE_PRODUCTS, VENDOR_OPTIONS, productsInGroup, money } from "/js/room-catalog.js?v=20260824j";
 
@@ -182,6 +183,7 @@ export async function bootRoomSim() {
   };
   builder.onRoomChange = () => {
     refreshTotal();
+    refreshMeasureChoices();
     document.querySelectorAll("[data-finish]").forEach((btn) => {
       btn.classList.toggle("is-on", btn.dataset.finish === builder.finish);
     });
@@ -192,6 +194,7 @@ export async function bootRoomSim() {
     if (hud.time && Number(hud.time.value) !== hour) hud.time.value = String(hour);
   };
   builder.onMode = (mode) => {
+    if (mode !== "plan") document.getElementById("simMeasurePanel").hidden = true;
     document.querySelectorAll("[data-mode]").forEach((btn) => {
       btn.classList.toggle("is-active", btn.getAttribute("data-mode") === mode);
       btn.setAttribute("aria-pressed", String(btn.getAttribute("data-mode") === mode));
@@ -356,6 +359,36 @@ export async function bootRoomSim() {
       builder.setMode(mode);
     });
   });
+  function refreshMeasureChoices() {
+    for (const id of ["simMeasureA", "simMeasureB"]) {
+      const select = document.getElementById(id);
+      const previous = select.value;
+      select.innerHTML = '<option value="">Choose furniture</option>' + builder.placedList().map((p, i) =>
+        `<option value="${esc(p.instanceId)}">${i + 1}. ${esc(p.name)}</option>`).join("");
+      if ([...select.options].some(option => option.value === previous)) select.value = previous;
+    }
+    updateDistance();
+  }
+  function updateDistance() {
+    const a = document.getElementById("simMeasureA").value;
+    const b = document.getElementById("simMeasureB").value;
+    const distance = builder.measureFurniture(a, b);
+    document.getElementById("simMeasureResult").textContent = distance === null
+      ? "Choose two different pieces."
+      : distance < 0.0001 ? "Footprints touch or overlap — no gap"
+      : `Gap: ${feetAndInches(distance)}`;
+  }
+  document.getElementById("simMeasure")?.addEventListener("click", () => {
+    builder.setMode("plan");
+    hud.catalog.classList.remove("is-open");
+    refreshMeasureChoices();
+    document.getElementById("simMeasurePanel").hidden = false;
+  });
+  document.getElementById("simMeasureClose")?.addEventListener("click", () => {
+    document.getElementById("simMeasurePanel").hidden = true;
+  });
+  for (const id of ["simMeasureA", "simMeasureB"]) document.getElementById(id).addEventListener("change", updateDistance);
+
   document.getElementById("simReset")?.addEventListener("click", () => builder.resetRoom());
   document.getElementById("simEmpty")?.addEventListener("click", () => {
     builder.clearRoom();
@@ -602,5 +635,6 @@ export async function bootRoomSim() {
     btn.classList.toggle("is-on", btn.dataset.finish === builder.finish);
   });
   readyToSave = true;
+  refreshMeasureChoices();
   saveDesign();
 }
