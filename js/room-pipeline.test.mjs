@@ -54,10 +54,33 @@ test("uses the configured reconstruction endpoint and preserves the listing id",
   });
 
   assert.equal(request.url, "/api/shop/reconstruct");
-  assert.equal(JSON.parse(request.options.body).listingId, "sr-001");
+  const requestBody = JSON.parse(request.options.body);
+  assert.equal(requestBody.listingId, "sr-001");
+  assert.deepEqual(requestBody.imageUrls, ["https://smartrealty.us/images/gallery/g-01.jpg"]);
   assert.equal(room.mode, "vision");
   assert.equal(room.listingId, "sr-001");
   assert.equal(room.width, 5.8);
+});
+
+test("sends up to four unique listing photos with the selected photo first", async () => {
+  browserConfig();
+  let requestBody;
+  globalThis.fetch = async (_url, options) => {
+    requestBody = JSON.parse(options.body);
+    return { async json() { return { ok: true, room: { mode: "vision" } }; } };
+  };
+
+  await reconstructRoom({
+    photoUrl: "images/gallery/g-02.jpg",
+    photoUrls: ["images/gallery/g-01.jpg", "images/gallery/g-02.jpg", "images/gallery/g-03.jpg", "images/gallery/g-04.jpg", "images/gallery/g-05.jpg"],
+  });
+
+  assert.deepEqual(requestBody.imageUrls, [
+    "https://smartrealty.us/images/gallery/g-02.jpg",
+    "https://smartrealty.us/images/gallery/g-01.jpg",
+    "https://smartrealty.us/images/gallery/g-03.jpg",
+    "https://smartrealty.us/images/gallery/g-04.jpg",
+  ]);
 });
 
 test("falls back to a usable sample room when analysis is unavailable", async () => {

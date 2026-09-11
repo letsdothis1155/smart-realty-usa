@@ -10,7 +10,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MAX_BODY_BYTES = 12_000;
 const IP_LIMIT = 8;
 const EMAIL_LIMIT = 3;
-const MAX_RECONSTRUCTION_BODY_BYTES = 4_000;
+const MAX_RECONSTRUCTION_BODY_BYTES = 6_000;
 const RECONSTRUCTION_LIMIT = 6;
 const RECONSTRUCTION_CACHE_SECONDS = 60 * 60 * 24 * 7;
 const CANONICAL_SITE = "https://smartrealty.us";
@@ -81,6 +81,7 @@ type SignupBody = {
 
 type ReconstructionBody = {
   imageUrl?: unknown;
+  imageUrls?: unknown;
   listingId?: unknown;
   roomType?: unknown;
 };
@@ -107,6 +108,7 @@ type ReconstructedRoom = {
   height: number;
   photoUrl: string;
   sourcePhotoUrl: string;
+  sourcePhotoUrls?: string[];
   walls: Array<{ id: string; role: "wall"; windows: number; door: boolean }>;
   floor: { role: "floor"; finish: string };
   ceiling: { role: "ceiling" };
@@ -351,10 +353,10 @@ function safeListingImage(value: unknown): string | null {
   return url.toString();
 }
 
-async function imageCacheKey(imageUrl: string): Promise<string> {
-  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(imageUrl));
+async function imageCacheKey(imageUrls: string[]): Promise<string> {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(imageUrls.join("\n")));
   const hex = Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
-  return `room:v1:${hex}`;
+  return `room:v2:${hex}`;
 }
 
 function fallbackRoom(imageUrl: string, reason: string): ReconstructedRoom {
@@ -414,7 +416,7 @@ function normalizeAnalysis(value: unknown): RoomAnalysis | null {
   };
 }
 
-async function analyzeRoomPhoto(imageUrl: string, env: AppEnv): Promise<RoomAnalysis> {
+async function analyzeRoomPhotos(imageUrls: string[], env: AppEnv): Promise<RoomAnalysis> {
   const response = await fetch("https://api.openai.com/v1/responses", {
     method: "POST",
     headers: {
@@ -431,9 +433,9 @@ async function analyzeRoomPhoto(imageUrl: string, env: AppEnv): Promise<RoomAnal
           content: [
             {
               type: "input_text",
-              text: "Analyze this real-estate listing photo for an editable 3D planning preview. Determine whether it is an interior. For an interior, conservatively estimate rectangular room width, depth, and height in meters, classify the room and floor, and count visible or strongly implied windows and doors across four logical walls. A single photo cannot prove dimensions, so use moderate or low confidence unless spatial cues are unusually strong. For an exterior or unusable image, classify it honestly and return safe default dimensions 6.4 by 5.2 by 2.72 meters. Do not identify people, infer private information, or claim architectural accuracy.",
+              text: `Analyze these ${imageUrls.length} real-estate listing photos as views of one room for an editable 3D planning preview. Reconcile repeated features across views instead of double-counting them. Determine whether they show an interior and appear consistent with the same room. For an interior, conservatively estimate rectangular room width, depth, and height in meters, classify the room and floor, and count visible or strongly implied windows and doors across four logical walls. Photos cannot prove dimensions, so use moderate or low confidence unless spatial cues are unusually strong. If views conflict, prioritize the first photo and mention the uncertainty in notes. For exterior or unusable images, classify honestly and return safe default dimensions 6.4 by 5.2 by 2.72 meters. Do not identify people, infer private information, or claim architectural accuracy.`,
             },
-            { type: "input_image", image_url: imageUrl, detail: "high" },
+            ...imageUrls.map((imageUrl) => ({ type: "input_image" as const, image_url: imageUrl, detail: "high" as const })),
           ],
         },
       ],
@@ -465,7 +467,8 @@ async function analyzeRoomPhoto(imageUrl: string, env: AppEnv): Promise<RoomAnal
   return analysis;
 }
 
-function roomFromAnalysis(imageUrl: string, analysis: RoomAnalysis): ReconstructedRoom {
+function roomFromAnalysis(imageUrls: string[], analysis: RoomAnalysis): ReconstructedRoom {
+  const imageUrl = imageUrls[0];
   if (analysis.sceneKind !== "interior") {
     const label = analysis.sceneKind === "exterior"
       ? "Exterior photo detected — showing a sample room. Choose an interior photo for reconstruction."
@@ -477,13 +480,14 @@ function roomFromAnalysis(imageUrl: string, analysis: RoomAnalysis): Reconstruct
   return {
     mode: "vision",
     estimated: true,
-    label: `AI-estimated ${analysis.roomType} from one listing photo — not an architectural measurement.`,
+    label: `AI-estimated ${analysis.roomType} from ${imageUrls.length} listing photo${imageUrls.length === 1 ? "" : "s"} — not an architectural measurement.`,
     roomType: analysis.roomType,
     width: analysis.width,
     depth: analysis.depth,
     height: analysis.height,
     photoUrl: imageUrl,
     sourcePhotoUrl: imageUrl,
+    sourcePhotoUrls: imageUrls,
     walls: analysis.walls.map((wall) => ({ ...wall, role: "wall" as const })),
     floor: { role: "floor", finish: analysis.floorFinish },
     ceiling: { role: "ceiling" },
@@ -511,8 +515,13 @@ async function handleReconstruction(request: Request, env: AppEnv, ctx: Executio
     return json({ ok: false, error: "Invalid JSON" }, 400, request);
   }
 
-  const imageUrl = safeListingImage(body.imageUrl);
+  const submittedUrls = Array.isArray(body.imageUrls) ? body.imageUrls : [body.imageUrl];
+  const imageUrls = [...new Set(submittedUrls.map(safeListingImage).filter((url): url is string => Boolean(url)))].slice(0, 4);
+  const imageUrl = imageUrls[0];
   if (!imageUrl) return json({ ok: false, error: "Choose a Smart Realty listing photo." }, 400, request);
+  if (submittedUrls.some((url) => url && !safeListingImage(url))) {
+    return json({ ok: false, error: "Every photo must be a Smart Realty listing image." }, 400, request);
+  }
   if (!env.OPENAI_API_KEY) {
     return json({ ok: false, error: "Photo analysis is temporarily unavailable.", room: fallbackRoom(imageUrl, "Photo analysis unavailable — showing a sample room.") }, 503, request);
   }
@@ -523,7 +532,7 @@ async function handleReconstruction(request: Request, env: AppEnv, ctx: Executio
     return json({ ok: false, error: "Photo analysis limit reached. Try again later." }, 429, request);
   }
 
-  const cacheKey = await imageCacheKey(imageUrl);
+  const cacheKey = await imageCacheKey(imageUrls);
   const cached = await env.SIGNUPS.get(cacheKey);
   if (cached) {
     try {
@@ -534,10 +543,10 @@ async function handleReconstruction(request: Request, env: AppEnv, ctx: Executio
   }
 
   try {
-    const analysis = await analyzeRoomPhoto(imageUrl, env);
-    const room = roomFromAnalysis(imageUrl, analysis);
+    const analysis = await analyzeRoomPhotos(imageUrls, env);
+    const room = roomFromAnalysis(imageUrls, analysis);
     ctx.waitUntil(env.SIGNUPS.put(cacheKey, JSON.stringify(room), { expirationTtl: RECONSTRUCTION_CACHE_SECONDS }));
-    console.log(JSON.stringify({ message: "room photo analyzed", listingId: cleanHeader(String(body.listingId || ""), 80), sceneKind: analysis.sceneKind, confidence: analysis.confidence }));
+    console.log(JSON.stringify({ message: "room photos analyzed", listingId: cleanHeader(String(body.listingId || ""), 80), photoCount: imageUrls.length, sceneKind: analysis.sceneKind, confidence: analysis.confidence }));
     return json({ ok: true, cached: false, room }, 200, request);
   } catch (error) {
     console.error(JSON.stringify({ message: "room photo analysis failed", error: error instanceof Error ? error.message : String(error) }));
