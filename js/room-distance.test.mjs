@@ -1,7 +1,14 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { footprintDistance, feetAndInches } from './room-distance.mjs';
+import { footprintDistance, footprintMeasurement, feetAndInches } from './room-distance.mjs';
 const box = (x, z, rotation = 0) => ({ x, z, width: 2, depth: 2, rotation });
+test('measurement segment length equals gap and overlap has no segment', () => {
+  for (const angle of [0, Math.PI / 4, Math.PI / 2]) {
+    const result = footprintMeasurement(box(0, 0), box(5, 4, angle));
+    assert.ok(Math.abs(Math.hypot(result.end.x - result.start.x, result.end.z - result.start.z) - result.distance) < 1e-9);
+  }
+  assert.equal(footprintMeasurement(box(0, 0), box(0, 0)).start, null);
+});
 test('edge gaps account for furniture size and diagonal separation', () => {
   assert.equal(footprintDistance(box(0, 0), box(5, 0)), 3);
   assert.ok(Math.abs(footprintDistance(box(0, 0), box(5, 6)) - 5) < 1e-9);

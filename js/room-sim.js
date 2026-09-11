@@ -1,5 +1,5 @@
-import { initRoomBuilder } from "/js/room-builder.js?v=20260911a";
-import { feetAndInches } from "/js/room-distance.mjs?v=20260911a";
+import { initRoomBuilder } from "/js/room-builder.js?v=20260911b";
+import { feetAndInches } from "/js/room-distance.mjs?v=20260911b";
 import { reconstructRoom } from "/js/room-pipeline.js?v=20260824j";
 import { CATALOG_TREE, SAMPLE_PRODUCTS, VENDOR_OPTIONS, productsInGroup, money } from "/js/room-catalog.js?v=20260824j";
 
@@ -373,6 +373,7 @@ export async function bootRoomSim() {
     const a = document.getElementById("simMeasureA").value;
     const b = document.getElementById("simMeasureB").value;
     const distance = builder.measureFurniture(a, b);
+    if (document.getElementById("simMeasurePanel").hidden) builder.clearGapLine();
     document.getElementById("simMeasureResult").textContent = distance === null
       ? "Choose two different pieces."
       : distance < 0.0001 ? "Footprints touch or overlap — no gap"
@@ -381,10 +382,11 @@ export async function bootRoomSim() {
   document.getElementById("simMeasure")?.addEventListener("click", () => {
     builder.setMode("plan");
     hud.catalog.classList.remove("is-open");
-    refreshMeasureChoices();
     document.getElementById("simMeasurePanel").hidden = false;
+    refreshMeasureChoices();
   });
   document.getElementById("simMeasureClose")?.addEventListener("click", () => {
+    builder.clearGapLine();
     document.getElementById("simMeasurePanel").hidden = true;
   });
   for (const id of ["simMeasureA", "simMeasureB"]) document.getElementById(id).addEventListener("change", updateDistance);
@@ -547,7 +549,7 @@ export async function bootRoomSim() {
       listingTitle = listing.address || listing.title || "Property";
       const gallery = listingPhotos(listing);
       if (gallery.length) photos = gallery;
-      if (photoUrl && !photos.includes(photoUrl)) photos.unshift(photoUrl);
+      if (photoUrl) photos = [photoUrl, ...photos.filter((url) => url !== photoUrl)];
       const loc = listing.location || [listing.city, listing.state, listing.postalCode].filter(Boolean).join(" ");
       const facts = [
         listing.listPrice ? money(listing.listPrice) : "",
@@ -569,6 +571,13 @@ export async function bootRoomSim() {
   const room = await reconstructRoom({ photoUrl: absPhoto(photos[0] || ""), listingId, roomType: "living" });
   builder.applyReconstruction(room);
   const resolved = photos.map(absPhoto).filter(Boolean);
+  const originalImage = document.getElementById("simOriginalImage");
+  const originalButton = document.getElementById("simOriginalPhoto");
+  if (resolved.length) {
+    originalImage.src = resolved[0];
+    originalButton.disabled = false;
+  }
+  originalButton.addEventListener("click", () => document.getElementById("simPhotoDialog").showModal());
   try {
     if (resolved.length) builder.setListingPhotos(resolved);
     renderPhotoStrip(resolved);
@@ -593,6 +602,7 @@ export async function bootRoomSim() {
     strip.querySelectorAll("[data-photo]").forEach((btn) => {
       btn.addEventListener("click", () => {
         const picked = btn.getAttribute("data-photo");
+        originalImage.src = picked;
         const next = [picked, ...urls.filter((u) => u !== picked)];
         builder.setListingPhotos(next);
         strip.querySelectorAll(".sim-photo").forEach((b) => b.classList.toggle("is-on", b === btn));
