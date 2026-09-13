@@ -70,8 +70,11 @@ export function normalizeListingPhotoUrl(photoUrl) {
   }
 }
 
-export async function reconstructRoom({ photoUrl = "", listingId = "", roomType = "living" } = {}) {
-  const normalizedPhotoUrl = normalizeListingPhotoUrl(photoUrl);
+export async function reconstructRoom({ photoUrl = "", photoUrls = [], listingId = "", roomType = "living" } = {}) {
+  const normalizedPhotos = [...new Set([photoUrl, ...(Array.isArray(photoUrls) ? photoUrls : [])]
+    .map(normalizeListingPhotoUrl)
+    .filter(Boolean))].slice(0, 4);
+  const normalizedPhotoUrl = normalizedPhotos[0] || "";
   const preset = ROOM_PRESETS[roomType] || ROOM_PRESETS.living;
   const base = {
     ...DEFAULT_LIVING_ROOM,
@@ -91,6 +94,7 @@ export async function reconstructRoom({ photoUrl = "", listingId = "", roomType 
         body: JSON.stringify({
           mode: "photo",
           imageUrl: normalizedPhotoUrl,
+          imageUrls: normalizedPhotos,
           listingId,
           roomType: preset.roomType,
           widthPx: 1600,

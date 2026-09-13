@@ -1,6 +1,6 @@
 import { initRoomBuilder } from "/js/room-builder.js?v=20260911c";
 import { feetAndInches } from "/js/room-distance.mjs?v=20260911b";
-import { reconstructRoom } from "/js/room-pipeline.js?v=20260824j";
+import { reconstructRoom } from "/js/room-pipeline.js?v=20260911d";
 import { CATALOG_TREE, SAMPLE_PRODUCTS, VENDOR_OPTIONS, productsInGroup, money } from "/js/room-catalog.js?v=20260824j";
 
 function track(event, props) {
@@ -573,15 +573,15 @@ export async function bootRoomSim() {
     if (!matchStatus) return;
     matchStatus.dataset.state = room.mode === "vision" ? "vision" : "sample";
     matchStatus.textContent = room.mode === "vision"
-      ? `AI photo estimate · ${room.analysis?.confidence || "low"} confidence`
+      ? `AI estimate from ${room.sourcePhotoUrls?.length || 1} photo${room.sourcePhotoUrls?.length === 1 ? "" : "s"} · ${room.analysis?.confidence || "low"} confidence`
       : "Sample room · photo analysis unavailable";
     matchStatus.title = room.label || "";
   }
 
-  const room = await reconstructRoom({ photoUrl: absPhoto(photos[0] || ""), listingId, roomType: "living" });
+  const resolved = photos.map(absPhoto).filter(Boolean);
+  const room = await reconstructRoom({ photoUrl: resolved[0] || "", photoUrls: resolved, listingId, roomType: "living" });
   builder.applyReconstruction(room);
   showPhotoMatch(room);
-  const resolved = photos.map(absPhoto).filter(Boolean);
   const originalImage = document.getElementById("simOriginalImage");
   const originalButton = document.getElementById("simOriginalPhoto");
   if (resolved.length) {
@@ -623,7 +623,7 @@ export async function bootRoomSim() {
           status.textContent = "Analyzing selected photo…";
         }
         strip.querySelectorAll("button").forEach((button) => { button.disabled = true; });
-        const nextRoom = await reconstructRoom({ photoUrl: picked, listingId, roomType: "living" });
+        const nextRoom = await reconstructRoom({ photoUrl: picked, photoUrls: next, listingId, roomType: "living" });
         builder.applyReconstruction(nextRoom);
         builder.setListingPhotos(next);
         showPhotoMatch(nextRoom);
