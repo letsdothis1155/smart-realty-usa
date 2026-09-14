@@ -48,6 +48,10 @@ export const DEFAULT_LIVING_ROOM = {
   height: 2.72,
   photoUrl: "",
   finish: "oak",
+  floorPolygon: [
+    { x: -3.2, z: -2.6 }, { x: 3.2, z: -2.6 },
+    { x: 3.2, z: 2.6 }, { x: -3.2, z: 2.6 },
+  ],
   walls: [
     { id: "north", role: "wall", windows: 0 },
     { id: "west", role: "wall", windows: 2 },

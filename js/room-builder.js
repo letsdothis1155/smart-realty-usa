@@ -6,7 +6,8 @@ import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.160.0/exampl
 import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js/+esm";
 import { buildFurnitureMesh, tintPlacement } from "/js/room-furniture.js?v=20260824j";
 import { DEFAULT_LAYOUT, findProduct, normalizeProduct } from "/js/room-catalog.js?v=20260824j";
-import { DEFAULT_LIVING_ROOM, FINISH_PRESETS, ROOM_PRESETS } from "/js/room-pipeline.js?v=20260824j";
+import { DEFAULT_LIVING_ROOM, FINISH_PRESETS, ROOM_PRESETS } from "/js/room-pipeline.js?v=20260914e";
+import { boxInsidePolygon, normalizeFloorPolygon, pointInPolygon } from "/js/room-geometry.mjs?v=20260914a";
 
 const IN_TO_M = 0.0254;
 const gltfLoader = new GLTFLoader();
@@ -156,6 +157,7 @@ export function initRoomBuilder(canvas, options = {}) {
   let roomWidth = Number(options.width) || DEFAULT_LIVING_ROOM.width;
   let roomDepth = Number(options.depth) || DEFAULT_LIVING_ROOM.depth;
   let roomHeight = Number(options.height) || DEFAULT_LIVING_ROOM.height;
+  let floorPolygon = normalizeFloorPolygon(options.floorPolygon, roomWidth, roomDepth);
   let photoUrl = options.photoUrl || "";
   let hour = 14;
   let mode = "orbit";
@@ -265,6 +267,7 @@ export function initRoomBuilder(canvas, options = {}) {
     roomWidth = Number(opts.width) || roomWidth;
     roomDepth = Number(opts.depth) || roomDepth;
     roomHeight = Number(opts.height) || roomHeight;
+    floorPolygon = normalizeFloorPolygon(opts.floorPolygon, roomWidth, roomDepth);
     if (opts.photoUrl !== undefined) photoUrl = opts.photoUrl || "";
     const inferredFinish = {
       oak: "oak",
@@ -287,8 +290,14 @@ export function initRoomBuilder(canvas, options = {}) {
     listingPhotoMeshes.length = 0;
 
     const finishFloor = (FINISH_PRESETS[finishId] || FINISH_PRESETS.oak).floor;
+    const floorShape = new THREE.Shape();
+    floorPolygon.forEach((point, index) => {
+      const action = index ? "lineTo" : "moveTo";
+      floorShape[action](point.x, -point.z);
+    });
+    floorShape.closePath();
     const floor = new THREE.Mesh(
-      new THREE.PlaneGeometry(roomWidth, roomDepth),
+      new THREE.ShapeGeometry(floorShape),
       new THREE.MeshStandardMaterial({ map: floorTex, color: finishFloor || "#ffffff", roughness: 0.72, metalness: 0.02 })
     );
     floor.rotation.x = -Math.PI / 2;
@@ -323,10 +332,15 @@ export function initRoomBuilder(canvas, options = {}) {
       return m;
     }
 
-    wall(roomWidth, roomHeight, 0, roomHeight / 2, -roomDepth / 2, 0);
-    wall(roomDepth, roomHeight, -roomWidth / 2, roomHeight / 2, 0, Math.PI / 2);
-    wall(roomDepth, roomHeight, roomWidth / 2, roomHeight / 2, 0, -Math.PI / 2);
-    southWall = wall(roomWidth, roomHeight, 0, roomHeight / 2, roomDepth / 2, Math.PI);
+    const wallEdges = floorPolygon.map((start, index) => {
+      const end = floorPolygon[(index + 1) % floorPolygon.length];
+      const dx = end.x - start.x;
+      const dz = end.z - start.z;
+      const length = Math.hypot(dx, dz);
+      const mesh = wall(length, roomHeight, (start.x + end.x) / 2, roomHeight / 2, (start.z + end.z) / 2, -Math.atan2(dz, dx));
+      return { start, end, length, mesh, midZ: (start.z + end.z) / 2 };
+    });
+    southWall = wallEdges.reduce((south, edge) => edge.midZ > south.midZ ? edge : south, wallEdges[0]).mesh;
     cutawayMeshes.push(southWall);
 
     function addWindow(x, z, rotY, width = 1.15, height = 1.35, sill = 0.95) {
@@ -372,10 +386,14 @@ export function initRoomBuilder(canvas, options = {}) {
       const total = Math.min(4, Math.max(0, Number(count) || 0));
       return Array.from({ length: total }, (_, index) => ((index + 1) / (total + 1) - 0.5) * span * 0.72);
     }
-    evenlySpaced(wallDetails("west").windows, roomDepth).forEach((z) => addWindow(-roomWidth / 2, z, Math.PI / 2));
-    evenlySpaced(wallDetails("east").windows, roomDepth).forEach((z) => addWindow(roomWidth / 2, z, -Math.PI / 2));
-    evenlySpaced(wallDetails("north").windows, roomWidth).forEach((x) => addWindow(x, -roomDepth / 2, 0));
-    evenlySpaced(wallDetails("south").windows, roomWidth).forEach((x) => addWindow(x, roomDepth / 2, Math.PI));
+    const rectangularShell = floorPolygon.length === 4 && floorPolygon.every((point) =>
+      Math.abs(Math.abs(point.x) - roomWidth / 2) < 0.12 && Math.abs(Math.abs(point.z) - roomDepth / 2) < 0.12);
+    if (rectangularShell) {
+      evenlySpaced(wallDetails("west").windows, roomDepth).forEach((z) => addWindow(-roomWidth / 2, z, Math.PI / 2));
+      evenlySpaced(wallDetails("east").windows, roomDepth).forEach((z) => addWindow(roomWidth / 2, z, -Math.PI / 2));
+      evenlySpaced(wallDetails("north").windows, roomWidth).forEach((x) => addWindow(x, -roomDepth / 2, 0));
+      evenlySpaced(wallDetails("south").windows, roomWidth).forEach((x) => addWindow(x, roomDepth / 2, Math.PI));
+    }
 
     function addDoor(id) {
       const vertical = id === "west" || id === "east";
@@ -392,15 +410,17 @@ export function initRoomBuilder(canvas, options = {}) {
       shellGroup.add(door);
       if (id === "south") cutawayMeshes.push(door);
     }
-    ["north", "west", "east", "south"].forEach((id) => {
-      if (wallDetails(id).door) addDoor(id);
-    });
+    if (rectangularShell) {
+      ["north", "west", "east", "south"].forEach((id) => {
+        if (wallDetails(id).door) addDoor(id);
+      });
+    }
 
     ceilingMesh = new THREE.Mesh(
-      new THREE.PlaneGeometry(roomWidth, roomDepth),
+      new THREE.ShapeGeometry(floorShape),
       new THREE.MeshStandardMaterial({ color: "#f7f4ee", roughness: 1, side: THREE.DoubleSide })
     );
-    ceilingMesh.rotation.x = Math.PI / 2;
+    ceilingMesh.rotation.x = -Math.PI / 2;
     ceilingMesh.position.y = roomHeight;
     ceilingMesh.userData.role = "ceiling";
     shellGroup.add(ceilingMesh);
@@ -587,6 +607,16 @@ export function initRoomBuilder(canvas, options = {}) {
     const hd = roomDepth / 2 - fp.d / 2 - 0.04;
     mesh.position.x = THREE.MathUtils.clamp(x, -hw, hw);
     mesh.position.z = THREE.MathUtils.clamp(z, -hd, hd);
+    if (!boxInsidePolygon(aabbXZ(mesh), floorPolygon)) {
+      const targetX = mesh.position.x;
+      const targetZ = mesh.position.z;
+      for (let step = 19; step >= 0; step -= 1) {
+        const scale = step / 20;
+        mesh.position.x = targetX * scale;
+        mesh.position.z = targetZ * scale;
+        if (boxInsidePolygon(aabbXZ(mesh), floorPolygon)) break;
+      }
+    }
   }
 
   function snapWall(mesh, product) {
@@ -626,7 +656,7 @@ export function initRoomBuilder(canvas, options = {}) {
     const a = aabbXZ(mesh);
     const hw = roomWidth / 2;
     const hd = roomDepth / 2;
-    if (a.min.x < -hw + 0.01 || a.max.x > hw - 0.01 || a.min.z < -hd + 0.01 || a.max.z > hd - 0.01) return true;
+    if (a.min.x < -hw + 0.01 || a.max.x > hw - 0.01 || a.min.z < -hd + 0.01 || a.max.z > hd - 0.01 || !boxInsidePolygon(a, floorPolygon)) return true;
     for (const [id, other] of items) {
       if (id === ignoreId) continue;
       const op = other.userData.product || {};
@@ -1045,8 +1075,10 @@ export function initRoomBuilder(canvas, options = {}) {
     const dz = Math.cos(yaw) * -forward - Math.sin(yaw) * strafe;
     const nx = THREE.MathUtils.clamp(walkRig.position.x + dx * speed, -roomWidth / 2 + 0.28, roomWidth / 2 - 0.28);
     const nz = THREE.MathUtils.clamp(walkRig.position.z + dz * speed, -roomDepth / 2 + 0.28, roomDepth / 2 - 0.28);
-    walkRig.position.x = nx;
-    walkRig.position.z = nz;
+    if (pointInPolygon({ x: nx, z: nz }, floorPolygon)) {
+      walkRig.position.x = nx;
+      walkRig.position.z = nz;
+    }
   }
 
   function animate() {
@@ -1151,7 +1183,7 @@ export function initRoomBuilder(canvas, options = {}) {
   function exportDesign() {
     return {
       version: 1,
-      reconstruction: { width: roomWidth, depth: roomDepth, height: roomHeight, photoUrl, finish: finishId },
+      reconstruction: { width: roomWidth, depth: roomDepth, height: roomHeight, floorPolygon, photoUrl, finish: finishId },
       hour,
       items: snapshot(),
       total: roomTotal(),
