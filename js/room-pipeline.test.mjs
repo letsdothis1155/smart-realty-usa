@@ -94,3 +94,24 @@ test("falls back to a usable sample room when analysis is unavailable", async ()
   assert.equal(room.photoUrl, "");
   assert.equal(room.sourcePhotoUrl, "https://smartrealty.us/images/gallery/g-02.jpg");
 });
+
+test("preserves a specific API credit error for an honest builder status", async () => {
+  browserConfig();
+  globalThis.fetch = async () => ({
+    async json() {
+      return {
+        ok: false,
+        code: "openai_credits_exhausted",
+        room: {
+          mode: "fallback",
+          label: "AI photo matching needs API credits. Showing a sample room for now.",
+          analysis: { sceneKind: "unusable", confidence: "low" },
+        },
+      };
+    },
+  });
+
+  const room = await reconstructRoom({ photoUrl: "images/gallery/g-01.jpg" });
+  assert.equal(room.mode, "fallback");
+  assert.equal(room.analysis.errorCode, "openai_credits_exhausted");
+});
