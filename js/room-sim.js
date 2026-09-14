@@ -1,6 +1,6 @@
 import { initRoomBuilder } from "/js/room-builder.js?v=20260911c";
 import { feetAndInches } from "/js/room-distance.mjs?v=20260911b";
-import { reconstructRoom } from "/js/room-pipeline.js?v=20260911d";
+import { reconstructRoom } from "/js/room-pipeline.js?v=20260914a";
 import { CATALOG_TREE, SAMPLE_PRODUCTS, VENDOR_OPTIONS, productsInGroup, money } from "/js/room-catalog.js?v=20260824j";
 
 function track(event, props) {
@@ -574,7 +574,9 @@ export async function bootRoomSim() {
     matchStatus.dataset.state = room.mode === "vision" ? "vision" : "sample";
     matchStatus.textContent = room.mode === "vision"
       ? `AI estimate from ${room.sourcePhotoUrls?.length || 1} photo${room.sourcePhotoUrls?.length === 1 ? "" : "s"} · ${room.analysis?.confidence || "low"} confidence`
-      : "Sample room · photo analysis unavailable";
+      : room.analysis?.errorCode === "openai_credits_exhausted"
+        ? "AI credits unavailable · sample room shown"
+        : "Sample room · photo analysis unavailable";
     matchStatus.title = room.label || "";
   }
 

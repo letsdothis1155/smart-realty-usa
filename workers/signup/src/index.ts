@@ -549,8 +549,22 @@ async function handleReconstruction(request: Request, env: AppEnv, ctx: Executio
     console.log(JSON.stringify({ message: "room photos analyzed", listingId: cleanHeader(String(body.listingId || ""), 80), photoCount: imageUrls.length, sceneKind: analysis.sceneKind, confidence: analysis.confidence }));
     return json({ ok: true, cached: false, room }, 200, request);
   } catch (error) {
-    console.error(JSON.stringify({ message: "room photo analysis failed", error: error instanceof Error ? error.message : String(error) }));
-    return json({ ok: false, error: "Could not analyze this photo right now.", room: fallbackRoom(imageUrl, "Photo analysis failed — showing a sample room.") }, 502, request);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const creditsExhausted = /no credits remaining|insufficient_quota|billing quota/i.test(errorMessage);
+    const publicMessage = creditsExhausted
+      ? "AI photo matching needs API credits. Showing a sample room for now."
+      : "Photo analysis failed — showing a sample room.";
+    console.error(JSON.stringify({
+      message: "room photo analysis failed",
+      reason: creditsExhausted ? "openai_credits_exhausted" : "upstream_failure",
+      error: errorMessage,
+    }));
+    return json({
+      ok: false,
+      code: creditsExhausted ? "openai_credits_exhausted" : "photo_analysis_failed",
+      error: publicMessage,
+      room: fallbackRoom(imageUrl, publicMessage),
+    }, creditsExhausted ? 503 : 502, request);
   }
 }
 

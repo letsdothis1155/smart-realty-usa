@@ -103,7 +103,15 @@ export async function reconstructRoom({ photoUrl = "", photoUrls = [], listingId
       });
       const data = await res.json();
       if (data.ok && data.room) return { ...base, ...data.room, listingId, estimated: true };
-      if (data.room) return { ...base, ...data.room, listingId, estimated: true };
+      if (data.room) {
+        return {
+          ...base,
+          ...data.room,
+          listingId,
+          estimated: true,
+          analysis: { ...data.room.analysis, errorCode: data.code || "photo_analysis_failed" },
+        };
+      }
     } catch {
       /* The builder remains usable when photo analysis is unavailable. */
     }
