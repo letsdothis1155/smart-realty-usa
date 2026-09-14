@@ -1,6 +1,6 @@
-import { initRoomBuilder } from "/js/room-builder.js?v=20260911c";
+import { initRoomBuilder } from "/js/room-builder.js?v=20260914e";
 import { feetAndInches } from "/js/room-distance.mjs?v=20260911b";
-import { reconstructHouse } from "/js/room-pipeline.js?v=20260914b";
+import { reconstructHouse } from "/js/room-pipeline.js?v=20260914e";
 import { CATALOG_TREE, SAMPLE_PRODUCTS, VENDOR_OPTIONS, productsInGroup, money } from "/js/room-catalog.js?v=20260824j";
 
 function track(event, props) {

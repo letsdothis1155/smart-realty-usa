@@ -95,6 +95,7 @@ type RoomAnalysis = {
   depth: number;
   height: number;
   floorFinish: "oak" | "dark-wood" | "tile" | "carpet" | "concrete" | "other";
+  floorPolygon: Array<{ x: number; z: number }>;
   walls: Array<{ id: "north" | "west" | "east" | "south"; windows: number; door: boolean }>;
   notes: string;
 };
@@ -112,6 +113,7 @@ type ReconstructedRoom = {
   photoUrl: string;
   sourcePhotoUrl: string;
   sourcePhotoUrls?: string[];
+  floorPolygon?: Array<{ x: number; z: number }>;
   walls: Array<{ id: string; role: "wall"; windows: number; door: boolean }>;
   floor: { role: "floor"; finish: string };
   ceiling: { role: "ceiling" };
@@ -292,7 +294,7 @@ async function deliverEmail(
 const ROOM_ANALYSIS_SCHEMA = {
   type: "object",
   additionalProperties: false,
-  required: ["sceneKind", "roomType", "confidence", "width", "depth", "height", "floorFinish", "walls", "notes"],
+  required: ["sceneKind", "roomType", "confidence", "width", "depth", "height", "floorFinish", "floorPolygon", "walls", "notes"],
   properties: {
     sceneKind: { type: "string", enum: ["interior", "exterior", "unusable"] },
     roomType: { type: "string", enum: ["living", "bedroom", "dining", "kitchen", "office", "other"] },
@@ -301,6 +303,20 @@ const ROOM_ANALYSIS_SCHEMA = {
     depth: { type: "number", minimum: 2.4, maximum: 15 },
     height: { type: "number", minimum: 2.1, maximum: 6 },
     floorFinish: { type: "string", enum: ["oak", "dark-wood", "tile", "carpet", "concrete", "other"] },
+    floorPolygon: {
+      type: "array",
+      minItems: 4,
+      maxItems: 8,
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["x", "z"],
+        properties: {
+          x: { type: "number", minimum: -7.5, maximum: 7.5 },
+          z: { type: "number", minimum: -7.5, maximum: 7.5 },
+        },
+      },
+    },
     walls: {
       type: "array",
       minItems: 4,
@@ -417,6 +433,10 @@ function fallbackRoom(imageUrl: string, reason: string): ReconstructedRoom {
     height: 2.72,
     photoUrl: "",
     sourcePhotoUrl: imageUrl,
+    floorPolygon: [
+      { x: -3.2, z: -2.6 }, { x: 3.2, z: -2.6 },
+      { x: 3.2, z: 2.6 }, { x: -3.2, z: 2.6 },
+    ],
     walls: [
       { id: "north", role: "wall", windows: 0, door: false },
       { id: "west", role: "wall", windows: 2, door: false },
@@ -442,6 +462,15 @@ function normalizeAnalysis(value: unknown): RoomAnalysis | null {
   const rawWalls = data.walls;
   if (!Array.isArray(rawWalls) || rawWalls.length !== 4) return null;
   const wallIds = ["north", "west", "east", "south"] as const;
+  const width = clampNumber(data.width, 2.4, 15, 6.4);
+  const depth = clampNumber(data.depth, 2.4, 15, 5.2);
+  const rawPolygon = Array.isArray(data.floorPolygon) ? data.floorPolygon : [];
+  const floorPolygon = rawPolygon.slice(0, 8).flatMap((point) => {
+    const value = record(point);
+    if (!value || typeof value.x !== "number" || typeof value.z !== "number") return [];
+    return [{ x: clampNumber(value.x, -width / 2, width / 2, 0), z: clampNumber(value.z, -depth / 2, depth / 2, 0) }];
+  });
+  if (floorPolygon.length < 4) return null;
   const walls = wallIds.map((id) => {
     const found = rawWalls.map((wall: unknown) => record(wall)).find((wall) => wall?.id === id);
     return {
@@ -454,10 +483,11 @@ function normalizeAnalysis(value: unknown): RoomAnalysis | null {
     sceneKind: String(data.sceneKind) as RoomAnalysis["sceneKind"],
     roomType: String(data.roomType) as RoomAnalysis["roomType"],
     confidence: String(data.confidence) as RoomAnalysis["confidence"],
-    width: clampNumber(data.width, 2.4, 15, 6.4),
-    depth: clampNumber(data.depth, 2.4, 15, 5.2),
+    width,
+    depth,
     height: clampNumber(data.height, 2.1, 6, 2.72),
     floorFinish: String(data.floorFinish) as RoomAnalysis["floorFinish"],
+    floorPolygon,
     walls,
     notes: cleanHeader(String(data.notes || ""), 240),
   };
@@ -480,7 +510,7 @@ async function analyzeRoomPhotos(imageUrls: string[], env: AppEnv): Promise<Room
           content: [
             {
               type: "input_text",
-              text: `Analyze these ${imageUrls.length} real-estate listing photos as views of one room and reconstruct an EMPTY editable 3D planning shell. Reconcile repeated architectural features across views instead of double-counting them. Ignore movable furniture, rugs, art, lamps, plants, people, and staging; preserve only permanent geometry such as floor, walls, windows, and doors. Determine whether the photos show an interior and appear consistent with the same room. For an interior, conservatively estimate rectangular room width, depth, and height in meters, classify the room and floor, and count visible or strongly implied windows and doors across four logical walls. Photos cannot prove dimensions, so use moderate or low confidence unless spatial cues are unusually strong. If views conflict, prioritize the first photo and mention the uncertainty in notes. For exterior or unusable images, classify honestly and return safe default dimensions 6.4 by 5.2 by 2.72 meters. Do not identify people, infer private information, or claim architectural accuracy.`,
+              text: `Analyze these ${imageUrls.length} real-estate listing photos as views of one room and reconstruct an EMPTY editable 3D planning shell. Reconcile repeated architectural features across views instead of double-counting them. Ignore movable furniture, rugs, art, lamps, plants, people, and staging; preserve only permanent geometry such as floor, walls, windows, and doors. Determine whether the photos show an interior and appear consistent with the same room. For an interior, conservatively estimate room width, depth, and height in meters, classify the room and floor, and count visible or strongly implied windows and doors across four logical walls. Return floorPolygon as 4-8 ordered x/z vertices centered around 0, tracing the floor boundary without self-intersections; use four rectangle corners when a non-rectangular shape is not clearly supported. Photos cannot prove dimensions or depth, so use moderate or low confidence unless spatial cues are unusually strong. If views conflict, prioritize the first photo and mention the uncertainty in notes. For exterior or unusable images, classify honestly, use safe default dimensions 6.4 by 5.2 by 2.72 meters, and return its four rectangle corners. Do not identify people, infer private information, or claim architectural accuracy.`,
             },
             ...imageUrls.map((imageUrl) => ({ type: "input_image" as const, image_url: imageUrl, detail: "high" as const })),
           ],
@@ -527,7 +557,7 @@ async function analyzeHousePhotos(imageUrls: string[], env: AppEnv): Promise<Arr
         content: [
           {
             type: "input_text",
-            text: `These ${imageUrls.length} numbered images are from one real-estate listing. Group images that clearly show the same interior room, and reconstruct one EMPTY editable 3D shell per distinct interior. Ignore movable furniture, rugs, art, lamps, plants, people, and staging; preserve permanent room geometry such as the floor, walls, windows, and doors. Ignore exteriors and unusable images unless no interior exists. photoIndices are zero-based image positions and each used index must belong to only one room. Give rooms short human labels such as Living room, Kitchen, or Primary bedroom. Conservatively estimate rectangular dimensions in meters, floor finish, and four logical walls. Photos are not measurements: use low or moderate confidence unless evidence is unusually strong. Never infer private information or claim architectural accuracy.`,
+            text: `These ${imageUrls.length} numbered images are from one real-estate listing. Group images that clearly show the same interior room, and reconstruct one EMPTY editable 3D shell per distinct interior. Ignore movable furniture, rugs, art, lamps, plants, people, and staging; preserve permanent room geometry such as the floor, walls, windows, and doors. Ignore exteriors and unusable images unless no interior exists. photoIndices are zero-based image positions and each used index must belong to only one room. Give rooms short human labels such as Living room, Kitchen, or Primary bedroom. Conservatively estimate dimensions, floor finish, and four logical walls. For each room, return floorPolygon as 4-8 ordered x/z vertices centered around 0, tracing the floor boundary without self-intersections; use four rectangle corners unless the photos clearly support an L-shaped, angled, or other non-rectangular boundary. Photos are not measurements or true depth scans: use low or moderate confidence unless evidence is unusually strong. Never infer private information or claim architectural accuracy.`,
           },
           ...imageUrls.map((imageUrl, index) => ({ type: "input_image" as const, image_url: imageUrl, detail: "high" as const, _index: index })),
         ].map((item) => {
@@ -585,6 +615,7 @@ function roomFromAnalysis(imageUrls: string[], analysis: RoomAnalysis): Reconstr
     sourcePhotoUrls: imageUrls,
     walls: analysis.walls.map((wall) => ({ ...wall, role: "wall" as const })),
     floor: { role: "floor", finish: analysis.floorFinish },
+    floorPolygon: analysis.floorPolygon,
     ceiling: { role: "ceiling" },
     objects: [],
     analysis: {
@@ -631,7 +662,7 @@ async function handleReconstruction(request: Request, env: AppEnv, ctx: Executio
     return json({ ok: false, error: "Photo analysis limit reached. Try again later." }, 429, request);
   }
 
-  const cacheKey = await imageCacheKey(imageUrls, houseMode ? "house-v1" : "room-v2");
+  const cacheKey = await imageCacheKey(imageUrls, houseMode ? "house-v2" : "room-v3");
   const cached = await env.SIGNUPS.get(cacheKey);
   if (cached) {
     try {
