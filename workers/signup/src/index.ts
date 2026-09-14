@@ -80,6 +80,7 @@ type SignupBody = {
 };
 
 type ReconstructionBody = {
+  mode?: unknown;
   imageUrl?: unknown;
   imageUrls?: unknown;
   listingId?: unknown;
@@ -99,6 +100,8 @@ type RoomAnalysis = {
 };
 
 type ReconstructedRoom = {
+  id?: string;
+  photoIndices?: number[];
   mode: "vision" | "fallback";
   estimated: true;
   label: string;
@@ -118,6 +121,12 @@ type ReconstructedRoom = {
     confidence: RoomAnalysis["confidence"];
     notes: string;
   };
+};
+
+type ReconstructedHouse = {
+  mode: "vision" | "fallback";
+  estimated: true;
+  rooms: ReconstructedRoom[];
 };
 
 const INTENTS: Record<string, string> = {
@@ -311,6 +320,30 @@ const ROOM_ANALYSIS_SCHEMA = {
   },
 } as const;
 
+const HOUSE_ANALYSIS_SCHEMA = {
+  type: "object",
+  additionalProperties: false,
+  required: ["rooms"],
+  properties: {
+    rooms: {
+      type: "array",
+      minItems: 1,
+      maxItems: 8,
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["id", "label", "photoIndices", ...ROOM_ANALYSIS_SCHEMA.required],
+        properties: {
+          id: { type: "string", maxLength: 60 },
+          label: { type: "string", maxLength: 80 },
+          photoIndices: { type: "array", minItems: 1, maxItems: 8, items: { type: "integer", minimum: 0, maximum: 7 } },
+          ...ROOM_ANALYSIS_SCHEMA.properties,
+        },
+      },
+    },
+  },
+} as const;
+
 function record(value: unknown): Record<string, unknown> | null {
   return value !== null && typeof value === "object" && !Array.isArray(value)
     ? (value as Record<string, unknown>)
@@ -353,10 +386,24 @@ function safeListingImage(value: unknown): string | null {
   return url.toString();
 }
 
-async function imageCacheKey(imageUrls: string[]): Promise<string> {
-  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(imageUrls.join("\n")));
+async function imageCacheKey(imageUrls: string[], mode = "room"): Promise<string> {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(`${mode}\n${imageUrls.join("\n")}`));
   const hex = Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
   return `room:v2:${hex}`;
+}
+
+function fallbackHouse(imageUrls: string[], reason: string): ReconstructedHouse {
+  return {
+    mode: "fallback",
+    estimated: true,
+    rooms: imageUrls.map((imageUrl, index) => ({
+      ...fallbackRoom(imageUrl, reason),
+      id: `photo-${index + 1}`,
+      label: `Photo ${index + 1} · sample 3D room`,
+      sourcePhotoUrls: [imageUrl],
+      photoIndices: [index],
+    })),
+  };
 }
 
 function fallbackRoom(imageUrl: string, reason: string): ReconstructedRoom {
@@ -433,7 +480,7 @@ async function analyzeRoomPhotos(imageUrls: string[], env: AppEnv): Promise<Room
           content: [
             {
               type: "input_text",
-              text: `Analyze these ${imageUrls.length} real-estate listing photos as views of one room for an editable 3D planning preview. Reconcile repeated features across views instead of double-counting them. Determine whether they show an interior and appear consistent with the same room. For an interior, conservatively estimate rectangular room width, depth, and height in meters, classify the room and floor, and count visible or strongly implied windows and doors across four logical walls. Photos cannot prove dimensions, so use moderate or low confidence unless spatial cues are unusually strong. If views conflict, prioritize the first photo and mention the uncertainty in notes. For exterior or unusable images, classify honestly and return safe default dimensions 6.4 by 5.2 by 2.72 meters. Do not identify people, infer private information, or claim architectural accuracy.`,
+              text: `Analyze these ${imageUrls.length} real-estate listing photos as views of one room and reconstruct an EMPTY editable 3D planning shell. Reconcile repeated architectural features across views instead of double-counting them. Ignore movable furniture, rugs, art, lamps, plants, people, and staging; preserve only permanent geometry such as floor, walls, windows, and doors. Determine whether the photos show an interior and appear consistent with the same room. For an interior, conservatively estimate rectangular room width, depth, and height in meters, classify the room and floor, and count visible or strongly implied windows and doors across four logical walls. Photos cannot prove dimensions, so use moderate or low confidence unless spatial cues are unusually strong. If views conflict, prioritize the first photo and mention the uncertainty in notes. For exterior or unusable images, classify honestly and return safe default dimensions 6.4 by 5.2 by 2.72 meters. Do not identify people, infer private information, or claim architectural accuracy.`,
             },
             ...imageUrls.map((imageUrl) => ({ type: "input_image" as const, image_url: imageUrl, detail: "high" as const })),
           ],
@@ -465,6 +512,54 @@ async function analyzeRoomPhotos(imageUrls: string[], env: AppEnv): Promise<Room
   const analysis = normalizeAnalysis(parsed);
   if (!analysis) throw new Error("OpenAI room analysis did not match the expected schema");
   return analysis;
+}
+
+async function analyzeHousePhotos(imageUrls: string[], env: AppEnv): Promise<Array<RoomAnalysis & { id: string; label: string; photoIndices: number[] }>> {
+  const response = await fetch("https://api.openai.com/v1/responses", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${env.OPENAI_API_KEY}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: env.OPENAI_MODEL || "gpt-5.4-mini",
+      store: false,
+      max_output_tokens: 2600,
+      input: [{
+        role: "user",
+        content: [
+          {
+            type: "input_text",
+            text: `These ${imageUrls.length} numbered images are from one real-estate listing. Group images that clearly show the same interior room, and reconstruct one EMPTY editable 3D shell per distinct interior. Ignore movable furniture, rugs, art, lamps, plants, people, and staging; preserve permanent room geometry such as the floor, walls, windows, and doors. Ignore exteriors and unusable images unless no interior exists. photoIndices are zero-based image positions and each used index must belong to only one room. Give rooms short human labels such as Living room, Kitchen, or Primary bedroom. Conservatively estimate rectangular dimensions in meters, floor finish, and four logical walls. Photos are not measurements: use low or moderate confidence unless evidence is unusually strong. Never infer private information or claim architectural accuracy.`,
+          },
+          ...imageUrls.map((imageUrl, index) => ({ type: "input_image" as const, image_url: imageUrl, detail: "high" as const, _index: index })),
+        ].map((item) => {
+          if (!("_index" in item)) return item;
+          const { _index, ...image } = item;
+          return [ { type: "input_text" as const, text: `Image ${_index}:` }, image ];
+        }).flat(),
+      }],
+      text: { format: { type: "json_schema", name: "house_reconstruction", strict: true, schema: HOUSE_ANALYSIS_SCHEMA } },
+    }),
+  });
+  const payload: unknown = await response.json();
+  if (!response.ok) {
+    const apiError = record(record(payload)?.error);
+    throw new Error(`OpenAI house analysis failed (${response.status}): ${cleanHeader(String(apiError?.message || "request failed"), 160)}`);
+  }
+  let parsed: unknown;
+  try { parsed = JSON.parse(outputText(payload)); } catch { throw new Error("OpenAI house analysis returned invalid JSON"); }
+  const rooms = record(parsed)?.rooms;
+  if (!Array.isArray(rooms)) throw new Error("OpenAI house analysis did not return rooms");
+  const used = new Set<number>();
+  return rooms.flatMap((value, index) => {
+    const raw = record(value);
+    const analysis = normalizeAnalysis(raw);
+    if (!raw || !analysis) return [];
+    const photoIndices = Array.isArray(raw.photoIndices)
+      ? [...new Set(raw.photoIndices.map(Number).filter((photoIndex) => Number.isInteger(photoIndex) && photoIndex >= 0 && photoIndex < imageUrls.length && !used.has(photoIndex)))].slice(0, 8)
+      : [];
+    photoIndices.forEach((photoIndex) => used.add(photoIndex));
+    if (!photoIndices.length || analysis.sceneKind !== "interior") return [];
+    return [{ ...analysis, id: cleanHeader(String(raw.id || `room-${index + 1}`), 60) || `room-${index + 1}`, label: cleanHeader(String(raw.label || analysis.roomType), 80), photoIndices }];
+  });
 }
 
 function roomFromAnalysis(imageUrls: string[], analysis: RoomAnalysis): ReconstructedRoom {
@@ -515,15 +610,19 @@ async function handleReconstruction(request: Request, env: AppEnv, ctx: Executio
     return json({ ok: false, error: "Invalid JSON" }, 400, request);
   }
 
+  const houseMode = body.mode === "house";
   const submittedUrls = Array.isArray(body.imageUrls) ? body.imageUrls : [body.imageUrl];
-  const imageUrls = [...new Set(submittedUrls.map(safeListingImage).filter((url): url is string => Boolean(url)))].slice(0, 4);
+  const imageUrls = [...new Set(submittedUrls.map(safeListingImage).filter((url): url is string => Boolean(url)))].slice(0, houseMode ? 8 : 4);
   const imageUrl = imageUrls[0];
   if (!imageUrl) return json({ ok: false, error: "Choose a Smart Realty listing photo." }, 400, request);
   if (submittedUrls.some((url) => url && !safeListingImage(url))) {
     return json({ ok: false, error: "Every photo must be a Smart Realty listing image." }, 400, request);
   }
   if (!env.OPENAI_API_KEY) {
-    return json({ ok: false, error: "Photo analysis is temporarily unavailable.", room: fallbackRoom(imageUrl, "Photo analysis unavailable — showing a sample room.") }, 503, request);
+    const reason = "Photo analysis unavailable — showing sample rooms.";
+    return json(houseMode
+      ? { ok: false, error: "Photo analysis is temporarily unavailable.", house: fallbackHouse(imageUrls, reason) }
+      : { ok: false, error: "Photo analysis is temporarily unavailable.", room: fallbackRoom(imageUrl, reason) }, 503, request);
   }
 
   const ip = request.headers.get("CF-Connecting-IP") || "unknown";
@@ -532,17 +631,33 @@ async function handleReconstruction(request: Request, env: AppEnv, ctx: Executio
     return json({ ok: false, error: "Photo analysis limit reached. Try again later." }, 429, request);
   }
 
-  const cacheKey = await imageCacheKey(imageUrls);
+  const cacheKey = await imageCacheKey(imageUrls, houseMode ? "house-v1" : "room-v2");
   const cached = await env.SIGNUPS.get(cacheKey);
   if (cached) {
     try {
-      return json({ ok: true, cached: true, room: JSON.parse(cached) as ReconstructedRoom }, 200, request);
+      return json(houseMode
+        ? { ok: true, cached: true, house: JSON.parse(cached) as ReconstructedHouse }
+        : { ok: true, cached: true, room: JSON.parse(cached) as ReconstructedRoom }, 200, request);
     } catch {
       // Ignore a malformed cache entry and refresh it.
     }
   }
 
   try {
+    if (houseMode) {
+      const analyses = await analyzeHousePhotos(imageUrls, env);
+      const house: ReconstructedHouse = analyses.length ? {
+        mode: "vision",
+        estimated: true,
+        rooms: analyses.map((analysis) => {
+          const roomPhotos = analysis.photoIndices.map((index) => imageUrls[index]).filter(Boolean);
+          return { ...roomFromAnalysis(roomPhotos, analysis), id: analysis.id, label: analysis.label, photoIndices: analysis.photoIndices };
+        }),
+      } : fallbackHouse(imageUrls, "No distinct interior rooms were detected — showing sample rooms.");
+      ctx.waitUntil(env.SIGNUPS.put(cacheKey, JSON.stringify(house), { expirationTtl: RECONSTRUCTION_CACHE_SECONDS }));
+      console.log(JSON.stringify({ message: "house photos analyzed", listingId: cleanHeader(String(body.listingId || ""), 80), photoCount: imageUrls.length, roomCount: house.rooms.length }));
+      return json({ ok: true, cached: false, house }, 200, request);
+    }
     const analysis = await analyzeRoomPhotos(imageUrls, env);
     const room = roomFromAnalysis(imageUrls, analysis);
     ctx.waitUntil(env.SIGNUPS.put(cacheKey, JSON.stringify(room), { expirationTtl: RECONSTRUCTION_CACHE_SECONDS }));
@@ -559,7 +674,12 @@ async function handleReconstruction(request: Request, env: AppEnv, ctx: Executio
       reason: creditsExhausted ? "openai_credits_exhausted" : "upstream_failure",
       error: errorMessage,
     }));
-    return json({
+    return json(houseMode ? {
+      ok: false,
+      code: creditsExhausted ? "openai_credits_exhausted" : "photo_analysis_failed",
+      error: publicMessage,
+      house: fallbackHouse(imageUrls, publicMessage),
+    } : {
       ok: false,
       code: creditsExhausted ? "openai_credits_exhausted" : "photo_analysis_failed",
       error: publicMessage,

@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { normalizeListingPhotoUrl, reconstructRoom } from "./room-pipeline.js";
+import { normalizeListingPhotoUrl, reconstructHouse, reconstructRoom } from "./room-pipeline.js";
 
 function browserConfig() {
   globalThis.window = {
@@ -114,4 +114,31 @@ test("preserves a specific API credit error for an honest builder status", async
   const room = await reconstructRoom({ photoUrl: "images/gallery/g-01.jpg" });
   assert.equal(room.mode, "fallback");
   assert.equal(room.analysis.errorCode, "openai_credits_exhausted");
+});
+
+test("requests one grouped house reconstruction for up to eight photos", async () => {
+  browserConfig();
+  let request;
+  globalThis.fetch = async (url, options) => {
+    request = { url, options };
+    return {
+      async json() {
+        return { ok: true, house: { mode: "vision", rooms: [{ id: "living-room", photoIndices: [0, 1] }] } };
+      },
+    };
+  };
+  const house = await reconstructHouse({ listingId: "house-1", photoUrls: Array.from({ length: 10 }, (_, i) => `images/gallery/g-${i}.jpg`) });
+  const body = JSON.parse(request.options.body);
+  assert.equal(body.mode, "house");
+  assert.equal(body.imageUrls.length, 8);
+  assert.equal(house.rooms[0].id, "living-room");
+});
+
+test("creates a separate editable fallback room for every photo", async () => {
+  browserConfig();
+  globalThis.fetch = async () => { throw new Error("offline"); };
+  const house = await reconstructHouse({ photoUrls: ["images/gallery/g-01.jpg", "images/gallery/g-02.jpg"] });
+  assert.equal(house.rooms.length, 2);
+  assert.deepEqual(house.rooms.map((room) => room.photoIndices), [[0], [1]]);
+  assert.equal(house.rooms[1].sourcePhotoUrl, "https://smartrealty.us/images/gallery/g-02.jpg");
 });

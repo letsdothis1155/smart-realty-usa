@@ -11,8 +11,8 @@
  *   → furniture placement
  *   → purchasable products
  *
- * Mode A (now): rectangular living-room shell, labeled as an estimate.
- * Mode B (later): RoomPlan / LiDAR / multi-photo via the same reconstructRoom() contract.
+ * Mode A (now): photo-grouped, editable rectangular room shells, labeled as estimates.
+ * Mode B (later): RoomPlan / LiDAR via the same reconstruction contracts.
  */
 
 export const PIPELINE_STAGES = [
@@ -127,4 +127,51 @@ export async function reconstructRoom({ photoUrl = "", photoUrls = [], listingId
     };
   }
   return base;
+}
+
+export async function reconstructHouse({ photoUrls = [], listingId = "" } = {}) {
+  const normalizedPhotos = [...new Set((Array.isArray(photoUrls) ? photoUrls : [])
+    .map(normalizeListingPhotoUrl)
+    .filter(Boolean))].slice(0, 8);
+  if (!normalizedPhotos.length) {
+    return { mode: "default", estimated: true, rooms: [{ ...DEFAULT_LIVING_ROOM, id: "sample-room", photoIndices: [] }] };
+  }
+
+  const config = typeof window === "undefined" ? null : window.SRU_CONFIG?.photoReconstruction;
+  const shopApiEnabled = typeof window === "undefined" || window.SRU_SHOP_API !== false;
+  if (config?.enabled !== false && shopApiEnabled) {
+    try {
+      const res = await fetch(config?.endpoint || "/api/shop/reconstruct", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mode: "house", imageUrls: normalizedPhotos, listingId }),
+      });
+      const data = await res.json();
+      if (data.house?.rooms?.length) {
+        return {
+          ...data.house,
+          listingId,
+          errorCode: data.ok ? "" : (data.code || "photo_analysis_failed"),
+        };
+      }
+    } catch {
+      /* Fall through to one editable sample room per listing photo. */
+    }
+  }
+
+  return {
+    mode: "fallback",
+    estimated: true,
+    listingId,
+    rooms: normalizedPhotos.map((sourcePhotoUrl, index) => ({
+      ...DEFAULT_LIVING_ROOM,
+      id: `photo-${index + 1}`,
+      label: `Photo ${index + 1} · sample 3D room`,
+      photoUrl: "",
+      sourcePhotoUrl,
+      sourcePhotoUrls: [sourcePhotoUrl],
+      photoIndices: [index],
+      analysis: { sceneKind: "unusable", confidence: "low" },
+    })),
+  };
 }
