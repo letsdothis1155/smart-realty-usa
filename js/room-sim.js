@@ -620,7 +620,7 @@ export async function bootRoomSim() {
     });
   }
 
-  async function selectRoom(room, { furnish = true } = {}) {
+  async function selectRoom(room, { furnish = false } = {}) {
     if (!room) return false;
     if (readyToSave) saveDesign();
     readyToSave = false;
@@ -668,7 +668,7 @@ export async function bootRoomSim() {
       button.addEventListener("click", () => selectRoom(rooms[index]).catch(console.error));
     });
   }
-  const restored = await selectRoom(rooms[0], { furnish: true });
+  const restored = await selectRoom(rooms[0]);
 
   const backLabel = document.getElementById("simBackLabel");
   if (backLabel) {
@@ -679,7 +679,9 @@ export async function bootRoomSim() {
 
   renderCatalog();
   track("3d_preview_open", { listingId });
-  if (restored && hud.hint) hud.hint.textContent = "Restored your saved layout for this room · switch rooms anytime";
+  if (hud.hint) hud.hint.textContent = restored
+    ? "Restored your saved layout for this room · switch rooms anytime"
+    : "Empty photo-estimated shell ready · add furniture or use AUTO FURNISH";
   refreshTotal();
   builder.resize();
   if (!restored) builder.setTimeOfDay(14);
