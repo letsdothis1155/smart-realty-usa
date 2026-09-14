@@ -1,6 +1,6 @@
 import { initRoomBuilder } from "/js/room-builder.js?v=20260911c";
 import { feetAndInches } from "/js/room-distance.mjs?v=20260911b";
-import { reconstructRoom } from "/js/room-pipeline.js?v=20260914a";
+import { reconstructHouse } from "/js/room-pipeline.js?v=20260914b";
 import { CATALOG_TREE, SAMPLE_PRODUCTS, VENDOR_OPTIONS, productsInGroup, money } from "/js/room-catalog.js?v=20260824j";
 
 function track(event, props) {
@@ -54,8 +54,8 @@ function absPhoto(u) {
   return `${location.origin}/${u}`;
 }
 
-function persistKey(listingId) {
-  return `sru.room.${listingId || "sample-living"}`;
+function persistKey(listingId, roomId = "sample-living") {
+  return `sru.room.${listingId || "sample"}.${roomId}`;
 }
 
 function slugify(value) {
@@ -166,12 +166,13 @@ export async function bootRoomSim() {
   let replaceMode = false;
   let listingTitle = "Property";
   let readyToSave = false;
+  let activeRoomId = "sample-living";
   const saveStatus = document.getElementById("simSaveStatus");
 
   function saveDesign() {
     if (!readyToSave) return;
     try {
-      localStorage.setItem(persistKey(listingId), JSON.stringify(builder.exportDesign()));
+      localStorage.setItem(persistKey(listingId, activeRoomId), JSON.stringify(builder.exportDesign()));
       if (saveStatus) saveStatus.textContent = "Saved on this device";
     } catch {
       if (saveStatus) saveStatus.textContent = "Storage unavailable · save an image";
@@ -580,25 +581,21 @@ export async function bootRoomSim() {
     matchStatus.title = room.label || "";
   }
 
-  const resolved = photos.map(absPhoto).filter(Boolean);
-  const room = await reconstructRoom({ photoUrl: resolved[0] || "", photoUrls: resolved, listingId, roomType: "living" });
-  builder.applyReconstruction(room);
-  showPhotoMatch(room);
+  const resolved = photos.map(absPhoto).filter(Boolean).slice(0, 8);
+  const house = await reconstructHouse({ photoUrls: resolved, listingId });
+  const rooms = (house.rooms || []).map((room) => house.errorCode
+    ? { ...room, analysis: { ...room.analysis, errorCode: house.errorCode } }
+    : room);
   const originalImage = document.getElementById("simOriginalImage");
   const originalButton = document.getElementById("simOriginalPhoto");
-  if (resolved.length) {
-    originalImage.src = resolved[0];
-    originalButton.disabled = false;
-  }
   originalButton.addEventListener("click", () => document.getElementById("simPhotoDialog").showModal());
-  try {
-    if (resolved.length) builder.setListingPhotos(resolved);
-    renderPhotoStrip(resolved);
-  } catch (err) {
-    console.error(err);
+
+  function roomPhotos(room) {
+    const indexed = Array.isArray(room.photoIndices) ? room.photoIndices.map((index) => resolved[index]).filter(Boolean) : [];
+    return indexed.length ? indexed : (room.sourcePhotoUrls || [room.sourcePhotoUrl]).filter(Boolean);
   }
 
-  function renderPhotoStrip(urls) {
+  function renderPhotoStrip(urls, selected = urls[0]) {
     const strip = document.getElementById("simPhotos");
     if (!strip) return;
     if (!urls.length) {
@@ -609,31 +606,69 @@ export async function bootRoomSim() {
     strip.innerHTML = urls
       .map(
         (u, i) =>
-          `<button type="button" class="sim-photo${i === 0 ? " is-on" : ""}" data-photo="${esc(u)}"><img src="${esc(u)}" alt="Listing photo ${i + 1}" /></button>`
+          `<button type="button" class="sim-photo${u === selected ? " is-on" : ""}" data-photo="${esc(u)}"><img src="${esc(u)}" alt="View ${i + 1} of this room" /></button>`
       )
       .join("");
     strip.querySelectorAll("[data-photo]").forEach((btn) => {
-      btn.addEventListener("click", async () => {
+      btn.addEventListener("click", () => {
         const picked = btn.getAttribute("data-photo");
         originalImage.src = picked;
         const next = [picked, ...urls.filter((u) => u !== picked)];
         builder.setListingPhotos(next);
         strip.querySelectorAll(".sim-photo").forEach((b) => b.classList.toggle("is-on", b === btn));
-        const status = document.getElementById("simPhotoMatch");
-        if (status) {
-          status.dataset.state = "loading";
-          status.textContent = "Analyzing selected photo…";
-        }
-        strip.querySelectorAll("button").forEach((button) => { button.disabled = true; });
-        const nextRoom = await reconstructRoom({ photoUrl: picked, photoUrls: next, listingId, roomType: "living" });
-        builder.applyReconstruction(nextRoom);
-        builder.setListingPhotos(next);
-        showPhotoMatch(nextRoom);
-        saveDesign();
-        strip.querySelectorAll("button").forEach((button) => { button.disabled = false; });
       });
     });
   }
+
+  async function selectRoom(room, { furnish = true } = {}) {
+    if (!room) return false;
+    if (readyToSave) saveDesign();
+    readyToSave = false;
+    activeRoomId = room.id || `room-${rooms.indexOf(room) + 1}`;
+    builder.applyReconstruction(room);
+    const urls = roomPhotos(room);
+    if (urls.length) {
+      originalImage.src = urls[0];
+      originalButton.disabled = false;
+      builder.setListingPhotos(urls);
+    } else {
+      originalButton.disabled = true;
+    }
+    renderPhotoStrip(urls);
+    showPhotoMatch(room);
+    document.querySelectorAll("[data-house-room]").forEach((button) => {
+      const selected = button.dataset.houseRoom === activeRoomId;
+      button.classList.toggle("is-on", selected);
+      button.setAttribute("aria-pressed", String(selected));
+    });
+    let restored = false;
+    try {
+      const raw = localStorage.getItem(persistKey(listingId, activeRoomId));
+      const saved = raw ? JSON.parse(raw) : null;
+      if (saved && Array.isArray(saved.items)) restored = await builder.loadDesign(saved);
+    } catch { restored = false; }
+    if (!restored && furnish) {
+      try { await builder.autoFurnish(); } catch (error) { console.error(error); }
+    }
+    readyToSave = true;
+    saveDesign();
+    refreshTotal();
+    refreshMeasureChoices();
+    return restored;
+  }
+
+  const roomNav = document.getElementById("simRooms");
+  if (roomNav && rooms.length) {
+    roomNav.hidden = false;
+    roomNav.innerHTML = rooms.map((room, index) => {
+      const id = room.id || `room-${index + 1}`;
+      return `<button type="button" data-house-room="${esc(id)}" aria-pressed="false">${esc(room.label || `Room ${index + 1}`)}</button>`;
+    }).join("");
+    roomNav.querySelectorAll("[data-house-room]").forEach((button, index) => {
+      button.addEventListener("click", () => selectRoom(rooms[index]).catch(console.error));
+    });
+  }
+  const restored = await selectRoom(rooms[0], { furnish: true });
 
   const backLabel = document.getElementById("simBackLabel");
   if (backLabel) {
@@ -644,25 +679,7 @@ export async function bootRoomSim() {
 
   renderCatalog();
   track("3d_preview_open", { listingId });
-  let restored = false;
-  try {
-    const raw = localStorage.getItem(persistKey(listingId));
-    const saved = raw ? JSON.parse(raw) : null;
-    if (saved && Array.isArray(saved.items)) {
-      restored = await builder.loadDesign(saved);
-      if (restored && hud.hint) hud.hint.textContent = "Restored your last layout for this listing · AUTO FURNISH to start over";
-    }
-  } catch {
-    restored = false;
-  }
-  if (!restored) {
-    try {
-      await builder.autoFurnish();
-    } catch (err) {
-      console.error(err);
-      if (hud.hint) hud.hint.textContent = "Auto-furnish hit a snag · tap AUTO FURNISH to retry";
-    }
-  }
+  if (restored && hud.hint) hud.hint.textContent = "Restored your saved layout for this room · switch rooms anytime";
   refreshTotal();
   builder.resize();
   if (!restored) builder.setTimeOfDay(14);

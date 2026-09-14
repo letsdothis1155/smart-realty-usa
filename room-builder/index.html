@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>3D Room · Shop This Room — SMART REALTY.US LLC</title>
   <meta name="description" content="Walk a property-inspired room, place planning models from Best Buy, IKEA, Wayfair, and Home Depot, and estimate the staged space before buying a home." />
-  <link rel="stylesheet" href="/room-builder/room-sim.css?v=20260911c" />
+  <link rel="stylesheet" href="/room-builder/room-sim.css?v=20260914d" />
   <script src="/domain-config.js"></script>
   <script src="/js/analytics.js"></script>
   <script src="/js/listings.js"></script>
@@ -37,6 +37,7 @@
         <span id="simListingMeta"></span>
         <span id="simPhotoMatch" class="sim-photo-match" data-state="sample">Checking photo match…</span>
         <div class="sim-photos" id="simPhotos" hidden></div>
+        <nav class="sim-rooms" id="simRooms" aria-label="3D rooms in this house" hidden></nav>
       </div>
 
       <div class="sim-side">
@@ -154,7 +155,7 @@
   </div>
   <noscript><p class="sim-loading">JavaScript is required for the interactive 3D room.</p></noscript>
   <script type="module">
-    import("/js/room-sim.js?v=20260914a")
+    import("/js/room-sim.js?v=20260914d")
       .then(({ bootRoomSim }) => bootRoomSim())
       .catch((error) => {
         console.error("Room simulator failed to start", error);

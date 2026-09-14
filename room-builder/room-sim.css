@@ -152,6 +152,30 @@ body.room-sim {
   height: 100%;
   object-fit: cover;
 }
+.sim-rooms {
+  display: flex;
+  gap: 6px;
+  margin-top: 0.55rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  overflow-x: auto;
+}
+.sim-rooms button {
+  flex: 0 0 auto;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  background: rgba(20, 24, 30, 0.88);
+  color: #d9deea;
+  padding: 0.42rem 0.7rem;
+  font: inherit;
+  font-size: 0.72rem;
+  cursor: pointer;
+}
+.sim-rooms button.is-on {
+  border-color: #e8c87a;
+  background: #e8c87a;
+  color: #17130b;
+}
 
 .sim-side {
   position: absolute;
