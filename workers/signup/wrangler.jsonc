@@ -14,6 +14,7 @@
     "SIGNUP_TO": "andrewiredale@smartrealty.us",
     "SIGNUP_FROM": "signup@smartrealty.us",
     "SIGNUP_FROM_NAME": "Smart Realty USA",
+    "RESEND_FROM": "Smart Realty USA <inquiries@notify.smartrealty.us>",
     "OPENAI_MODEL": "gpt-5.4-mini"
   },
   "kv_namespaces": [

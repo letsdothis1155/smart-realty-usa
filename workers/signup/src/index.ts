@@ -15,7 +15,11 @@ const RECONSTRUCTION_LIMIT = 6;
 const RECONSTRUCTION_CACHE_SECONDS = 60 * 60 * 24 * 7;
 const CANONICAL_SITE = "https://smartrealty.us";
 
-type AppEnv = Env & { OPENAI_API_KEY?: string };
+type AppEnv = Env & {
+  OPENAI_API_KEY?: string;
+  RESEND_API_KEY?: string;
+  RESEND_FROM?: string;
+};
 
 function corsHeaders(request: Request): Headers {
   const origin = request.headers.get("Origin") || "";
@@ -195,8 +199,9 @@ function buildMime(opts: {
 }
 
 async function deliverEmail(
-  env: Env,
+  env: AppEnv,
   opts: {
+    id: string;
     name: string;
     email: string;
     subject: string;
@@ -207,6 +212,45 @@ async function deliverEmail(
   const to = env.SIGNUP_TO;
   const from = env.SIGNUP_FROM;
   const fromName = env.SIGNUP_FROM_NAME || "Smart Realty USA";
+
+  if (env.RESEND_API_KEY) {
+    try {
+      const res = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${env.RESEND_API_KEY}`,
+          "Content-Type": "application/json",
+          "Idempotency-Key": `signup/${opts.id}`,
+        },
+        body: JSON.stringify({
+          from: env.RESEND_FROM || `${fromName} <${from}>`,
+          to: [to],
+          reply_to: `${cleanHeader(opts.name, 80)} <${opts.email}>`,
+          subject: opts.subject,
+          text: opts.text,
+          html: opts.html,
+        }),
+      });
+      const payload = await res.text();
+      if (res.ok) {
+        return { emailed: true, via: "resend" };
+      }
+      console.error(
+        JSON.stringify({
+          message: "resend email send failed",
+          status: res.status,
+          body: payload.slice(0, 300),
+        }),
+      );
+    } catch (error) {
+      console.error(
+        JSON.stringify({
+          message: "resend email send threw",
+          error: error instanceof Error ? error.message : String(error),
+        }),
+      );
+    }
+  }
 
   try {
     await env.EMAIL.send({
@@ -845,7 +889,7 @@ export default {
         <p>No password was collected. This is a request, not a live member login.</p>
       `.trim();
 
-      const delivered = await deliverEmail(env, { name, email, subject, text, html });
+      const delivered = await deliverEmail(env, { id, name, email, subject, text, html });
       console.log(
         JSON.stringify({
           message: "signup request",
