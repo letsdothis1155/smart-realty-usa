@@ -96,5 +96,5 @@ Use when you want register/login on the same host:
 - [ ] `presenterMode: false` (already)  
 - [ ] Share URL privately first, then wider  
 
-**Contact:** ai@smartrealty.us  
+**Contact:** andrewiredale@smartrealty.us
 **Demo disclaimer:** not a licensed brokerage; marketing prototype only.

@@ -2607,11 +2607,11 @@ function initDemoGate() {
 
 // ---------- Live chat (human-style responses) ----------
 const AGENT_REPLIES = [
-  "This chat is a demo assistant — not a live concierge. For a real reply, email ai@smartrealty.us.",
+  "This chat is a demo assistant — not a live concierge. For a real reply, email andrewiredale@smartrealty.us.",
   "House Blue Book on this demo is a transparent offer next to a fair-value estimate. No hidden fees in the UI.",
   "Bitcoin quotes use live Coinbase/CoinGecko prices. The pay button does not move real funds.",
   "Try-Before-Buy is a product idea on this demo: stay first, then apply eligible nights toward a purchase.",
-  "SMART REALTY.US LLC is owner-operated in Louisville. Phone 1-800-762-7879 · ai@smartrealty.us.",
+  "SMART REALTY.US LLC is owner-operated in Louisville. Phone 1-800-762-7879 · andrewiredale@smartrealty.us.",
   "This site runs on GitHub Pages, built solo by Andrew in Louisville. Free member access uses passwordless email magic links — we're in public demo now, ahead of full brokerage licensing.",
   "Want a Blue Book, a BTC quote, or a waitlist invite? I can point you to those sections — or email Andrew.",
 ];
@@ -2640,7 +2640,7 @@ function openChat(prefill) {
   $("#chatPanel").classList.remove("hidden");
   if (!$("#chatMessages").children.length) {
     appendChat(
-      "Hi — this is the Smart Realty demo assistant. It is not a 24/7 human desk. For Andrew, email ai@smartrealty.us. What do you want to know about the demo?"
+      "Hi — this is the Smart Realty demo assistant. It is not a 24/7 human desk. For Andrew, email andrewiredale@smartrealty.us. What do you want to know about the demo?"
     );
   }
   if (prefill) {
@@ -2697,7 +2697,7 @@ function initChat() {
         reply =
           "Our free House Blue Book is like a Kelley Blue Book for homes — fair market value, comps, and our lowest transparent offer with no surprise fees.";
       } else if (lower.includes("phone") || lower.includes("call")) {
-        reply = "Call 1-800-762-7879 or email ai@smartrealty.us. This is an owner-operated Louisville LLC — not a 24/7 call center.";
+        reply = "Call 1-800-762-7879 or email andrewiredale@smartrealty.us. This is an owner-operated Louisville LLC — not a 24/7 call center.";
       } else if (lower.includes("security") || lower.includes("safe") || lower.includes("hack")) {
         reply =
           "The public site is static HTTPS on GitHub Pages + Cloudflare. The Bitcoin explorer is a read-only node. We do not run a 24/7 SOC or a live title vault.";
@@ -2951,7 +2951,7 @@ function getConfig() {
       siteName: "Smart Realty USA",
       siteUrl: "https://smartrealty.us",
       canonicalHost: "smartrealty.us",
-      contactEmail: "ai@smartrealty.us",
+      contactEmail: "andrewiredale@smartrealty.us",
       phoneDisplay: "502-539-1090",
       phoneTel: "+15025391090",
       isPrivateDemo: false,
@@ -2962,7 +2962,7 @@ function getConfig() {
 
 function applyDomainConfig() {
   const cfg = getConfig();
-  const email = cfg.contactEmail || "ai@smartrealty.us";
+  const email = cfg.contactEmail || "andrewiredale@smartrealty.us";
   const siteUrl = (cfg.siteUrl || "").replace(/\/$/, "");
   const seo = cfg.seo || {};
   // Public index when seo.index === true (explicit flip)
@@ -3100,9 +3100,9 @@ Suggested walkthrough (5–7 minutes):
   5. Open any home — see Blue Book stack + live ₿ price
   6. Try Free Blue Book on the form
   7. Optional: Simulate Bitcoin checkout or book a Try-Before-Buy stay
-  8. Email ai@smartrealty.us or call 1-800-762-7879
+  8. Email andrewiredale@smartrealty.us or call 1-800-762-7879
 
-Official contact: ${cfg.contactEmail || "ai@smartrealty.us"}
+Official contact: ${cfg.contactEmail || "andrewiredale@smartrealty.us"}
 
 —
 Demo Version · All Rights Reserved © 2026 Smart Realty USA

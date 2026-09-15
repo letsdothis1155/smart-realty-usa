@@ -2,7 +2,7 @@
 
 Exclusive real-estate demo: transparent **House Blue Book** pricing, live **Bitcoin** checkout quotes, Try-Before-Buy stays, and 24/7 human-style support chat.
 
-**Official contact:** [ai@smartrealty.us](mailto:ai@smartrealty.us)
+**Official contact:** [andrewiredale@smartrealty.us](mailto:andrewiredale@smartrealty.us)
 
 ---
 

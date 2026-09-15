@@ -24,4 +24,4 @@ Also:
 8. `./scripts/verify-live.sh yourdomain.com`
 9. Email kit: fill `SHARE-EMAIL.txt` and send
 
-**Contact:** ai@smartrealty.us
+**Contact:** andrewiredale@smartrealty.us

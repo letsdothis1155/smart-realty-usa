@@ -40,7 +40,7 @@
 | Mailing address | **Same as physical** | |
 | Public phone | **1-800-762-7879** | On smartrealty.us |
 | Direct phone (D&B may call) | **502-539-1090** | Owner line from the company one-pager |
-| Business email | **ai@smartrealty.us** | Public contact |
+| Business email | **andrewiredale@smartrealty.us** | Public contact |
 | Account-request inbox | **andrewiredale@smartrealty.us** | Not the D&B login email |
 | Website | **https://smartrealty.us** | |
 | Country | **United States** | |

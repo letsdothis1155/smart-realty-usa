@@ -34,7 +34,7 @@ if (!defined('SRU_DATA_DIR')) {
     define('SRU_DATA_DIR', __DIR__ . '/data');
 }
 if (!defined('SRU_NOTIFY_EMAIL')) {
-    define('SRU_NOTIFY_EMAIL', 'ai@smartrealty.us');
+    define('SRU_NOTIFY_EMAIL', 'andrewiredale@smartrealty.us');
 }
 if (!defined('SRU_MAIL_FROM')) {
     define('SRU_MAIL_FROM', 'noreply@smartrealty.us');

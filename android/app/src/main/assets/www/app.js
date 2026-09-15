@@ -379,7 +379,7 @@
       toast(state.favs.has(p.id) ? "Saved" : "Removed");
     };
     $("#dChat").onclick = () => {
-      location.href = "mailto:ai@smartrealty.us?subject=" + encodeURIComponent("About " + p.title);
+      location.href = "mailto:andrewiredale@smartrealty.us?subject=" + encodeURIComponent("About " + p.title);
     };
   }
 

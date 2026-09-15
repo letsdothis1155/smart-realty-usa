@@ -36,7 +36,7 @@ Sign in: [https://www.godaddy.com](https://www.godaddy.com) → **My Products**
 
 ### Optional later
 
-- [ ] **Professional Email** or free **forwarding** for `ai@smartrealty.us`
+- [ ] **Professional Email** or free **forwarding** for `andrewiredale@smartrealty.us`
 - [ ] Microsoft 365 only if you want full mailboxes
 
 ### Do not use for this project
@@ -190,7 +190,7 @@ GoDaddy account
 ├── Domain: smartrealty.us          ← DNS + renewals
 ├── Web Hosting (cPanel)            ← website + PHP accounts
 │     └── public_html/              ← only Smart Realty files
-├── Email (optional)                ← ai@smartrealty.us
+├── Email (optional)                ← andrewiredale@smartrealty.us
 └── NOT used: Website Builder       ← disconnect
 ```
 
@@ -237,6 +237,6 @@ python3 -m http.server 8766
 6. [ ] Create `api/config.local.php` and set all server-only secrets
 7. [ ] `domain-config.js` → `apiUrl: ""`, `siteUrl` correct  
 8. [ ] Test **auth.html** create account + login  
-9. [ ] Optional: email for `ai@smartrealty.us`  
+9. [ ] Optional: email for `andrewiredale@smartrealty.us`
 
 When you’ve finished **Step 1–2** in the GoDaddy UI (hosting purchased + builder status), tell me what you see under My Products and we’ll walk DNS + upload line by line.

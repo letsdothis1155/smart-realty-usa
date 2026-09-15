@@ -82,7 +82,7 @@
           <a href="/auth.html">Sign in</a>
           <a href="/privacy.html">Privacy</a>
           <a href="/terms.html">Terms</a>
-          <a href="mailto:ai@smartrealty.us">ai@smartrealty.us</a>
+          <a href="mailto:andrewiredale@smartrealty.us">andrewiredale@smartrealty.us</a>
         </div>
       </div>
       <div class="container g-footer-bottom">

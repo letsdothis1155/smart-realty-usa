@@ -20,7 +20,7 @@ You need **one** of:
 Both end at **https://smartrealty.us** with your demo.
 
 **In-app unlock:** private value configured in `api/config.local.php`
-**Contact:** ai@smartrealty.us
+**Contact:** andrewiredale@smartrealty.us
 
 ---
 

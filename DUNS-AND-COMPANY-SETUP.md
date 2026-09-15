@@ -6,7 +6,7 @@
 > It is a free **9-digit business identifier** issued by **Dun & Bradstreet (D&B)**.  
 > Real-estate **brokerage licenses** are separate and regulated by each U.S. state.
 
-Official contact email (demo): **ai@smartrealty.us**  
+Official contact email (demo): **andrewiredale@smartrealty.us**
 Account requests: **andrewiredale@smartrealty.us**
 
 **Filed facts (do not invent a second LLC):**  
@@ -40,7 +40,7 @@ Before D‑U‑N‑S, have a real legal entity:
 3. **Get an EIN (free)** — IRS online:  
    https://www.irs.gov/businesses/small-businesses-self-employed/apply-for-an-employer-identification-number-ein-online
 4. **Open a business bank account** — same legal name as formation docs
-5. **Register domain + email** — e.g. `smartrealty.us` / `ai@smartrealty.us`
+5. **Register domain + email** — e.g. `smartrealty.us` / `andrewiredale@smartrealty.us`
 
 Keep one **canonical** legal name and address. Use it everywhere.
 
@@ -70,7 +70,7 @@ D&B sometimes creates numbers when others inquire about your company.
 - [x] Trade name / DBA — **Smart Realty USA**
 - [x] Physical street address — **2611 Harmony Rd, Louisville, KY 40299** (no P.O. box)
 - [x] Mailing address — same
-- [x] Phone + business email — **1-800-762-7879** / **502-539-1090** · **ai@smartrealty.us**
+- [x] Phone + business email — **1-800-762-7879** / **502-539-1090** · **andrewiredale@smartrealty.us**
 - [x] Owner / officer — **Andrew Iredale Jr**, Owner / Managing Member
 - [x] Business structure — Kentucky member-managed LLC
 - [x] Year started — **2026** (filed 3 Aug 2026, SOS 1614978.06)
@@ -185,4 +185,4 @@ Phone assistance is sometimes available through D&B (numbers change). Prefer sta
 ---
 
 © 2026 Smart Realty USA · Demo materials · All Rights Reserved  
-Contact: ai@smartrealty.us
+Contact: andrewiredale@smartrealty.us

@@ -21,7 +21,7 @@ window.SRU_CONFIG = {
   /** Host only (for display) */
   canonicalHost: "smartrealty.us",
 
-  contactEmail: "ai@smartrealty.us",
+  contactEmail: "andrewiredale@smartrealty.us",
   phoneDisplay: "502-539-1090",
   phoneTel: "+15025391090",
 
@@ -44,7 +44,7 @@ window.SRU_CONFIG = {
   dunsNumber: "", // add when Dun & Bradstreet issues it
   ein: "", // never publish; retrieve from IRS if needed
   businessAddress: "2611 Harmony Rd, Louisville, KY 40299",
-  billingEmail: "ai@smartrealty.us",
+  billingEmail: "andrewiredale@smartrealty.us",
 
   /** Private-demo chrome (badges, presenter panel). Public site stays an honest demo. */
   isPrivateDemo: false,

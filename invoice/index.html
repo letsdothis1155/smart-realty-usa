@@ -54,7 +54,7 @@
         <p><strong>SMART REALTY.US LLC</strong></p>
         <p>Kentucky member-managed LLC · filed 3 Aug 2026 · SOS 1614978.06</p>
         <p>2611 Harmony Rd, Louisville, KY 40299</p>
-        <p>1-800-762-7879 · ai@smartrealty.us</p>
+        <p>1-800-762-7879 · andrewiredale@smartrealty.us</p>
         <p>Owner: Andrew Iredale Jr · Not a licensed brokerage. Not a bank.</p>
       </div>
       <h1>Invoice</h1>
@@ -82,7 +82,7 @@
     </article>
     <div class="inv-actions no-print">
       <button type="button" class="btn btn-primary" id="invPrint">Print / PDF</button>
-      <a class="btn btn-outline" id="invMail" href="mailto:ai@smartrealty.us">Email this invoice</a>
+      <a class="btn btn-outline" id="invMail" href="mailto:andrewiredale@smartrealty.us">Email this invoice</a>
       <a class="btn btn-ghost" href="/copy/">Write the copy</a>
       <a class="btn btn-ghost" href="/account.html">Request an account</a>
     </div>
@@ -126,8 +126,8 @@
           "Pay off-site. This website does not collect cards or bank numbers.",
           "Print the invoice page to PDF if you need a file."
         ].filter(Boolean).join("\n");
-        var dest = em || "ai@smartrealty.us";
-        a.href = "mailto:" + dest + "?cc=ai@smartrealty.us&subject=" + encodeURIComponent(sub) + "&body=" + encodeURIComponent(body);
+        var dest = em || "andrewiredale@smartrealty.us";
+        a.href = "mailto:" + dest + "?cc=andrewiredale@smartrealty.us&subject=" + encodeURIComponent(sub) + "&body=" + encodeURIComponent(body);
       }
       ["invNo","invDate","invTo","invEmail","invWhere","invItem","invAmt","invNotes"].forEach(function (id) {
         var el = document.getElementById(id);

@@ -44,7 +44,7 @@
       .filter((line, i, arr) => line !== "" || arr[i - 1] !== "")
       .join("\n");
     return (
-      "mailto:ai@smartrealty.us?subject=" +
+      "mailto:andrewiredale@smartrealty.us?subject=" +
       encodeURIComponent(sub) +
       "&body=" +
       encodeURIComponent(body)

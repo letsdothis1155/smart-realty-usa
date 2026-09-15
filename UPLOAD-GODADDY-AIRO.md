@@ -2,7 +2,7 @@
 
 **Package:** `SmartRealty-USA-GoDaddy-Demo.zip` (in your Downloads folder)  
 **Demo password:** set privately in `api/config.local.php` after upload
-**Contact:** ai@smartrealty.us  
+**Contact:** andrewiredale@smartrealty.us
 
 ---
 
@@ -126,5 +126,5 @@ Demo unlock and full member accounts work after PHP `api/` is live on cPanel.
 
 ## Support
 
-Email: **ai@smartrealty.us**  
+Email: **andrewiredale@smartrealty.us**
 Project on Mac: `~/Projects/smart-realty-usa`
