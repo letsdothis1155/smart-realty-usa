@@ -1,6 +1,7 @@
 import { initRoomBuilder } from "/js/room-builder.js?v=20260914e";
 import { feetAndInches } from "/js/room-distance.mjs?v=20260911b";
 import { reconstructHouse } from "/js/room-pipeline.js?v=20260914e";
+import { readRoomPlanFile } from "/js/roomplan-import.mjs?v=20260915a";
 import { CATALOG_TREE, SAMPLE_PRODUCTS, VENDOR_OPTIONS, productsInGroup, money } from "/js/room-catalog.js?v=20260824j";
 
 function track(event, props) {
@@ -572,8 +573,10 @@ export async function bootRoomSim() {
   function showPhotoMatch(room) {
     const matchStatus = document.getElementById("simPhotoMatch");
     if (!matchStatus) return;
-    matchStatus.dataset.state = room.mode === "vision" ? "vision" : "sample";
-    matchStatus.textContent = room.mode === "vision"
+    matchStatus.dataset.state = ["vision", "lidar"].includes(room.mode) ? "vision" : "sample";
+    matchStatus.textContent = room.mode === "lidar"
+      ? "Measured LiDAR / RoomPlan geometry · imported locally"
+      : room.mode === "vision"
       ? `AI estimate from ${room.sourcePhotoUrls?.length || 1} photo${room.sourcePhotoUrls?.length === 1 ? "" : "s"} · ${room.analysis?.confidence || "low"} confidence`
       : room.analysis?.errorCode === "openai_credits_exhausted"
         ? "AI credits unavailable · sample room shown"
@@ -669,6 +672,34 @@ export async function bootRoomSim() {
     });
   }
   const restored = await selectRoom(rooms[0]);
+
+  const lidarInput = document.getElementById("simLidarFile");
+  document.getElementById("simLidar")?.addEventListener("click", () => lidarInput?.click());
+  lidarInput?.addEventListener("change", async () => {
+    const file = lidarInput.files?.[0];
+    if (!file) return;
+    hud.hint.textContent = "Reading measured RoomPlan geometry…";
+    try {
+      const lidarRoom = await readRoomPlanFile(file);
+      rooms.push(lidarRoom);
+      const button = document.createElement("button");
+      button.type = "button";
+      button.dataset.houseRoom = lidarRoom.id;
+      button.setAttribute("aria-pressed", "false");
+      button.textContent = lidarRoom.label;
+      button.addEventListener("click", () => selectRoom(lidarRoom).catch(console.error));
+      roomNav.hidden = false;
+      roomNav.append(button);
+      await selectRoom(lidarRoom);
+      builder.clearRoom();
+      hud.hint.textContent = "Measured empty shell imported locally · ready to build";
+      track("lidar_room_imported", { listingId, vertices: lidarRoom.floorPolygon.length });
+    } catch (error) {
+      hud.hint.textContent = error instanceof Error ? error.message : "This RoomPlan scan could not be imported.";
+    } finally {
+      lidarInput.value = "";
+    }
+  });
 
   const backLabel = document.getElementById("simBackLabel");
   if (backLabel) {

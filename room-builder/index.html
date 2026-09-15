@@ -46,6 +46,8 @@
         <button type="button" class="sim-chip" id="simAuto">✨ AUTO FURNISH</button>
         <button type="button" class="sim-chip" id="simEmpty">EMPTY ROOM</button>
         <button type="button" class="sim-chip" id="simDimensions">ROOM SIZE</button>
+        <button type="button" class="sim-chip" id="simLidar" title="Import an Apple RoomPlan JSON file locally; the scan is not uploaded">IMPORT LIDAR SCAN</button>
+        <input id="simLidarFile" type="file" accept="application/json,.json" hidden />
         <button type="button" class="sim-chip" id="simMeasure">MEASURE GAP</button>
         <button type="button" class="sim-chip" id="simOriginalPhoto" disabled>ORIGINAL PHOTO</button>
         <button type="button" class="sim-chip" id="simUndo">UNDO</button>
@@ -155,7 +157,7 @@
   </div>
   <noscript><p class="sim-loading">JavaScript is required for the interactive 3D room.</p></noscript>
   <script type="module">
-    import("/js/room-sim.js?v=20260914e")
+    import("/js/room-sim.js?v=20260915a")
       .then(({ bootRoomSim }) => bootRoomSim())
       .catch((error) => {
         console.error("Room simulator failed to start", error);
