@@ -14,7 +14,7 @@
 | Address | 2611 Harmony Rd, Louisville, KY 40299 |
 | Public phone | 1-800-762-7879 |
 | Owner phone | 502-539-1090 |
-| Public email | ai@smartrealty.us |
+| Public email | andrewiredale@smartrealty.us |
 | Account requests | andrewiredale@smartrealty.us |
 | D‑U‑N‑S | Not issued yet |
 | EIN | Retrieve if already assigned — do not apply a second time; do not publish |
@@ -46,7 +46,7 @@ This is a practical checklist, not legal advice. The steps below are the origina
 | Principal office | **2611 Harmony Rd, Louisville, KY 40299** |
 | Registered agent name | **Andrew Iredale** (as on Articles) |
 | Registered agent address | 2611 Harmony Rd, Louisville, KY 40299 |
-| Email | ai@smartrealty.us (public) · andrewiredale@smartrealty.us (account requests) |
+| Email | andrewiredale@smartrealty.us (public) · andrewiredale@smartrealty.us (account requests) |
 | Phone | 1-800-762-7879 (public) · 502-539-1090 (owner) |
 | Website | https://smartrealty.us |
 

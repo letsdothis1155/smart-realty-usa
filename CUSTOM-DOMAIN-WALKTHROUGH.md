@@ -5,7 +5,7 @@
 | Item | Value |
 |------|--------|
 | **Recommended domain** | `smartrealty.us` (or any domain you own) |
-| **Official email** | `ai@smartrealty.us` |
+| **Official email** | `andrewiredale@smartrealty.us` |
 | **In-app demo password** | Private value in `api/config.local.php` |
 | **Server login (optional)** | Create independently in cPanel Directory Privacy |
 | **Project folder** | `~/Projects/smart-realty-usa` |
@@ -18,7 +18,7 @@
 ```
 https://smartrealty.us          → password gate → full demo
 https://www.smartrealty.us      → redirects to apex (or vice versa)
-ai@smartrealty.us               → real inbox or forward
+andrewiredale@smartrealty.us               → real inbox or forward
 Client email                    → ready to send (SHARE-EMAIL.txt)
 ```
 
@@ -370,7 +370,7 @@ window.SRU_CONFIG = {
   // Primary public URL (no trailing slash)
   siteUrl: "https://smartrealty.us",       // or https://demo.smartrealty.us
   canonicalHost: "smartrealty.us",
-  contactEmail: "ai@smartrealty.us",
+  contactEmail: "andrewiredale@smartrealty.us",
   phoneDisplay: "1-800-SMART-USA",
   phoneTel: "+18007627879",
   demoPasswordHint: false, // never show password on live site
@@ -390,18 +390,18 @@ The site uses this for:
 
 ---
 
-# Phase 8 — Email: `ai@smartrealty.us`
+# Phase 8 — Email: `andrewiredale@smartrealty.us`
 
 ### Option 1 — Forwarding (fastest, free)
 
 1. GoDaddy → domain → **Email** → **Forwarding**
-2. Forward `ai@smartrealty.us` → your personal Gmail/iCloud  
+2. Forward `andrewiredale@smartrealty.us` → your personal Gmail/iCloud
 3. Save → test by emailing yourself
 
 ### Option 2 — Real mailbox
 
 1. GoDaddy → **Microsoft 365** / **Professional Email**
-2. Create mailbox: `ai@smartrealty.us`
+2. Create mailbox: `andrewiredale@smartrealty.us`
 3. Sign in via Outlook web / Apple Mail / Gmail “Send mail as”
 
 ### SPF (if you send from that domain)
@@ -452,7 +452,7 @@ Manual browser pass:
 7. [ ] Map view shows pins
 8. [ ] Blue Book form generates numbers
 9. [ ] Chat widget opens
-10. [ ] `mailto:ai@smartrealty.us` works
+10. [ ] `mailto:andrewiredale@smartrealty.us` works
 11. [ ] Phone link works on mobile
 12. [ ] iPhone Safari + Chrome desktop both OK
 
@@ -462,7 +462,7 @@ Manual browser pass:
 
 1. Open `SHARE-EMAIL.txt`
 2. Replace `YOUR_LIVE_URL` with your real HTTPS URL
-3. Send from `ai@smartrealty.us` if possible
+3. Send from `andrewiredale@smartrealty.us` if possible
 
 **Never put the password in public tweets or public Instagram bios.**  
 Send credentials privately (email, Signal, iMessage).
@@ -539,4 +539,4 @@ htpasswd -nbB demo 'NewPasswordHere'
 ---
 
 © 2026 Smart Realty USA · Demo Version · All Rights Reserved  
-Contact: **ai@smartrealty.us**
+Contact: **andrewiredale@smartrealty.us**

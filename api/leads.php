@@ -83,7 +83,7 @@ if (defined('SRU_LEAD_AUTOREPLY') && SRU_LEAD_AUTOREPLY && function_exists('mail
         . "Thanks for joining the Smart Realty USA waitlist.\n"
         . "We will share Blue Book drops, market updates, and private demo invites.\n\n"
         . "Explore the demo: {$site}\n"
-        . "Questions? Reply to this email or write ai@smartrealty.us\n\n"
+        . "Questions? Reply to this email or write andrewiredale@smartrealty.us\n\n"
         . "— Smart Realty USA\n"
         . "(Demo platform — not a licensed brokerage transaction system.)\n";
     $mailed['autoreply'] = @mail($email, $subj2, $body2, $headersBase);

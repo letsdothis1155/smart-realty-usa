@@ -25,7 +25,7 @@
     const message = ["I would like a listing copy quote.", "Name: " + body.name,
       "Reply email: " + body.email, "City: " + body.city, body.note,
       "Please confirm scope, final price and delivery date before payment."].join("\n");
-    fallback.href = "mailto:ai@smartrealty.us?subject=Listing%20copy%20pack%20request&body=" + encodeURIComponent(message);
+    fallback.href = "mailto:andrewiredale@smartrealty.us?subject=Listing%20copy%20pack%20request&body=" + encodeURIComponent(message);
   }
 
   form.addEventListener("input", () => {

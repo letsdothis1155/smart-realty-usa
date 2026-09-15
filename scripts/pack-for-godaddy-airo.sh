@@ -31,7 +31,7 @@ window.SRU_CONFIG = {
   tagline: "Exclusive homes. Transparent prices. Bitcoin ready.",
   siteUrl: "https://smartrealty.us",
   canonicalHost: "smartrealty.us",
-  contactEmail: "ai@smartrealty.us",
+  contactEmail: "andrewiredale@smartrealty.us",
   phoneDisplay: "1-800-SMART-USA",
   phoneTel: "+18007627879",
   legalName: "Smart Realty USA LLC",

@@ -17,7 +17,7 @@ define('SRU_JWT_DAYS', 14);
 define('SRU_CORS_ORIGIN', '');
 define('SRU_DATA_DIR', __DIR__ . '/data');
 
-define('SRU_NOTIFY_EMAIL', 'ai@smartrealty.us');
+define('SRU_NOTIFY_EMAIL', 'andrewiredale@smartrealty.us');
 define('SRU_MAIL_FROM', 'noreply@smartrealty.us');
 define('SRU_LEAD_AUTOREPLY', true);
 define('SRU_SITE_URL', 'https://smartrealty.us');

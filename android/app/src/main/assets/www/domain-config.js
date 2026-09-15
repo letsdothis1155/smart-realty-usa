@@ -21,7 +21,7 @@ window.SRU_CONFIG = {
   /** Host only (for display) */
   canonicalHost: "smartrealty.us",
 
-  contactEmail: "ai@smartrealty.us",
+  contactEmail: "andrewiredale@smartrealty.us",
   phoneDisplay: "1-800-SMART-USA",
   phoneTel: "+18007627879",
 
