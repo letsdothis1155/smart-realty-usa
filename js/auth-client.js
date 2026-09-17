@@ -377,16 +377,54 @@
     return data;
   }
 
-  async function submitLead({ email, name, source, interest }) {
-    if (!(await hasLiveApi())) {
-      const err = new Error("API offline");
-      err.code = "NO_API";
-      err.status = 503;
-      throw err;
+  const WORKER_INTENTS = {
+    browse: true,
+    buy: true,
+    sell: true,
+    rent: true,
+    services: true,
+    dcw: true,
+    bitcoin: true,
+    investor: true,
+    other: true,
+  };
+
+  function mapLeadIntent(raw) {
+    const key = String(raw || "").trim().toLowerCase();
+    if (WORKER_INTENTS[key]) return key;
+    if (key === "copy" || key === "listing_copy" || key === "sponsor" || key === "advertise") {
+      return "services";
     }
-    return api(ep("leads"), {
-      method: "POST",
-      body: { email, name, source, interest },
+    return "other";
+  }
+
+  async function submitLead(lead) {
+    const l = lead || {};
+    const name = String(l.name || "").trim() || "Website visitor";
+    const email = String(l.email || "").trim();
+    const intent = mapLeadIntent(l.intent || l.interest || l.source);
+    const note = [l.source, l.interest, l.message, l.note].filter(Boolean).join(" | ").slice(0, 500);
+
+    if (await hasLiveApi()) {
+      try {
+        return await api(ep("leads"), {
+          method: "POST",
+          body: { email, name, source: l.source, interest: l.interest },
+        });
+      } catch {
+        /* PHP CRM is not the live inbox. Fall through to the signup Worker. */
+      }
+    }
+
+    return requestAccount({
+      name,
+      email,
+      intent,
+      note,
+      website: l.website || "",
+      phone: l.phone || "",
+      city: l.city || "",
+      state: l.state || "",
     });
   }
 

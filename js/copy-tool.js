@@ -77,5 +77,40 @@
       if (m) m.textContent = "Copy the box manually.";
     }
   });
+  document.getElementById("copyHire")?.addEventListener("click", async () => {
+    paint();
+    const msg = document.getElementById("copyMsg");
+    const email = val("cEmail");
+    const name = (email.split("@")[0] || "Copy client").replace(/[^\w.\- ]+/g, " ").trim() || "Copy client";
+    if (!email) {
+      if (msg) msg.textContent = "Enter your email so Andrew can quote the $150 pack.";
+      document.getElementById("cEmail")?.focus();
+      return;
+    }
+    const note = [
+      "Listing copy pack | starting quote USD 150 | /copy/",
+      "Address: " + (val("cAddr") || "(none)"),
+      "City: " + (val("cCity") || "(none)"),
+      "Type: " + (val("cType") || "(none)"),
+      "Beds/baths/sqft: " + [val("cBeds"), val("cBaths"), val("cSqft")].join("/"),
+      "Facts: " + (val("cFeats") || "(none)"),
+    ].join(" | ").slice(0, 500);
+    try {
+      const res = await fetch("/api/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({ name, email, intent: "services", note, website: "" }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || data.ok !== true) throw new Error(data.error || "Could not save that request.");
+      if (msg) {
+        msg.textContent = data.emailed
+          ? "Brief received. Andrew was notified. Pay with Stripe only after he confirms the job."
+          : "Brief saved. Email Andrew from the button next to this, then pay only after he confirms.";
+      }
+    } catch (err) {
+      if (msg) msg.textContent = (err.message || "Could not send.") + " Use Email $150 job.";
+    }
+  });
   paint();
 })();
