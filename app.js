@@ -674,50 +674,56 @@ function initWaitlist() {
     const btn = $("#waitlistBtn");
     const email = $("#waitlistEmail")?.value?.trim();
     const name = $("#waitlistName")?.value?.trim() || "";
-    if (!email) return;
+    if (!email || name.length < 2) {
+      if (msg) {
+        msg.textContent = "Enter your name and email so Andrew can reply.";
+        msg.classList.remove("hidden", "ok");
+      }
+      return;
+    }
     btn.disabled = true;
     const prev = btn.textContent;
-    btn.textContent = "Joining…";
-    const saveLocal = () => {
-      const key = "sru_waitlist_local";
-      const list = JSON.parse(localStorage.getItem(key) || "[]");
-      if (!list.includes(email)) list.push(email);
-      localStorage.setItem(key, JSON.stringify(list));
-      msg.textContent = "You're on the list on this device.";
-    };
+    btn.textContent = "Sending…";
+    const mailto =
+      "mailto:andrewiredale@smartrealty.us?subject=" +
+      encodeURIComponent("Waitlist: " + name) +
+      "&body=" +
+      encodeURIComponent("Name: " + name + "\nEmail: " + email + "\nHomepage waitlist.");
     try {
-      const live =
-        window.SRU_AUTH?.hasLiveApi ? await window.SRU_AUTH.hasLiveApi() : false;
-      if (live && window.SRU_AUTH.submitLead) {
-        const data = await window.SRU_AUTH.submitLead({
-          email,
-          name,
-          source: "homepage_waitlist",
-          interest: "launch_updates",
-        });
-        msg.textContent = data.message || "You're on the list.";
-      } else {
-        saveLocal();
+      if (!window.SRU_AUTH?.submitLead) throw new Error("Signup is not available in this browser.");
+      const data = await window.SRU_AUTH.submitLead({
+        email,
+        name,
+        source: "homepage_waitlist",
+        interest: "other",
+        intent: "other",
+        note: "Homepage waitlist — launch updates",
+      });
+      const sent = !!(data && (data.ok === true || data.emailed === true || data.id));
+      if (!sent) throw new Error("Could not confirm receipt.");
+      try {
+        const key = "sru_waitlist_local";
+        const list = JSON.parse(localStorage.getItem(key) || "[]");
+        if (!list.includes(email)) list.push(email);
+        localStorage.setItem(key, JSON.stringify(list));
+      } catch {
+        /* device backup only */
       }
+      msg.innerHTML = data.emailed
+        ? "Request received. Andrew was notified."
+        : 'Request saved. Also <a href="' + mailto + '">email Andrew</a> so it hits the inbox.';
       msg.classList.remove("hidden");
       msg.classList.add("ok");
       form.reset();
-      toast("Waitlist joined.");
-      track("waitlist_join", { email_domain: (email.split("@")[1] || "").slice(0, 40) });
+      track("lead_submitted", { source: "homepage_waitlist", emailed: !!data.emailed });
     } catch (err) {
-      if (err && (err.code === "NO_API" || err.status === 405 || err.status === 503)) {
-        saveLocal();
-        msg.classList.remove("hidden");
-        msg.classList.add("ok");
-        form.reset();
-        toast("Waitlist joined.");
-        track("waitlist_join", { email_domain: (email.split("@")[1] || "").slice(0, 40) });
-      } else {
-        msg.textContent = err.message || "Could not join — try again.";
-        msg.classList.remove("hidden");
-        msg.classList.remove("ok");
-        track("waitlist_error");
-      }
+      msg.innerHTML =
+        (err.message || "Could not send.") +
+        ' Use <a href="' +
+        mailto +
+        '">email Andrew</a>.';
+      msg.classList.remove("hidden", "ok");
+      track("waitlist_error");
     } finally {
       btn.disabled = false;
       btn.textContent = prev;
@@ -2070,47 +2076,49 @@ function initContactLeadForm() {
     if (!email) return;
     btn.disabled = true;
     const interestLabel = note ? `${interest}: ${note.slice(0, 100)}` : interest;
-    const saveLocal = () => {
-      const key = "sru_contact_local";
-      const list = JSON.parse(localStorage.getItem(key) || "[]");
-      list.push({ email, name, interest: interestLabel, at: new Date().toISOString() });
-      localStorage.setItem(key, JSON.stringify(list.slice(-40)));
-      msg.textContent = "Saved on this device. We will follow up at this email.";
-    };
+    const mailto =
+      "mailto:andrewiredale@smartrealty.us?subject=" +
+      encodeURIComponent("Contact: " + (name || email)) +
+      "&body=" +
+      encodeURIComponent(
+        "Name: " + name + "\nEmail: " + email + "\nInterest: " + interestLabel + "\n"
+      );
     try {
-      const live = window.SRU_AUTH?.hasLiveApi ? await window.SRU_AUTH.hasLiveApi() : false;
-      if (live && window.SRU_AUTH.submitLead) {
-        const data = await window.SRU_AUTH.submitLead({
-          email,
-          name,
-          source: "support_contact",
-          interest,
-          intent: interest,
-          message: note,
-          consent: true,
-        });
-        msg.textContent = data.message || "Sent — we’ll be in touch.";
-      } else {
-        saveLocal();
+      if (!name || name.length < 2) throw new Error("Enter your name so Andrew can reply.");
+      if (!window.SRU_AUTH?.submitLead) throw new Error("Signup is not available in this browser.");
+      const data = await window.SRU_AUTH.submitLead({
+        email,
+        name,
+        source: "support_contact",
+        interest,
+        intent: "other",
+        note: interestLabel,
+        message: note,
+      });
+      const sent = !!(data && (data.ok === true || data.emailed === true || data.id));
+      if (!sent) throw new Error("Could not confirm receipt.");
+      try {
+        const key = "sru_contact_local";
+        const list = JSON.parse(localStorage.getItem(key) || "[]");
+        list.push({ email, name, interest: interestLabel, at: new Date().toISOString() });
+        localStorage.setItem(key, JSON.stringify(list.slice(-40)));
+      } catch {
+        /* device backup only */
       }
+      msg.innerHTML = data.emailed
+        ? "Request received. Andrew was notified."
+        : 'Request saved. Also <a href="' + mailto + '">email Andrew</a> so it hits the inbox.';
       msg.classList.remove("hidden");
       msg.classList.add("ok");
       form.reset();
-      toast("Request saved.");
-      track("contact_submit", { interest });
+      track("lead_submitted", { source: "support_contact", emailed: !!data.emailed });
     } catch (err) {
-      if (err && (err.code === "NO_API" || err.status === 405 || err.status === 503)) {
-        saveLocal();
-        msg.classList.remove("hidden");
-        msg.classList.add("ok");
-        form.reset();
-        toast("Request saved.");
-        track("contact_submit", { interest, fallback: true });
-      } else {
-        msg.textContent = err.message || "Could not send.";
-        msg.classList.remove("hidden");
-        msg.classList.remove("ok");
-      }
+      msg.innerHTML =
+        (err.message || "Could not send.") +
+        ' Use <a href="' +
+        mailto +
+        '">email Andrew</a>.';
+      msg.classList.remove("hidden", "ok");
     } finally {
       btn.disabled = false;
     }
@@ -2221,8 +2229,11 @@ function openRental(id) {
     e.preventDefault();
     const nights = $("#rentNights").textContent;
     closeModals();
-    toast(`Stay reserved at ${p.title} for ${nights} nights. A human concierge will confirm shortly.`);
-    openChat(`I just reserved a try-before-buy stay at ${p.title}. Can you confirm availability and purchase credit terms?`);
+    toast("Demo only — nothing was reserved. Email Andrew if you want to talk about a stay.");
+    openChat(
+      `This is a demo stay calculator for ${p.title} (${nights} nights). No reservation was booked. How would I email Andrew about a real stay?`
+    );
+    track("stay_demo_submit", { listing: p.id || "" });
   });
 }
 
@@ -2526,8 +2537,12 @@ function initDemoGate() {
   const mode = authMode();
 
   if (mode === "open") {
-    // Public landing: no password wall; soft-gate member actions instead
-    if (gate) gate.classList.add("unlocked");
+    // Public landing: no password wall; keep gate out of the indexed DOM
+    if (gate) {
+      gate.classList.add("unlocked");
+      gate.hidden = true;
+      gate.setAttribute("aria-hidden", "true");
+    }
     document.body.classList.add("gate-open", "auth-open-mode");
     document.documentElement.classList.add("auth-open-boot");
     initOpenLandingBanner();

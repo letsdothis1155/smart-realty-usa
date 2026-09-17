@@ -2,8 +2,10 @@
 User-agent: *
 Allow: /
 Allow: /copy/
+Allow: /hire/
 Allow: /advertise/
 Allow: /services/
+Allow: /start/
 Allow: /apps/
 Disallow: /api/
 Disallow: /property/

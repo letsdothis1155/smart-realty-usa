@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SMART REALTY.US LLC — Louisville listing copy and Daily Cache Wiper</title>
-  <meta name="description" content="Louisville software company. $150 listing copy you still edit. Daily Cache Wiper waitlist while Google Play is not public. Not a licensed brokerage. Not a CMA." />
+  <meta name="description" content="Louisville software company. $150 listing copy you still edit. Daily Cache Wiper waitlist while Play review finishes. Not a licensed brokerage. Not a CMA." />
   <meta name="theme-color" content="#0a0c10" />
   <meta name="robots" content="index, follow" id="metaRobots" />
   <link rel="canonical" href="https://smartrealty.us/" id="canonicalLink" />
@@ -41,7 +41,7 @@
     })();
   </script>
   <script src="js/listings.js?v=20260824a"></script>
-  <script src="js/auth-client.js?v=20260819c"></script>
+  <script src="js/auth-client.js?v=20260917a"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js?v=supabase1"></script>
   <script src="js/auth-guard.js?v=supabase1"></script>
@@ -93,7 +93,7 @@
 <body>
   <a class="skip-link" href="#home">Skip to content</a>
   <!-- Access gate — redirects to auth.html for full sign-in / create account -->
-  <div class="gate" id="demoGate">
+  <div class="gate" id="demoGate" hidden aria-hidden="true">
     <div class="gate-card glass">
       <div class="logo" style="justify-content:center;margin-bottom:1rem">
         <span class="logo-mark">SR</span>
@@ -269,7 +269,7 @@
           </h1>
           <div class="hero-sub fade-up delay-2">
             <p>We write listing copy for <strong>$150</strong>. You confirm every fact before you publish.</p>
-            <p>Daily Cache Wiper is our Android app. The public Play page is not live yet — leave your email.</p>
+            <p>Daily Cache Wiper is our Android app ($2/month after a 7-day trial). Google rejected the latest Play update on 16 Sep 2026 (store icon vs on-device icon). Leave your email — we write you when a public install can take a subscription.</p>
             <p>Not a licensed brokerage. Not a CMA. Demo houses below are not for sale.</p>
           </div>
           <div class="hero-cta fade-up delay-3">
@@ -292,7 +292,7 @@
             </div>
             <div class="stat">
               <strong>$2</strong>
-              <span>DCW Premium / mo when Play is live</span>
+              <span>DCW Premium / mo after Play publishes</span>
             </div>
           </div>
         </div>
@@ -1112,7 +1112,7 @@
             <p class="contact-lead-sub">Andrew reviews these personally. Not a live brokerage desk.</p>
             <div class="form-row">
               <label>Name
-                <input type="text" id="contactName" autocomplete="name" placeholder="Your name" />
+                <input type="text" id="contactName" required minlength="2" maxlength="80" autocomplete="name" placeholder="Your name" />
               </label>
               <label>Email
                 <input type="email" id="contactEmail" required autocomplete="email" placeholder="you@email.com" />
@@ -1244,7 +1244,7 @@
           <p class="waitlist-sub">Join the Smart Realty list — new markets, BTC checkout tips, and private demo invites.</p>
         </div>
         <form id="waitlistForm" class="waitlist-form">
-          <input type="text" id="waitlistName" name="name" placeholder="Name (optional)" autocomplete="name" />
+          <input type="text" id="waitlistName" name="name" placeholder="Your name" required minlength="2" maxlength="80" autocomplete="name" />
           <input type="email" id="waitlistEmail" name="email" placeholder="you@email.com" required autocomplete="email" />
           <button type="submit" class="btn btn-primary" id="waitlistBtn">Join waitlist</button>
         </form>
@@ -1457,6 +1457,6 @@
   <script src="js/smart-score.js?v=20260819t"></script>
   <script src="js/bitcoin.js?v=20260824h"></script>
   <script src="js/bluebook.js?v=20260824a"></script>
-  <script src="app.js?v=20260829a"></script>
+  <script src="app.js?v=20260917a"></script>
 </body>
 </html>

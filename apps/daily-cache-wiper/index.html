@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Daily Cache Wiper — SMART REALTY.US LLC</title>
-  <meta name="description" content="Daily Cache Wiper is an Android cache-only cleaner from SMART REALTY.US LLC. Premium is $2/month after a 7-day trial once Google publishes the listing. Not live on Play yet." />
+  <meta name="description" content="Daily Cache Wiper is an Android cache-only cleaner from SMART REALTY.US LLC. Premium is $2/month after a 7-day trial. Latest Play update was rejected 16 Sep 2026. Revenue $0." />
   <meta name="robots" content="index,follow" />
   <link rel="canonical" href="https://smartrealty.us/apps/daily-cache-wiper/" />
   <style>
@@ -53,15 +53,17 @@
 
   <h2>Store status</h2>
   <p class="note">
-    Production <strong>1.5.1</strong> and the AccessibilityService listing are
-    <strong>in Google review</strong> (started 19 Aug 2026). The public Play page is
-    still HTTP 404. Do not treat
-    <code>play.google.com/store/apps/details?id=com.dailycachewiper.app</code>
-    as a live install link until Google publishes it. We are not restarting that review.
+    Package <code>com.dailycachewiper.app</code>, version <strong>1.5.1</strong>.
+    The public Play URL now returns HTTP 200 with listing copy (checked 17 Sep 2026).
+    Google Play emailed <strong>App Status: Rejected</strong> on <strong>16 Sep 2026</strong>
+    for a Misleading Claims mismatch: store hi-res icon vs on-device launcher icon.
+    An earlier rejection (8 Sep) was missing AccessibilityService text in the listing.
+    Do not treat the Play URL as a paying install until Console shows the update published
+    and a real device can install from Play. Revenue received so far: <strong>$0</strong>.
   </p>
 
-  <h2>Email me when it is on Play</h2>
-  <p class="muted">Name and email only. No password. No bank numbers. We write you when the public store page is a 200.</p>
+  <h2>Email me when a public install can take a subscription</h2>
+  <p class="muted">Name and email only. No password. No bank numbers. We write you when a real Play install can bill Premium.</p>
   <form class="notify" id="dcwNotify">
     <label>Name
       <input type="text" id="dcwName" name="name" required minlength="2" maxlength="80" autocomplete="name" />
@@ -121,7 +123,7 @@
           try { data = await res.json(); } catch (err) { data = {}; }
           if (!res.ok) throw new Error(data.error || "Could not save that request.");
           msg.className = "ok";
-          msg.textContent = data.message || "Saved. We will email you when the Play page is live.";
+          msg.textContent = data.message || "Saved. We will email you when a public Play install can take a subscription.";
           form.reset();
         } catch (err) {
           var body = encodeURIComponent("Name: " + name + "\nEmail: " + email + "\nPlease email me when Daily Cache Wiper is public on Play.");
