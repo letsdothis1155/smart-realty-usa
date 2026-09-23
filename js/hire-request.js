@@ -66,7 +66,7 @@
       }
       const reference = data.id.slice(0, 80);
       status.textContent = data.emailed === true
-        ? "Request received and Andrew's notification was sent. Reference: " + reference + ". Wait for the quote before paying. No payment has been taken."
+        ? "Request received and Andrew's notification was sent. Reference: " + reference + ". No payment has been taken. Pay $150 with Stripe when you want the pack."
         : "Request saved. Reference: " + reference + ". We could not confirm Andrew's email notification. Use the email link below and include this reference. No payment has been taken.";
       if (data.emailed !== true) {
         body.note += " | Saved request reference: " + reference;
