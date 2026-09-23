@@ -9,6 +9,7 @@ Allow: /start/
 Allow: /pricing/
 Allow: /buy/
 Allow: /sell/
+Allow: /paid/
 Allow: /apps/
 Disallow: /api/
 Disallow: /property/

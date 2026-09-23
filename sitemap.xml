@@ -46,6 +46,11 @@
     <priority>0.4</priority>
   </url>
   <url>
+    <loc>https://smartrealty.us/paid/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://smartrealty.us/sell/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.4</priority>
