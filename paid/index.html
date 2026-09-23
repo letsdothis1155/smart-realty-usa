@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Send property facts — SMART REALTY.US LLC</title>
+  <meta name="description" content="After you pay $150 on Stripe, send the property facts here. This page does not charge you. Not a brokerage." />
+  <link rel="canonical" href="https://smartrealty.us/paid/" />
+  <meta name="robots" content="index, follow" />
+  <link rel="stylesheet" href="/styles.css" />
+  <style>
+    .facts { max-width: 640px; }
+    .facts label { display: block; margin: 1rem 0; }
+    .facts input, .facts textarea {
+      display: block; width: 100%; box-sizing: border-box; margin-top: .35rem;
+      padding: .8rem; border: 1px solid var(--border, #526174); border-radius: 8px;
+      background: #151c26; color: #f4f7fb; font: inherit;
+    }
+    .facts input:focus-visible, .facts textarea:focus-visible { outline: 2px solid #9ed8f6; outline-offset: 2px; }
+    .facts .status { overflow-wrap: anywhere; }
+    .facts .status:empty { display: none; }
+    .facts .hp { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+  </style>
+</head>
+<body class="legal-page">
+  <header class="legal-header">
+    <div class="container legal-header-inner">
+      <a href="/" class="logo">
+        <span class="logo-mark">SR</span>
+        <span class="logo-text"><strong>Smart Realty</strong><small>USA</small></span>
+      </a>
+      <nav class="legal-nav">
+        <a href="/hire/">$150 copy</a>
+        <a href="/pricing/">Prices</a>
+        <a href="/">Home</a>
+      </nav>
+    </div>
+  </header>
+  <main class="container legal-main facts">
+    <p class="eyebrow">Listing copy · after Stripe</p>
+    <h1>Send the property facts</h1>
+    <p>Stripe collects the $150. This page does not charge you and does not see your card. Andrew writes three headlines and one description from what you type here, then replies to the email you enter. You still edit every fact before you publish.</p>
+    <p>Use this after Stripe shows the payment as paid. If you have not paid, <a href="https://buy.stripe.com/7sY9AVdfx0edbKqfhTebu00">pay $150 with Stripe</a> first. A note here is not a payment and not a booked job until it matches a Stripe receipt.</p>
+    <form id="factsForm">
+      <label>Your name
+        <input id="factsName" name="name" required minlength="2" maxlength="80" autocomplete="name" />
+      </label>
+      <label>Email on the Stripe receipt
+        <input id="factsEmail" name="email" type="email" required maxlength="120" autocomplete="email" />
+      </label>
+      <label>Property city
+        <input id="factsCity" name="city" required maxlength="80" autocomplete="address-level2" placeholder="Louisville" />
+      </label>
+      <label>Facts you confirm
+        <textarea id="factsBody" name="facts" required maxlength="400" rows="6" placeholder="Beds, baths, and only the features the owner confirmed. Leave out schools, flood status, and anything you are not sure of."></textarea>
+      </label>
+      <div class="hp" aria-hidden="true">
+        <label>Company website <input id="factsSite" name="website" tabindex="-1" autocomplete="off" /></label>
+      </div>
+      <button type="submit" class="btn btn-primary" id="factsBtn">Send the facts</button>
+      <p class="status" id="factsStatus" role="status"></p>
+    </form>
+    <p class="muted">Copywriting only. Not a listing, appraisal, or sale. No password, card, or bank number on this form.</p>
+  </main>
+  <footer class="legal-footer container">
+    <a href="/">← Home</a>
+    <span>© 2026 SMART REALTY.US LLC</span>
+  </footer>
+  <script>
+    (function () {
+      var form = document.getElementById("factsForm");
+      var btn = document.getElementById("factsBtn");
+      var status = document.getElementById("factsStatus");
+      form.addEventListener("submit", async function (event) {
+        event.preventDefault();
+        if (!form.reportValidity()) return;
+        var name = document.getElementById("factsName").value.trim();
+        var email = document.getElementById("factsEmail").value.trim();
+        var city = document.getElementById("factsCity").value.trim();
+        var facts = document.getElementById("factsBody").value.trim();
+        var website = document.getElementById("factsSite").value;
+        status.textContent = "Sending…";
+        btn.disabled = true;
+        try {
+          var res = await fetch("/api/signup", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Accept: "application/json" },
+            body: JSON.stringify({
+              name: name,
+              email: email,
+              city: city,
+              intent: "services",
+              website: website,
+              note: ("Facts after Stripe. Match the receipt before writing. City: " + city + ". " + facts).slice(0, 500)
+            })
+          });
+          var data = await res.json().catch(function () { return {}; });
+          if (!res.ok || !data.ok || data.emailed !== true) {
+            throw new Error(data.error || "Could not deliver. Try again in a minute.");
+          }
+          status.textContent = "Sent. Andrew matches this to the Stripe receipt, then replies to " + email + ". No payment was taken on this page.";
+          form.reset();
+        } catch (error) {
+          status.textContent = error.message || "Could not deliver. Try again in a minute.";
+        } finally {
+          btn.disabled = false;
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
