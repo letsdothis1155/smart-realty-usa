@@ -41,7 +41,7 @@
     })();
   </script>
   <script src="js/listings.js?v=20260824a"></script>
-  <script src="js/auth-client.js?v=20260917a"></script>
+  <script src="js/auth-client.js?v=20260923a"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js?v=supabase1"></script>
   <script src="js/auth-guard.js?v=supabase1"></script>
@@ -268,9 +268,8 @@
             <span class="gradient-text">Copy you still edit.</span>
           </h1>
           <div class="hero-sub fade-up delay-2">
-            <p>We write listing copy for <strong>$150</strong>. Pay on Stripe, then send the property facts. You confirm every fact before you publish.</p>
-            <p>Daily Cache Wiper is our Android app ($2/month after a 7-day trial, billed by Google Play, not this site). The <a href="https://play.google.com/store/apps/details?id=com.dailycachewiper.app">public Play listing</a> shows Install (checked 23 Sep 2026). Google rejected the 16 Sep 2026 update because the store icon did not match the on-device icon, so that update is not the build in the store. App revenue so far: <strong>$0</strong>.</p>
-            <p>Not a licensed brokerage. Not a CMA. Demo houses below are not for sale.</p>
+            <p>Listing copy is <strong>$150</strong>, paid on Stripe. You still edit every fact.</p>
+            <p><a href="apps/daily-cache-wiper/">Daily Cache Wiper</a> is <strong>$2/month</strong> after a 7-day trial, billed by Google Play. Demo homes below are not for sale.</p>
           </div>
           <div class="hero-cta fade-up delay-3">
             <a href="https://buy.stripe.com/7sY9AVdfx0edbKqfhTebu00" class="btn btn-primary btn-lg" target="_blank" rel="noopener">Pay $150 with Stripe</a>
@@ -1080,8 +1079,8 @@
           <p class="eyebrow">Owner-operated</p>
           <h2>Talk to Andrew — email, phone, or the demo assistant</h2>
           <p class="section-sub">
-            SMART REALTY.US LLC is one person in Louisville. Email is the real inbox.
-            The on-site chat is a demo helper, not a 24/7 concierge desk.
+            SMART REALTY.US LLC is one person in Louisville.
+            Use the form for a reply. The chat is a demo helper, not a desk.
           </p>
           <div class="support-channels">
             <a href="tel:+18007627879" class="support-card glass">
@@ -1108,8 +1107,8 @@
           </div>
 
           <form id="contactLeadForm" class="contact-lead-form glass">
-            <h3>Request a callback / info</h3>
-            <p class="contact-lead-sub">Andrew reviews these personally. Not a live brokerage desk.</p>
+            <h3>Send a note</h3>
+            <p class="contact-lead-sub">Name, email, and what you need. This is not a brokerage desk.</p>
             <div class="form-row">
               <label>Name
                 <input type="text" id="contactName" required minlength="2" maxlength="80" autocomplete="name" placeholder="Your name" />
@@ -1120,24 +1119,15 @@
             </div>
             <label>What do you need?
               <select id="contactInterest">
-                <option value="buy">Buy a home</option>
-                <option value="sell">Sell a home</option>
-                <option value="rent">Rent</option>
-                <option value="valuation">Home value</option>
-                <option value="showing">Request a showing</option>
-                <option value="agent">Find an agent</option>
-                <option value="finance">Financing information</option>
-                <option value="investor">Investment look</option>
-                <option value="service">Digital services</option>
-                <option value="list">List a property</option>
-                <option value="callback">Phone callback</option>
-                <option value="bluebook">Blue Book help</option>
-                <option value="bitcoin">Bitcoin checkout</option>
-                <option value="general">General question</option>
+                <option value="services">Listing copy — $150</option>
+                <option value="dcw">Daily Cache Wiper</option>
+                <option value="advertise">Website ad</option>
+                <option value="browse">Demo homes / Blue Book</option>
+                <option value="other">Something else</option>
               </select>
             </label>
             <label>Message (optional)
-              <textarea id="contactMsg" rows="3" placeholder="Tell us which home or city…"></textarea>
+              <textarea id="contactMsg" rows="3" placeholder="What should Andrew know?"></textarea>
             </label>
             <button type="submit" class="btn btn-primary" id="contactLeadBtn">Send to Andrew</button>
             <p class="waitlist-msg hidden" id="contactLeadMsg" role="status"></p>
@@ -1457,6 +1447,6 @@
   <script src="js/smart-score.js?v=20260819t"></script>
   <script src="js/bitcoin.js?v=20260824h"></script>
   <script src="js/bluebook.js?v=20260824a"></script>
-  <script src="app.js?v=20260917a"></script>
+  <script src="app.js?v=20260923a"></script>
 </body>
 </html>

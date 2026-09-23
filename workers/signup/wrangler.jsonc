@@ -11,7 +11,7 @@
     "traces": { "enabled": true, "head_sampling_rate": 0.01 }
   },
   "vars": {
-    "SIGNUP_TO": "andrewiredale@smartrealty.us",
+    // SIGNUP_TO is a Worker secret (the owner inbox). Do not put it in this file or on the website.
     "SIGNUP_FROM": "signup@smartrealty.us",
     "SIGNUP_FROM_NAME": "Smart Realty USA",
     "RESEND_FROM": "Smart Realty USA <inquiries@notify.smartrealty.us>",

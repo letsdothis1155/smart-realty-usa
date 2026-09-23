@@ -4,10 +4,6 @@
   const params = new URLSearchParams(location.search);
   const resetToken = params.get("reset") || "";
   const resetEmail = params.get("email") || "";
-  const SIGNUP_TO =
-    (window.SRU_CONFIG && window.SRU_CONFIG.auth && window.SRU_CONFIG.auth.signupEmail) ||
-    "andrewiredale@smartrealty.us";
-
   function showErr(m) {
     const e = $("#accError");
     if (!e) return;
@@ -168,33 +164,19 @@
         note,
         website,
       });
-      const mailBody = encodeURIComponent(
-        `Name: ${name}\nEmail: ${email}\nPhone: ${phone || "(none)"}\nCity: ${city || "(none)"}\nState: ${state || "(none)"}\nIntent: ${intent || "(none)"}\nNote: ${note}\n\nSent from the accounts page on smartrealty.us.`,
-      );
       if (data.emailed) {
         showOk(
           data.message ||
-            `Request sent to ${SIGNUP_TO}. We will email you at ${email} when your account is ready.`,
+            `Request sent. We will email you at ${email}. No password was collected.`,
         );
         e.target.reset();
       } else {
-        const mailto = `mailto:${SIGNUP_TO}?subject=${encodeURIComponent("Account request: " + name)}&body=${mailBody}`;
-        showOk(data.message || "Request saved on this device.");
-        const err = $("#accError");
-        err.innerHTML = `Also <a href="${mailto}">email ${SIGNUP_TO}</a> so it hits the inbox.`;
-        err.classList.remove("hidden");
+        showErr("We saved the request on this device but could not deliver it. Try again in a minute. Do not send a password.");
       }
       renderPending();
       renderStats(null);
     } catch (err) {
-      const body = encodeURIComponent(
-        `Name: ${name}\nEmail: ${email}\nPhone: ${phone || "(none)"}\nCity: ${city || "(none)"}\nState: ${state || "(none)"}\nIntent: ${intent || "(none)"}\nNote: ${note}\n\nSent from the accounts page on smartrealty.us.`,
-      );
-      const mailto = `mailto:${SIGNUP_TO}?subject=${encodeURIComponent("Account request: " + name)}&body=${body}`;
-      const box = $("#accError");
-      box.innerHTML = `${err.message || "Could not send."} You can also <a href="${mailto}">email ${SIGNUP_TO}</a>.`;
-      box.classList.remove("hidden");
-      $("#accStatus")?.classList.add("hidden");
+      showErr(err.message || "Could not send. Try again in a minute. Do not send a password.");
       renderPending();
       renderStats(null);
     } finally {

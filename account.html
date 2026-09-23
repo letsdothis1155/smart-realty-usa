@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Accounts — Smart Realty USA</title>
-  <meta name="description" content="Request a Smart Realty USA account. Requests go to andrewiredale@smartrealty.us. No password is collected on this page." />
+  <meta name="description" content="Request a Smart Realty USA account. Name and email only. No password. The owner inbox is not published on this page." />
   <meta name="robots" content="noindex, nofollow" />
   <meta name="theme-color" content="#0a0c10" />
   <link rel="canonical" href="https://smartrealty.us/account.html" />
@@ -12,8 +12,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
-  <script src="domain-config.js?v=accounts3"></script>
-  <script src="js/auth-client.js?v=accounts3"></script>
+  <script src="domain-config.js?v=accounts4"></script>
+  <script src="js/auth-client.js?v=accounts4"></script>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏡</text></svg>" />
 </head>
 <body class="auth-page account-page">
@@ -27,19 +27,17 @@
       <p class="auth-brand-badge">ACCOUNTS</p>
       <h1>Your account</h1>
       <p class="auth-brand-copy">
-        Request access from this page. It emails
-        <a href="mailto:andrewiredale@smartrealty.us">andrewiredale@smartrealty.us</a>.
-        GitHub Pages cannot store member passwords — no password is collected here.
-        Invoices bill from SMART REALTY.US LLC.
+        Send your name, email, and what you need. The request is emailed to the owner, with a text file of the same details.
+        That inbox is not shown on this site. No password is collected.
       </p>
       <ul class="auth-perks">
-        <li>Name, email, and what you need — plus optional phone and city</li>
-        <li>Saved homes stay on this device until login is live</li>
-        <li>Node explorer and 3D chain stay public</li>
+        <li>Listing copy is $150, paid on Stripe</li>
+        <li>Daily Cache Wiper is billed by Google Play</li>
+        <li>Demo homes are not for sale</li>
       </ul>
       <div class="account-aside-links">
         <a class="btn btn-outline" href="index.html#listings">← Homes</a>
-        <a class="btn btn-ghost" href="https://mempool.smartrealty.us" target="_blank" rel="noopener">Node explorer</a>
+        <a class="btn btn-ghost" href="hire/">Listing copy</a>
       </div>
     </aside>
 
@@ -51,8 +49,8 @@
         <form id="accountRequestForm" class="auth-form" autocomplete="on">
           <h2>Request an account</h2>
           <p class="auth-lead">
-            Send your name, email, and what you need. We write back when member login is ready.
-            Password sign-in is not live on this GitHub Pages host.
+            Three fields are required: name, email, and what you need. Phone and city are optional.
+            We write back to the email you enter. Password sign-in is not live on this host.
           </p>
           <label>Full name
             <input type="text" id="reqName" name="name" required minlength="2" maxlength="80" autocomplete="name" placeholder="Your name" />
@@ -73,15 +71,11 @@
           </div>
           <label>What do you need?
             <select id="reqIntent" name="intent">
-              <option value="browse">Browse homes / Blue Book</option>
-              <option value="buy">Buy</option>
-              <option value="sell">Sell / list</option>
-              <option value="rent">Rent / stay</option>
-              <option value="services">Digital services / listing copy</option>
+              <option value="services">Listing copy — $150</option>
               <option value="dcw">Daily Cache Wiper</option>
-              <option value="bitcoin">Bitcoin / node</option>
-              <option value="investor">Investor</option>
-              <option value="other">Other</option>
+              <option value="advertise">Website ad</option>
+              <option value="browse">Demo homes / Blue Book</option>
+              <option value="other">Something else</option>
             </select>
           </label>
           <label>Note <span class="auth-optional">(optional)</span>
@@ -155,17 +149,15 @@
       <section class="account-section" id="toolsSection">
         <h3>On this site</h3>
         <div class="account-links">
-          <a href="index.html#listings">Browse homes</a>
-          <a href="invoice/">Invoice</a>
-          <a href="https://mempool.smartrealty.us" target="_blank" rel="noopener">Node explorer</a>
-          <a href="https://mempool.smartrealty.us/mempools" target="_blank" rel="noopener">Mempools</a>
-          <a href="blockchain-live.html">3D blockchain</a>
-          <a href="auth.html?tab=demo">Demo access</a>
+          <a href="hire/">Listing copy — $150</a>
+          <a href="apps/daily-cache-wiper/">Daily Cache Wiper</a>
+          <a href="advertise/">Advertise</a>
+          <a href="index.html#listings">Demo homes</a>
           <button type="button" class="linkish hidden" id="accSignOut">Sign out</button>
         </div>
       </section>
     </main>
   </div>
-  <script src="js/account-page.js?v=accounts3"></script>
+  <script src="js/account-page.js?v=accounts4"></script>
 </body>
 </html>

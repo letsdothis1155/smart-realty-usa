@@ -195,49 +195,6 @@
     }
   }
 
-  function formatAccountRequest(fields) {
-    const f = fields || {};
-    return [
-      `Name: ${f.name || ""}`,
-      `Email: ${f.email || ""}`,
-      `Phone: ${f.phone || "(none)"}`,
-      `City: ${f.city || "(none)"}`,
-      `State: ${f.state || "(none)"}`,
-      `Intent: ${f.intent || "(none)"}`,
-      `Note: ${f.note || "(none)"}`,
-      "",
-      "From the smartrealty.us account request page. No password was collected.",
-    ].join("\n");
-  }
-
-  async function deliverViaFormSubmit(fields) {
-    const to = authCfg().signupEmail || "andrewiredale@smartrealty.us";
-    const res = await fetch(`https://formsubmit.co/ajax/${encodeURIComponent(to)}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Accept: "application/json" },
-      body: JSON.stringify({
-        name: fields.name,
-        email: fields.email,
-        _subject: `Account request: ${fields.name}`,
-        _template: "box",
-        _captcha: "false",
-        _replyto: fields.email,
-        message: formatAccountRequest(fields),
-      }),
-    });
-    const data = await res.json().catch(() => ({}));
-    const msg = String(data.message || "");
-    if (/activate/i.test(msg)) {
-      return { needsActivation: true, message: msg };
-    }
-    if (!res.ok || data.success === "false" || data.success === false) {
-      const err = new Error(msg || "Email fallback failed");
-      err.status = res.status;
-      throw err;
-    }
-    return data;
-  }
-
   async function requestAccount({ name, email, note, website, phone, city, state, intent }) {
     const payload = {
       name: String(name || "").trim(),
@@ -275,17 +232,6 @@
       err.status = res.status;
       err.data = data;
       throw err;
-    }
-    if (data.emailed) return data;
-    try {
-      const fallback = await deliverViaFormSubmit(payload);
-      data.emailed = true;
-      data.via = "formsubmit";
-      data.message = fallback.needsActivation
-        ? "Request sent. Click the activation email at andrewiredale@smartrealty.us once — after that, new requests land in that inbox."
-        : "Request sent. We will email you when your account is ready.";
-    } catch {
-      /* Worker already saved the request; page shows a mailto backup if needed. */
     }
     return data;
   }
@@ -383,6 +329,7 @@
     sell: true,
     rent: true,
     services: true,
+    advertise: true,
     dcw: true,
     bitcoin: true,
     investor: true,
