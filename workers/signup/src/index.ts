@@ -140,8 +140,9 @@ const INTENTS: Record<string, string> = {
   buy: "Buy",
   sell: "Sell / list",
   rent: "Rent / stay",
-  services: "Digital services / listing copy",
+  services: "Listing copy — $150",
   dcw: "Daily Cache Wiper",
+  advertise: "Website ad",
   bitcoin: "Bitcoin / node",
   investor: "Investor",
   other: "Other",
@@ -198,6 +199,13 @@ function buildMime(opts: {
   ].join("\r\n");
 }
 
+function bytesToBase64(text: string): string {
+  const bytes = new TextEncoder().encode(text);
+  let binary = "";
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return btoa(binary);
+}
+
 async function deliverEmail(
   env: AppEnv,
   opts: {
@@ -211,6 +219,10 @@ async function deliverEmail(
 ): Promise<{ emailed: boolean; via: string }> {
   const to = env.SIGNUP_TO;
   const from = env.SIGNUP_FROM;
+  if (!to || !from) {
+    console.error(JSON.stringify({ message: "signup email is not configured" }));
+    return { emailed: false, via: "none" };
+  }
   const fromName = env.SIGNUP_FROM_NAME || "Smart Realty USA";
 
   if (env.RESEND_API_KEY) {
@@ -229,6 +241,12 @@ async function deliverEmail(
           subject: opts.subject,
           text: opts.text,
           html: opts.html,
+          attachments: [
+            {
+              filename: `account-request-${opts.id}.txt`,
+              content: bytesToBase64(opts.text),
+            },
+          ],
         }),
       });
       const payload = await res.text();
@@ -871,6 +889,7 @@ export default {
         "",
         "Reply to this email to reach the applicant.",
         "No password was collected. This is a request, not a live member login.",
+        "The same details are attached as a text file.",
       ].join("\n");
       const html = `
         <p>New account request from <a href="https://smartrealty.us">smartrealty.us</a></p>

@@ -72,15 +72,12 @@
     const live = window.SRU_AUTH.hasLiveApi
       ? await window.SRU_AUTH.hasLiveApi()
       : false;
-    const signupTo =
-      (window.SRU_CONFIG && window.SRU_CONFIG.auth && window.SRU_CONFIG.auth.signupEmail) ||
-      "andrewiredale@smartrealty.us";
     if (live) {
-      apiHint.textContent = `Accounts service online · new requests still email ${signupTo}`;
+      apiHint.textContent = "Accounts service online. A request emails the owner. This page does not show that inbox.";
       apiHint.classList.add("ok");
     } else if (base) {
       apiHint.textContent =
-        `Browse is open. Request an account and it emails ${signupTo}. Sign-in needs the PHP API (not on GitHub Pages).`;
+        "Browse is open. An account request emails the owner. Sign-in needs the PHP API (not on GitHub Pages).";
       apiHint.classList.add("warn");
     } else {
       apiHint.textContent =
@@ -145,12 +142,6 @@
       showError("Enter your email.");
       return;
     }
-    const to =
-      (window.SRU_CONFIG && window.SRU_CONFIG.auth && window.SRU_CONFIG.auth.signupEmail) ||
-      "andrewiredale@smartrealty.us";
-    const mailBody = encodeURIComponent(
-      `Name: ${name}\nEmail: ${email}\nPhone: ${phone || "(none)"}\nCity: ${city || "(none)"}\nState: ${state || "(none)"}\nIntent: ${intent || "(none)"}\nNote: ${note}\n\nSent from the account request page on smartrealty.us.`,
-    );
     setBusy(btn, true);
     try {
       const data = await window.SRU_AUTH.requestAccount({
@@ -166,22 +157,14 @@
       if (data.emailed) {
         showStatus(
           data.message ||
-            `Request sent to Smart Realty. We will email you at ${email} when your account is ready.`,
+            `Request sent. We will email you at ${email}. No password was collected.`,
         );
         $("#signupForm").reset();
       } else {
-        const mailto = `mailto:${to}?subject=${encodeURIComponent("Account request: " + name)}&body=${mailBody}`;
-        showStatus(
-          data.message || "Request saved on our side. Send the same note by email so it hits the inbox.",
-        );
-        errorEl.innerHTML = `Also <a href="${mailto}">email ${to}</a> so we see it right away.`;
-        errorEl.classList.remove("hidden");
+        showError("We could not deliver that request. Try again in a minute. Do not send a password.");
       }
     } catch (err) {
-      const mailto = `mailto:${to}?subject=${encodeURIComponent("Account request: " + name)}&body=${mailBody}`;
-      errorEl.innerHTML = `${err.message || "Could not send."} You can also <a href="${mailto}">email ${to}</a>.`;
-      errorEl.classList.remove("hidden");
-      statusEl.classList.add("hidden");
+      showError(err.message || "Could not send. Try again in a minute. Do not send a password.");
     } finally {
       setBusy(btn, false);
     }

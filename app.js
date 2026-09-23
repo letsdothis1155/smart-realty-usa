@@ -2091,7 +2091,7 @@ function initContactLeadForm() {
         name,
         source: "support_contact",
         interest,
-        intent: "other",
+        intent: interest,
         note: interestLabel,
         message: note,
       });
