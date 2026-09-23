@@ -131,6 +131,16 @@ window.SRU_CONFIG = {
   },
 
   /**
+   * Live money paths. Cards are processed by Stripe, not this website.
+   * A hire request is not a charge. Bitcoin checkout stays demo.
+   */
+  payments: {
+    copyStripeUrl: "https://buy.stripe.com/7sY9AVdfx0edbKqfhTebu00",
+    copyPriceUsd: 150,
+    advertiseFromUsd: 100,
+  },
+
+  /**
    * Referral / affiliate partners — the actual revenue lever for a site
    * that is explicitly NOT a licensed brokerage (see IMPROVEMENTS.md).
    * Smart Realty USA doesn't transact real estate itself; it refers

@@ -48,7 +48,7 @@
     </div>
   </header>
   <main class="container legal-main">
-    <p class="eyebrow no-print">Print → Save as PDF · email the PDF · no cards or bank numbers on this page</p>
+    <p class="eyebrow no-print">Print → Save as PDF · or pay the $150 listing-copy pack with Stripe. Cards are processed by Stripe, not this page.</p>
     <article class="glass inv-sheet" id="inv">
       <div class="inv-from">
         <p><strong>SMART REALTY.US LLC</strong></p>
@@ -75,16 +75,17 @@
           </select>
         </label>
         <label>Amount USD <input id="invAmt" type="number" min="0" step="1" value="150" /></label>
-        <label>Notes <textarea id="invNotes" rows="3">Due on receipt. Payment instructions will be emailed to the address above. This site does not collect cards, routing numbers, or account numbers. Not a brokerage transaction. Revenue is $0 until this invoice is paid.</textarea></label>
+        <label>Notes <textarea id="invNotes" rows="3">Due on receipt. Pay the $150 listing-copy pack at https://buy.stripe.com/7sY9AVdfx0edbKqfhTebu00 (Stripe). This site does not store cards, routing numbers, or account numbers. Not a brokerage transaction. Revenue is $0 until this invoice is paid.</textarea></label>
       </form>
       <p id="invTotal" style="font-size:1.4rem;font-weight:800;margin-top:1rem"></p>
       <p class="biz-note">Bill from SMART REALTY.US LLC. EIN is not printed here. D‑U‑N‑S® is pending. No guaranteed outcomes from the work.</p>
+      <p class="muted no-print">The Stripe button charges $150 for the listing-copy pack only. If this invoice is a different amount, email the PDF instead of using that button.</p>
     </article>
     <div class="inv-actions no-print">
-      <button type="button" class="btn btn-primary" id="invPrint">Print / PDF</button>
-      <a class="btn btn-outline" id="invMail" href="mailto:andrewiredale@smartrealty.us">Email this invoice</a>
+      <a class="btn btn-primary" href="https://buy.stripe.com/7sY9AVdfx0edbKqfhTebu00" target="_blank" rel="noopener">Pay $150 with Stripe</a>
+      <button type="button" class="btn btn-outline" id="invPrint">Print / PDF</button>
+      <a class="btn btn-ghost" id="invMail" href="mailto:andrewiredale@smartrealty.us">Email this invoice</a>
       <a class="btn btn-ghost" href="/copy/">Write the copy</a>
-      <a class="btn btn-ghost" href="/account.html">Request an account</a>
     </div>
   </main>
   <footer class="legal-footer container">
@@ -123,7 +124,8 @@
           "",
           notes,
           "",
-          "Pay off-site. This website does not collect cards or bank numbers.",
+          "Pay $150 listing copy: https://buy.stripe.com/7sY9AVdfx0edbKqfhTebu00",
+          "Cards are processed by Stripe. This website does not store cards or bank numbers.",
           "Print the invoice page to PDF if you need a file."
         ].filter(Boolean).join("\n");
         var dest = em || "andrewiredale@smartrealty.us";

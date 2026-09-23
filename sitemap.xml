@@ -36,6 +36,21 @@
     <priority>0.5</priority>
   </url>
   <url>
+    <loc>https://smartrealty.us/pricing/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://smartrealty.us/buy/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.4</priority>
+  </url>
+  <url>
+    <loc>https://smartrealty.us/sell/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.4</priority>
+  </url>
+  <url>
     <loc>https://smartrealty.us/privacy.html</loc>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>

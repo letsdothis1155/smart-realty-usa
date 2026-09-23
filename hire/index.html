@@ -40,17 +40,16 @@
       <section aria-labelledby="offer-title">
         <h2 id="offer-title">Listing copy pack</h2>
         <p class="offer-price">$150</p>
-        <p>Starting quote for one property. Andrew confirms the scope, final price and delivery date before you decide to pay.</p>
+        <p>One property, <strong>$150</strong>, paid on Stripe. The button charges that amount now. The form below does not.</p>
         <ul>
           <li>Three headline options.</li>
           <li>One edited property description based on your supplied facts.</li>
           <li>Copy delivered by email for you to review and publish.</li>
         </ul>
-        <h2>How your request becomes a job</h2>
+        <h2>How this works</h2>
         <ol>
-          <li><strong>Request the pack.</strong> Share your contact details and a brief below.</li>
-          <li><strong>Review the quote.</strong> Andrew confirms the work, timing, any revisions and payment instructions by email.</li>
-          <li><strong>Pay the agreed invoice.</strong> Your request itself does not charge you or book work.</li>
+          <li><strong>Pay $150 with Stripe</strong> if you want the pack now. Stripe emails you a receipt. Reply with the property facts, or put them in the form.</li>
+          <li><strong>Or request a quote.</strong> The form does not charge you and does not book the work.</li>
           <li><strong>Review your copy.</strong> Check every property fact before you publish it.</li>
         </ol>
         <div class="glass offer-example">
@@ -60,9 +59,10 @@
           <small>The free <a href="/copy/">draft workshop</a> produces a template in your browser. The paid service adds Andrew's editing of your supplied brief. Trying the workshop does not place an order.</small>
         </div>
       </section>
+      <p><a class="btn btn-primary" href="https://buy.stripe.com/7sY9AVdfx0edbKqfhTebu00" target="_blank" rel="noopener">Pay $150 with Stripe</a></p>
       <form class="glass offer-form" id="hireForm" aria-labelledby="request-title">
-        <h2 id="request-title">Request the $150 pack</h2>
-        <p>No account needed. No card or bank details on this form.</p>
+        <h2 id="request-title">Or request a quote — no charge</h2>
+        <p>No account needed. No card or bank details on this form. Submitting it does not take payment.</p>
         <label for="hireName">Your name<input id="hireName" name="name" required minlength="2" maxlength="80" autocomplete="name" /></label>
         <label for="hireEmail">Email for the quote<input id="hireEmail" name="email" type="email" required maxlength="120" autocomplete="email" /></label>
         <label for="hireCity">Property city (optional)<input id="hireCity" name="city" maxlength="80" autocomplete="address-level2" /></label>
@@ -72,6 +72,7 @@
         <label class="consent"><input id="hireConsent" type="checkbox" required /><span>Andrew may contact me about this request. I understand this is copywriting, not a brokerage listing or appraisal. <a href="/privacy.html">Privacy policy</a>.</span></label>
         <button type="submit" class="btn btn-primary" id="hireSubmit">Request a quote — no charge</button>
         <p class="offer-status" id="hireStatus" role="status" aria-live="polite" tabindex="-1"></p>
+        <p><a class="btn btn-outline" href="https://buy.stripe.com/7sY9AVdfx0edbKqfhTebu00" target="_blank" rel="noopener">Pay $150 with Stripe</a></p>
         <p><a id="hireEmailFallback" href="mailto:andrewiredale@smartrealty.us?subject=Listing%20copy%20pack%20request">Prefer email? Contact Andrew</a></p>
         <noscript><p>This form needs JavaScript. Email <a href="mailto:andrewiredale@smartrealty.us?subject=Listing%20copy%20pack%20request">andrewiredale@smartrealty.us</a> with your name, city and brief to request a quote.</p></noscript>
       </form>
@@ -79,6 +80,6 @@
     <p style="margin-top:2rem">Copywriting by SMART REALTY.US LLC. Not a licensed brokerage, appraisal or CMA service. No guarantee of a sale, ranking or traffic. You are responsible for confirming property facts and approving the copy before publication.</p>
   </main>
   <footer class="legal-footer container"><a href="/">← Home</a><a href="/privacy.html">Privacy</a><a href="/terms.html">Terms</a><span>© 2026 SMART REALTY.US LLC</span></footer>
-  <script src="/js/hire-request.js?v=1" defer></script>
+  <script src="/js/hire-request.js?v=2" defer></script>
 </body>
 </html>

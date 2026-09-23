@@ -6,6 +6,9 @@ Allow: /hire/
 Allow: /advertise/
 Allow: /services/
 Allow: /start/
+Allow: /pricing/
+Allow: /buy/
+Allow: /sell/
 Allow: /apps/
 Disallow: /api/
 Disallow: /property/
