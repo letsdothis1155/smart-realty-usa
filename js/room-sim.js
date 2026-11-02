@@ -1,6 +1,6 @@
 import { initRoomBuilder } from "/js/room-builder.js?v=20260914e";
 import { feetAndInches } from "/js/room-distance.mjs?v=20260911b";
-import { reconstructHouse } from "/js/room-pipeline.js?v=20260914e";
+import { reconstructHouse, reconstructRoom } from "/js/room-pipeline.js?v=20260914e";
 import { readRoomPlanFile } from "/js/roomplan-import.mjs?v=20260915a";
 import { CATALOG_TREE, SAMPLE_PRODUCTS, VENDOR_OPTIONS, productsInGroup, money } from "/js/room-catalog.js?v=20260824j";
 
@@ -598,7 +598,8 @@ export async function bootRoomSim() {
     return indexed.length ? indexed : (room.sourcePhotoUrls || [room.sourcePhotoUrl]).filter(Boolean);
   }
 
-  function renderPhotoStrip(urls, selected = urls[0]) {
+  let photoAnalysisRequest = 0;
+  function renderPhotoStrip(urls, selected = urls[0], room = {}) {
     const strip = document.getElementById("simPhotos");
     if (!strip) return;
     if (!urls.length) {
@@ -613,18 +614,39 @@ export async function bootRoomSim() {
       )
       .join("");
     strip.querySelectorAll("[data-photo]").forEach((btn) => {
-      btn.addEventListener("click", () => {
+      btn.addEventListener("click", async () => {
+        const requestId = ++photoAnalysisRequest;
         const picked = btn.getAttribute("data-photo");
         originalImage.src = picked;
         const next = [picked, ...urls.filter((u) => u !== picked)];
         builder.setListingPhotos(next);
         strip.querySelectorAll(".sim-photo").forEach((b) => b.classList.toggle("is-on", b === btn));
+        // Imported measurements stay authoritative when browsing references.
+        if (room.mode === "lidar") return;
+        if (hud.hint) hud.hint.textContent = "Analyzing selected room view…";
+        try {
+          const analyzed = await reconstructRoom({ photoUrl: picked, photoUrls: next, listingId, roomType: room.roomType });
+          if (requestId !== photoAnalysisRequest) return;
+          if (analyzed.mode !== "vision") {
+            if (hud.hint) hud.hint.textContent = "Photo analysis unavailable · current room kept";
+            return;
+          }
+          const updated = { ...analyzed, id: room.id, photoIndices: room.photoIndices };
+          Object.assign(room, updated);
+          builder.applyReconstruction(updated);
+          builder.setListingPhotos(next);
+          showPhotoMatch(updated);
+          if (hud.hint) hud.hint.textContent = "Selected view analyzed · room dimensions estimated";
+        } catch {
+          if (requestId === photoAnalysisRequest && hud.hint) hud.hint.textContent = "Photo analysis could not finish · current room kept";
+        }
       });
     });
   }
 
   async function selectRoom(room, { furnish = false } = {}) {
     if (!room) return false;
+    ++photoAnalysisRequest;
     if (readyToSave) saveDesign();
     readyToSave = false;
     activeRoomId = room.id || `room-${rooms.indexOf(room) + 1}`;
@@ -637,7 +659,7 @@ export async function bootRoomSim() {
     } else {
       originalButton.disabled = true;
     }
-    renderPhotoStrip(urls);
+    renderPhotoStrip(urls, urls[0], room);
     showPhotoMatch(room);
     document.querySelectorAll("[data-house-room]").forEach((button) => {
       const selected = button.dataset.houseRoom === activeRoomId;
