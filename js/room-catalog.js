@@ -651,6 +651,13 @@ export const SAMPLE_PRODUCTS = [
   }),
 ];
 
+// Retailer dimensions drive these editable planning meshes. Product pages
+// remain the source of truth for current prices, stock, and finishes.
+SAMPLE_PRODUCTS.unshift(
+  product({ id: "ikea-kivik-39440593", sku: "394.405.93", modelId: "sofa-linen", category: "sofa", group: "sofa", meshStyle: "sofa", name: "KIVIK sofa · Tibbleby beige/gray", brand: "IKEA", store: "IKEA", vendor: "ikea", productUrl: "https://www.ikea.com/us/en/p/kivik-sofa-tibbleby-beige-gray-s39440593/", price: 799, widthIn: 89.75, depthIn: 37.375, heightIn: 32.625, swatch: "#a6a39b", snap: "floor", dimensionsSource: "retailer", modelSource: "procedural", modelDisclaimer: "Dimensioned planning visualization", priceCheckedAt: "2026-11-02" }),
+  product({ id: "ikea-lack-60566062", sku: "605.660.62", modelId: "tv-stand-walnut", category: "tv-stand", group: "tv-stand", meshStyle: "tv-stand", name: "LACK TV unit · black-brown", brand: "IKEA", store: "IKEA", vendor: "ikea", productUrl: "https://www.ikea.com/us/en/p/lack-tv-unit-black-brown-60566062/", price: 64.99, widthIn: 63, depthIn: 13.75, heightIn: 14.125, swatch: "#302821", snap: "floor", dimensionsSource: "retailer", modelSource: "procedural", modelDisclaimer: "Dimensioned planning visualization", priceCheckedAt: "2026-11-02" })
+);
+
 export const PRODUCT_BY_ID = Object.fromEntries(SAMPLE_PRODUCTS.map((p) => [p.id, p]));
 
 export const VENDOR_OPTIONS = [
