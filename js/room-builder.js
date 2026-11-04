@@ -171,6 +171,44 @@ export function initRoomBuilder(canvas, options = {}) {
   const cutawayMeshes = [];
   const listingPhotoMeshes = [];
   let pendingListingPhotos = [];
+  let photoPaletteRequest = 0;
+  function matchPhotoPalette(url) {
+    const request = ++photoPaletteRequest;
+    const image = new Image();
+    image.crossOrigin = "anonymous";
+    image.onload = () => {
+      if (request !== photoPaletteRequest) return;
+      try {
+        const canvas = document.createElement("canvas");
+        canvas.width = canvas.height = 48;
+        const context = canvas.getContext("2d", { willReadFrequently: true });
+        if (!context) return;
+        context.drawImage(image, 0, 0, 48, 48);
+        const pixels = context.getImageData(0, 0, 48, 48).data;
+        const medianColor = (start, end) => {
+          const channels = [[], [], []];
+          for (let y = start; y < end; y++) for (let x = 8; x < 40; x++) {
+            const i = (y * 48 + x) * 4;
+            const brightness = (pixels[i] + pixels[i + 1] + pixels[i + 2]) / 3;
+            if (brightness < 25 || brightness > 245) continue;
+            channels.forEach((values, channel) => values.push(pixels[i + channel]));
+          }
+          if (channels[0].length < 20) return null;
+          return new THREE.Color(...channels.map((values) => {
+            values.sort((a, b) => a - b);
+            return values[Math.floor(values.length / 2)] / 255;
+          })).convertSRGBToLinear();
+        };
+        const wall = medianColor(7, 20);
+        const floor = medianColor(37, 47);
+        shellGroup.traverse((mesh) => {
+          const color = mesh.userData.role === "wall" ? wall : mesh.userData.role === "floor" ? floor : null;
+          if (color && mesh.material?.color) mesh.material.color.copy(color);
+        });
+      } catch { /* Cross-origin images can still be used as references. */ }
+    };
+    image.src = url;
+  }
   let southWall = null;
   let ceilingMesh = null;
 
@@ -205,6 +243,7 @@ export function initRoomBuilder(canvas, options = {}) {
   }
 
   function mountListingPhotos(urls = []) {
+    ++photoPaletteRequest;
     pendingListingPhotos = (urls || []).filter(Boolean).slice(0, 4);
     listingPhotoMeshes.forEach((m) => {
       shellGroup.remove(m);
@@ -217,6 +256,7 @@ export function initRoomBuilder(canvas, options = {}) {
     const list = pendingListingPhotos;
     if (!list.length) return;
     const url = list[0];
+    matchPhotoPalette(url);
     const w = Math.min(1.35, roomWidth * 0.24);
     const h = 0.9;
     const frame = makePhotoFrame(url, w, h);
@@ -1101,6 +1141,7 @@ export function initRoomBuilder(canvas, options = {}) {
     pushUndo();
     finishId = id;
     rebuildShell();
+    ++photoPaletteRequest;
     onChange();
     return finishId;
   }
