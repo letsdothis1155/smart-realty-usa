@@ -116,11 +116,11 @@ test("preserves a specific API credit error for an honest builder status", async
   assert.equal(room.analysis.errorCode, "openai_credits_exhausted");
 });
 
-test("requests one grouped house reconstruction for up to eight photos", async () => {
+test("reconstructs the complete gallery in batches and keeps global photo indices", async () => {
   browserConfig();
-  let request;
+  const requests = [];
   globalThis.fetch = async (url, options) => {
-    request = { url, options };
+    requests.push({ url, options });
     return {
       async json() {
         return { ok: true, house: { mode: "vision", rooms: [{ id: "living-room", photoIndices: [0, 1] }] } };
@@ -128,10 +128,12 @@ test("requests one grouped house reconstruction for up to eight photos", async (
     };
   };
   const house = await reconstructHouse({ listingId: "house-1", photoUrls: Array.from({ length: 10 }, (_, i) => `images/gallery/g-${i}.jpg`) });
-  const body = JSON.parse(request.options.body);
-  assert.equal(body.mode, "house");
-  assert.equal(body.imageUrls.length, 8);
+  const bodies = requests.map(request => JSON.parse(request.options.body));
+  assert.deepEqual(bodies.map(body => body.mode), ["house", "house"]);
+  assert.deepEqual(bodies.map(body => body.imageUrls.length), [8, 2]);
   assert.equal(house.rooms[0].id, "living-room");
+  assert.deepEqual(house.rooms[1].photoIndices, [8, 9]);
+  assert.notEqual(house.rooms[0].id, house.rooms[1].id);
 });
 
 test("creates a separate editable fallback room for every photo", async () => {
