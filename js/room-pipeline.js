@@ -1,3 +1,5 @@
+import { planListing } from "./sr-layout.mjs";
+
 /**
  * Room generation pipeline — modular so a listing photo can later
  * become an editable 3D room without rewriting the shop UI.
@@ -230,7 +232,16 @@ export function photoWallDistance(wallWidth, wallHeight, fovDeg = 50, aspect = 1
   return Math.min(height / 2 / tanV, width / 2 / tanH);
 }
 
-export function applyListedSize(room, listing, index = 0, total = 1) {
+export function applyListedSize(room, listing, index = 0, total = 1, plan = null) {
+  const id = room?.id?.replace(/^reference-/, "");
+  const planned = plan?.rooms.find(entry => entry.id === id);
+  if (planned && room.mode !== "vision" && room.mode !== "lidar") {
+    return {
+      ...room, width: planned.w, depth: planned.d, height: plan.heightM,
+      floorPolygon: undefined, sizeSource: planned.estimated ? "listed-sqft" : "listed-room",
+      listedSqft: plan.sqft,
+    };
+  }
   if (!room || room.mode === "vision" || room.mode === "lidar" || room.sizeSource === "listed-sqft") return room;
   const sized = listingRoomSize(listing, room.roomType || "other", index, total);
   if (sized.sizeSource !== "listed-sqft") return room;
@@ -240,6 +251,22 @@ export function applyListedSize(room, listing, index = 0, total = 1) {
     ...sized,
     label: `${room.label || "Room"} · about ${feet} from the listed ${sized.listedSqft.toLocaleString("en-US")} sqft`,
   };
+}
+
+export function propertyRoomModel(listing, photoUrls) {
+  if (!listing) return { rooms: [], plan: null };
+  let plan = null;
+  try { plan = planListing(listing); } catch { /* Partial listing data can still provide photos. */ }
+  const rooms = listPropertyRooms(listing, photoUrls);
+  const byType = new Map();
+  for (const room of rooms) {
+    const type = room.roomType;
+    const total = rooms.filter(entry => entry.roomType === type).length;
+    const index = byType.get(type) || 0;
+    byType.set(type, index + 1);
+    Object.assign(room, applyListedSize(room, listing, index, total, plan));
+  }
+  return { rooms, plan };
 }
 
 function photoStem(photoUrl) {

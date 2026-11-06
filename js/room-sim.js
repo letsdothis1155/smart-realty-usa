@@ -1,7 +1,7 @@
-import { PROPERTY_PHOTO_ROOMS } from "/js/room-photo-previews.mjs?v=20261106b";
-import { initRoomBuilder } from "/js/room-builder.js?v=20261106photo";
+import { PROPERTY_PHOTO_ROOMS } from "/js/room-photo-previews.mjs?v=2";
+import { initRoomBuilder } from "/js/room-builder.js?v=shared2";
 import { feetAndInches } from "/js/room-distance.mjs?v=20260911b";
-import { applyListedSize, DEFAULT_LIVING_ROOM, listPropertyRooms, planningRoom, reconstructHouse, reconstructRoom, roomChoiceLabel } from "/js/room-pipeline.js?v=20261106photo";
+import { DEFAULT_LIVING_ROOM, planningRoom, propertyRoomModel, reconstructHouse, reconstructRoom, roomChoiceLabel } from "/js/room-pipeline.js?v=shared2";
 import { readRoomPlanFile } from "/js/roomplan-import.mjs?v=20260915a";
 import { CATALOG_TREE, SAMPLE_PRODUCTS, VENDOR_OPTIONS, productsInGroup, money } from "/js/room-catalog.js?v=20261106rooms";
 
@@ -101,7 +101,7 @@ function webglAvailable() {
   }
 }
 
-function showStillFallback(message, photo) {
+function showStillFallback(message, photos = []) {
   const canvas = document.getElementById("simCanvas");
   const fallback = document.getElementById("simFallback");
   const stage = document.getElementById("simFallbackStage");
@@ -111,9 +111,14 @@ function showStillFallback(message, photo) {
   if (fallback) fallback.hidden = false;
   if (msg) msg.textContent = message || "3D is unavailable. Showing a still visualization.";
   if (stage) {
-    stage.innerHTML = photo
-      ? `<img src="${esc(photo)}" alt="Listing photo used as a still visualization" /><p>Estimated visualization — not a 3D scan.</p>`
-      : `<p>No listing photo available for a still preview.</p>`;
+    stage.replaceChildren();
+    for (const src of (Array.isArray(photos) ? photos : [photos]).map(absPhoto).filter(Boolean).slice(0, 12)) {
+      const img = document.createElement("img");
+      img.alt = "Listing photo";
+      img.onerror = () => img.remove();
+      img.src = src;
+      stage.append(img);
+    }
   }
   if (loading) loading.hidden = true;
   document.querySelector(".sim-hud")?.classList.add("is-fallback");
@@ -136,17 +141,25 @@ export async function bootRoomSim() {
   const fallbackBack = document.getElementById("simFallbackBack");
   if (fallbackBack) fallbackBack.href = returnHref;
 
+  let listing = bundledListing;
+  if (listingId) {
+    try {
+      const response = await fetch(`${apiOrigin()}/api/listings/${encodeURIComponent(listingId)}`, { signal: AbortSignal.timeout(8000) });
+      if (response.ok) listing = (await response.json()).listing || listing;
+    } catch { /* Use the bundled listing when available. */ }
+  }
+  const gallery = listing ? listingPhotos(listing) : [];
+  const photos = gallery.length ? gallery : photoUrl ? [photoUrl] : [];
   if (!webglAvailable()) {
-    showStillFallback("This browser cannot run WebGL. A still visualization is shown instead.", absPhoto(photoUrl));
+    showStillFallback("3D unavailable on this device.", photos);
     return;
   }
-
   let builder;
   try {
     builder = initRoomBuilder(canvas);
-  } catch (err) {
-    console.error(err);
-    showStillFallback("The 3D engine could not start. A still visualization is shown instead.", photoUrl);
+  } catch (error) {
+    console.error(error);
+    showStillFallback("3D unavailable. The room engine could not start.", photos);
     return;
   }
   const hud = {
@@ -555,23 +568,10 @@ export async function bootRoomSim() {
   if (fallbackBack) fallbackBack.href = returnHref;
 
   if (hud.loading) { hud.loading.hidden = false; hud.loading.textContent = "Loading property photos…"; }
-  let photos = photoUrl ? [photoUrl] : [];
-  let listing = bundledListing;
   if (listingId) {
     track("listing_view", { listingId });
-    try {
-      const res = await fetch(`${apiOrigin()}/api/listings/${encodeURIComponent(listingId)}`, { signal: AbortSignal.timeout(10000) });
-      if (res.ok) {
-        const data = await res.json();
-        if (data.listing) listing = data.listing;
-      }
-    } catch {
-      /* Static hosting uses the bundled demo catalog loaded by the page. */
-    }
     if (listing) {
       listingTitle = listing.address || listing.title || "Property";
-      const gallery = listingPhotos(listing);
-      if (gallery.length) photos = gallery;
 
       const loc = listing.location || [listing.city, listing.state, listing.postalCode].filter(Boolean).join(" ");
       const facts = [
@@ -640,16 +640,13 @@ export async function bootRoomSim() {
 
   const resolved = [...new Set(photos.map(absPhoto).filter(Boolean))];
   if (hud.loading) hud.loading.textContent = "Loading rooms…";
-  const rooms = listPropertyRooms(listing, resolved);
-  if (!rooms.length) rooms.push({ ...DEFAULT_LIVING_ROOM, id: "sample-room" });
-  const seenByType = {};
-  for (let i = 0; i < rooms.length; i += 1) {
-    const type = rooms[i].roomType || "other";
-    const total = rooms.filter((room) => (room.roomType || "other") === type).length;
-    const index = seenByType[type] || 0;
-    seenByType[type] = index + 1;
-    rooms[i] = applyListedSize(rooms[i], listing, index, total);
+  const { rooms } = propertyRoomModel(listing, resolved);
+  if (listingId && (!listing || (!resolved.length && !Number(listing.sqft) && !listing.roomSizes?.length))) {
+    builder.dispose();
+    showStillFallback("3D unavailable. There is not enough listing data for this property.", resolved);
+    return;
   }
+  if (!rooms.length) rooms.push({ ...DEFAULT_LIVING_ROOM, id: "sample-room" });
   const customKey = `sru.room.list.${listingId || "sample"}`;
   let customRooms = [];
   try {
@@ -820,13 +817,21 @@ export async function bootRoomSim() {
   const restored = await queueRoom(initial);
   reconstructHouse({ photoUrls: resolved, listingId }).then((house) => {
     const visionRooms = (house?.rooms || []).filter((room) => room.mode === "vision");
-    visionRooms.forEach((vision) => {
-      const match = rooms.find((room) => room.mode !== "lidar" && room.mode !== "vision" && room.roomType === vision.roomType);
-      if (!match) return;
-      const kept = { id: match.id, label: match.label, photoIndices: match.photoIndices, sourcePhotoUrls: match.sourcePhotoUrls };
-      Object.assign(match, vision, kept);
-      if (activeRoomId === match.id && builder.placedList().length === 0) builder.applyReconstruction(match);
-    });
+    for (const vision of visionRooms) {
+      const source = new Set((vision.sourcePhotoUrls || []).map(absPhoto));
+      for (const index of vision.photoIndices || []) {
+        if (resolved[index]) source.add(resolved[index]);
+      }
+      if (!source.size) continue;
+      const match = rooms.find(room => room.mode === "fallback" &&
+        room.id !== activeRoomId && roomPhotos(room).some(url => source.has(url)));
+      if (!match) continue;
+      const identity = { id: match.id, label: match.label, photoIndices: match.photoIndices, sourcePhotoUrls: match.sourcePhotoUrls };
+      const dimensions = match.sizeSource === "listed-room"
+        ? { width: match.width, depth: match.depth, height: match.height, floorPolygon: undefined, sizeSource: match.sizeSource }
+        : {};
+      Object.assign(match, vision, identity, dimensions);
+    }
   }).catch(() => {});
 
   const lidarInput = document.getElementById("simLidarFile");

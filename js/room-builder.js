@@ -6,7 +6,7 @@ import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.160.0/exampl
 import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js/+esm";
 import { buildFurnitureMesh, tintPlacement } from "/js/room-furniture.js?v=20261106rooms";
 import { DEFAULT_LAYOUT, findProduct, normalizeProduct } from "/js/room-catalog.js?v=20261106rooms";
-import { DEFAULT_LIVING_ROOM, FINISH_PRESETS, ROOM_PRESETS, photoWallDistance } from "/js/room-pipeline.js?v=20261106photo";
+import { DEFAULT_LIVING_ROOM, FINISH_PRESETS, ROOM_PRESETS, photoWallDistance } from "/js/room-pipeline.js?v=shared2";
 import { boxInsidePolygon, normalizeFloorPolygon, pointInPolygon, polygonArea } from "/js/room-geometry.mjs?v=20260914a";
 
 const IN_TO_M = 0.0254;
@@ -333,7 +333,10 @@ export function initRoomBuilder(canvas, options = {}) {
         plane.material.needsUpdate = true;
       },
       undefined,
-      () => {}
+      () => {
+        if (request !== photoWallRequest || plane.userData.resourcesDisposed) return;
+        mountListingPhotos(list.slice(1), { frameCamera: false });
+      }
     );
     if (frameCamera) framePhotoCamera();
     else if (photoWallMesh) {
