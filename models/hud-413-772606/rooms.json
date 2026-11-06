@@ -726,5 +726,6 @@
     "doorHeightM": 2.032,
     "counterHeightM": 0.9144,
     "note": "An 80 in door and a 36 in counter are scale references only. This plan did not measure them in a photo."
-  }
+  },
+  "engineVersion": 1
 }

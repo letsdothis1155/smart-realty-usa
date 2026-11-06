@@ -184,13 +184,14 @@
     async function startRoomBuilder() {
       const params = new URLSearchParams(location.search);
       const listingId = params.get("listing") || "";
-      if (listingId) {
-        const probe = await fetch(`/models/${encodeURIComponent(listingId)}/rooms.json`);
-        if (probe.ok) {
+      if (listingId && params.get("mode") === "walk") {
+        const probe = await fetch(`/models/${encodeURIComponent(listingId)}/rooms.json`).catch(() => null);
+        if (probe?.ok) {
           const walk = document.getElementById("srWalk");
           const view = document.getElementById("sr-3d-viewer");
           const back = document.getElementById("srWalkBack");
-          back.href = params.get("from") || `/new-listings/?id=${encodeURIComponent(listingId)}`;
+          back.href = `/room-builder/?listing=${encodeURIComponent(listingId)}`;
+          back.textContent = "← Edit rooms";
           view.dataset.listingId = listingId;
           walk.hidden = false;
           const root = document.querySelector(".sim-root");
@@ -200,7 +201,7 @@
           return;
         }
       }
-      const { bootRoomSim } = await import("/js/room-sim.js?v=20261106photo");
+      const { bootRoomSim } = await import("/js/room-sim.js?v=shared2");
       await bootRoomSim();
     }
     startRoomBuilder().catch((error) => {
