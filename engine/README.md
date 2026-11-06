@@ -40,6 +40,10 @@ The private worker completes compatible observed patches into one editable floor
 
 When a completed room is available, the builder opens it directly. It starts in a cutaway orbit, with original listing views available for comparison. The cutaway only changes visibility while orbiting; exports keep the room geometry. Missing or low-quality photo models retain the existing fallback, and the planning editor remains available from the studio.
 
+### Universal studio compatibility
+
+Every property route and embedded listing viewer now opens the shared studio. Generated photo models take priority. Rooms without a generated model receive a complete editable planning layout from the same listing sizing logic, including properties missing room sizes or photos. The room selector includes both generated and estimated rooms. Failed models fall back inside the studio. These planning layouts use neutral finishes and clearly identified reference photos; they do not claim photo reconstruction or enable uncalibrated photo-camera overlays. No paid inference is required for this compatibility path.
+
 | Found | Repair |
 | --- | --- |
 | Six photo pages each shipped a copy of the viewer and its controls | Shared one studio and retained the old URLs as redirects |

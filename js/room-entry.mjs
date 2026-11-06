@@ -19,3 +19,11 @@ export function photoRoomTarget(query, entries = []) {
   }
   return choice ? '/room-builder/studio/?' + new URLSearchParams({ listing, room: choice.id }) : '';
 }
+export function studioRoomTarget(query) {
+  const params = new URLSearchParams(query);
+  const listing = params.get('listing');
+  if (!/^[a-zA-Z0-9_-]{1,100}$/.test(listing || '') || params.get('engine') === 'planning' || params.get('mode') === 'walk') return '';
+  const target = new URLSearchParams({ listing });
+  for (const key of ['room','photo']) if (params.get(key)) target.set(key,params.get(key));
+  return '/room-builder/studio/?' + target;
+}
