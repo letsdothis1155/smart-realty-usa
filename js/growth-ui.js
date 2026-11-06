@@ -25,16 +25,16 @@
           <span class="logo-text"><strong>Smart Realty</strong><small>USA</small></span>
         </a>
         <nav class="g-nav" id="gNav">
-          ${link("/", "Homes", "home")}
-          ${link("/new-listings/", "Live listings", "listings")}
+          ${link("/", "Home", "home")}
+          ${link("/new-listings/", "Listings", "new-listings")}
           ${link("/room-builder/", "3D Room", "room-builder")}
-          ${link("/start/", "Start", "start")}
+          ${link("/hire/", "Listing copy", "hire")}
           ${link("/apps/", "Apps", "apps")}
-          ${link("/learn/", "Learn", "learn")}
+          ${link("/terms.html", "Terms", "terms")}
         </nav>
         <div class="g-header-actions">
           <a class="btn btn-ghost btn-sm" href="/account.html">Account</a>
-          <a class="btn btn-primary btn-sm" href="/direct-deposit/setup/">Set up</a>
+          <a class="btn btn-primary btn-sm" href="/hire/">Listing copy</a>
           <button class="menu-toggle g-menu" id="gMenu" type="button" aria-label="Open menu"><span></span><span></span><span></span></button>
         </div>
       </div>
@@ -50,43 +50,37 @@
             <span class="logo-mark">SR</span>
             <span class="logo-text"><strong>Smart Realty</strong><small>USA</small></span>
           </a>
-          <p class="g-footer-tag">Get paid → organize → build a goal → prepare for property.</p>
-          <p class="g-fine">SmartRealty is not a bank or licensed brokerage. No guaranteed savings, ownership, or returns.</p>
+          <p class="g-footer-tag">Homes, a 3D room preview, and owner tools from a Louisville LLC.</p>
+          <p class="g-fine">SMART REALTY.US LLC is not a bank or a licensed brokerage. Original work by Andrew Iredale Jr. All rights reserved.</p>
         </div>
         <div>
           <h5>Homes</h5>
+          <a href="/new-listings/">Live listings</a>
+          <a href="/room-builder/">3D room</a>
           <a href="/start/">Start</a>
           <a href="/buy/">Buy</a>
           <a href="/sell/">Sell</a>
-          <a href="/rent/">Rent</a>
-          <a href="/showing/">Showing</a>
-          <a href="/list/">List a property</a>
+          <a href="/hire/">Listing copy</a>
         </div>
         <div>
           <h5>Apps &amp; tools</h5>
           <a href="/apps/">All apps</a>
           <a href="/apps/daily-cache-wiper/">Daily Cache Wiper</a>
           <a href="/apps/axiom/">Axiom</a>
-          <a href="/new-listings/">New listings</a>
-          <a href="/build/">3D Home Builder</a>
-          <a href="/room-builder/">3D Room Builder</a>
-          <a href="/direct-deposit/">Direct deposit</a>
-          <a href="/goals/">Property goals</a>
-          <a href="/learn/">Guides</a>
           <a href="/services/">Services</a>
+          <a href="/pricing/">Pricing</a>
         </div>
         <div>
           <h5>Company</h5>
           <a href="/#business">LLC facts</a>
-          <a href="/security/">Trust center</a>
-          <a href="/auth.html">Sign in</a>
+          <a href="/account.html">Request an account</a>
           <a href="/privacy.html">Privacy</a>
           <a href="/terms.html">Terms</a>
           <a href="mailto:andrewiredale@smartrealty.us">andrewiredale@smartrealty.us</a>
         </div>
       </div>
       <div class="container g-footer-bottom">
-        <p>© 2026 SMART REALTY.US LLC · Louisville, KY · Public demo ahead of full brokerage licensing</p>
+        <p>© 2026 Andrew Iredale Jr / SMART REALTY.US LLC · Louisville, KY · All rights reserved.</p>
       </div>
     </footer>`;
   }
