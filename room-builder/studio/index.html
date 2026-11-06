@@ -29,10 +29,7 @@ input[type=color]{width:100%;padding:4px}
 select{background:#172b25;color:#e8f0ec}
 .workspace{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:18px;align-items:start}
 .stage,.furnish-panel,.advanced{background:#19292b;border:1px solid #2d4140;border-radius:16px;padding:18px;min-width:0}
-.stage-toolbar{display:flex;flex-wrap:wrap;align-items:end;gap:9px;margin-bottom:14px}
-.stage-toolbar label{flex:1 1 140px}
-.stage-toolbar .controls{margin:0}
-.stage-title{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin:12px 0}
+.stage-title{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:0 0 14px}
 .stage-title h2{margin:0}
 .room-canvas{position:relative;overflow:hidden;border-radius:10px;background:#111820}
 canvas{display:block;width:100%;height:auto;touch-action:none;outline-offset:3px}
@@ -42,6 +39,7 @@ canvas{display:block;width:100%;height:auto;touch-action:none;outline-offset:3px
 #finish-canvas{position:absolute;inset:0;height:100%;pointer-events:none;background:transparent}
 #viewer-loading{position:absolute;inset:0;display:grid;place-items:center;background:#152325;color:#cceca8}
 .scene-help{font-size:12px;margin:12px 0 0}
+#room-scale-status{color:#d6e7c4;font-weight:600}
 #finish-note{font-size:12px;margin-top:8px}
 #finish-note p{margin:6px 0}
 .check{display:flex;align-items:center;gap:8px}
@@ -83,26 +81,18 @@ details[open]>summary{margin-bottom:12px}
  .room-heading{align-items:stretch;flex-direction:column;gap:10px}
  #property-room-nav{width:100%}
  .stage,.furnish-panel,.advanced{padding:14px}
- .stage-toolbar label{flex-basis:130px}
- .stage-toolbar .controls{width:100%}
- .stage-toolbar .controls button{flex:1}
 }
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
 </style>
 <main id="studio" hidden>
 <p id="property-back" hidden><a href="/room-builder/">← All rooms for this property</a></p>
 <header class="room-heading">
- <div><span class="eyebrow">Smart Realty · Room studio</span><h1>Build your room.</h1><p><span id="room-title">Room preview</span></p><p class="room-note">Photo view uses the listing image. The 3D surfaces and furniture scale are estimates.</p></div>
+ <div><span class="eyebrow">Smart Realty · Room studio</span><h1>Build your room.</h1><p><span id="room-title">Room preview</span></p><p class="room-note" id="room-evidence"></p></div>
  <div class="controls" id="property-room-nav" hidden><label>Property room<select id="property-room"></select></label></div>
 </header>
 <div class="workspace">
 <section class="stage" aria-label="Room preview">
- <div class="stage-toolbar">
-  <label>Photo<select id="view"></select></label>
-  <label>Display<select id="display"><option value="match" hidden disabled>Photo + furniture</option><option value="photo" hidden disabled>3D surfaces</option><option value="both" selected>Surfaces + points</option><option value="shell">Surfaces</option><option value="points">Points</option></select></label>
-  <div class="controls"><button id="camera" class="secondary">Photo view</button><button id="orbit" class="secondary">Orbit in 3D</button></div>
- </div>
- <div class="stage-title"><h2 id="mode">Room preview</h2></div>
+ <div class="stage-title"><h2 id="mode">Editable 3D room</h2><button id="orbit" class="secondary" hidden>Return to 3D</button></div>
  <div class="room-canvas"><canvas id="cloud" tabindex="0" aria-label="Editable room. Drag furniture to move it, or drag empty space to orbit."></canvas><canvas id="finish-canvas" hidden aria-hidden="true"></canvas><div id="viewer-loading" role="status">Loading your room…</div></div>
  <p id="room-scale-status" class="scene-help"></p>
  <div class="controls"><button id="fit-view" class="secondary">Fit 3D view</button><button id="save-picture" class="secondary">Save 3D picture</button></div>
@@ -110,9 +100,13 @@ details[open]>summary{margin-bottom:12px}
  <div id="finish-note" hidden>
   <label class="check" id="windows-control"><input id="window-photos" type="checkbox" checked>Show window photos</label>
   <p id="match-note" hidden>The original photo remains behind your 3D furniture.</p>
-  <p id="surface-note">This view uses estimated surfaces textured from the listing photos. Unseen boundaries remain incomplete.</p>
+  <p id="surface-note"></p>
  </div>
- <details><summary>Compare the original photo</summary><div class="source-photo"><canvas id="photo" tabindex="0" aria-label="Original listing photo. In advanced editing, mark two corners to place an opening."></canvas></div></details>
+ <details id="photo-reference"><summary>Compare listing photos</summary>
+  <div class="controls"><label>Reference angle<select id="view"></select></label><button id="camera" class="secondary" disabled>Use photo camera</button></div>
+  <p id="photo-status" class="scene-help" role="status"></p>
+  <div class="source-photo"><canvas id="photo" tabindex="0" aria-label="Original listing photo. In advanced editing, mark two corners to place an opening." hidden></canvas></div>
+ </details>
 </section>
 <aside class="furnish-panel" aria-label="Furniture catalog and selected item">
  <h2>Add furniture</h2>
@@ -131,8 +125,9 @@ details[open]>summary{margin-bottom:12px}
  </div>
 </aside>
 </div>
-<details class="advanced"><summary>Advanced room geometry and downloads</summary>
- <p>Estimated observed surfaces · Scale not measured · Room boundaries incomplete</p>
+<details class="advanced" id="geometry-controls"><summary>Room geometry and downloads</summary>
+ <p id="geometry-note"></p>
+ <div class="controls"><label>Display<select id="display"><option value="match" hidden disabled>Photo + furniture</option><option value="photo" hidden disabled>Textured room</option><option value="both">Surfaces + points</option><option value="shell" selected>Geometry only</option><option value="points">Points</option></select></label></div>
  <div class="controls"><label class="check" id="joins-control"><input id="joins" type="checkbox" checked>Use fitted joins</label></div><p id="joins-note"></p>
  <section><h2>Edit a surface</h2><div class="controls"><label>Surface<select id="surface"></select></label><label class="check"><input type="checkbox" id="visible">Include surface</label><label>Move surface (% scene span)<input id="offset" type="number" step="0.1" min="-20" max="20" value="0"></label></div><p id="fit"></p>
  <h2>Openings</h2><p>Review opening candidates against the source photos before cutting the surfaces.</p>
@@ -146,5 +141,5 @@ details[open]>summary{margin-bottom:12px}
 </main>
 <section id="room-unavailable" hidden><h1>3D unavailable</h1><p id="room-error">This room preview could not load.</p><div id="room-fallback-photos"></div><p><a id="room-fallback-back" href="/room-builder/">Back to property builder</a></p></section>
 <script id="editor-data" type="application/json"></script>
-<script id="room-engine" type="module" src="/js/sr-photo-engine.js?v=3"></script>
+<script id="room-engine" type="module" src="/js/sr-photo-engine.js?v=4"></script>
 </html>

@@ -409,9 +409,9 @@ function surfaceIntersection(ray, surface) {
  return {uv:[dot(local,surface.u),dot(local,surface.v)],distance,surface};
 }
 
-function surfaceAtRay(ray) {
+function surfaceAtRay(ray, surfaces = shell.surfaces) {
  let nearest = null;
- for (const surface of shell.surfaces) {
+ for (const surface of surfaces) {
   if (!surface.enabled) continue;
   const hit = surfaceIntersection(ray,surface);
   if (hit && surfaceContains(surface,hit.uv) && (!nearest || hit.distance<nearest.distance)) nearest=hit;
@@ -419,8 +419,8 @@ function surfaceAtRay(ray) {
  return nearest;
 }
 
-function wallAtRay(ray) {
- const hit = surfaceAtRay(ray);
+function wallAtRay(ray, surfaces) {
+ const hit = surfaceAtRay(ray,surfaces);
  return hit?.surface.kind === 'wall' ? hit : null;
 }
 
@@ -434,14 +434,15 @@ function overlapsWallItem(surface,item,span,neighbors) {
  });
 }
 
-function placedFurnitureMeshes(highlight = true) {
+function placedFurnitureMeshes(visibleSurfaces) {
  const span = floorSpan();
- const placed = furnitureItems().map(item => ({item,surface:furnitureSurface(item)}));
- const key = JSON.stringify([highlight ? selectedFurniture : null, placed.map(({item,surface}) =>
+ const placed = furnitureItems().map(item => ({item,surface:furnitureSurface(item)}))
+  .filter(({surface})=>visibleSurfaces.includes(surface));
+ const key = JSON.stringify([selectedFurniture, placed.map(({item,surface}) =>
   [item,surface?.offset,isWallItem(item) ? surface?.polygon : null,isWallItem(item) ? surface?.openings : null])]);
  if (furnitureCache?.key === key) return furnitureCache.objects;
  const objects = placed.flatMap(({item,surface}) => furnitureIsVisible(item,surface,span) ? furnitureMesh(
-  item,surface,span,highlight && item.id === selectedFurniture) : []);
+  item,surface,span,item.id === selectedFurniture) : []);
  furnitureCache = {key, objects};
  return objects;
 }
@@ -456,7 +457,8 @@ function productLink(id, catalog) {
 }
 
 function furnitureStorageKey() {
- return data.listingId && 'sru.photo-room.' + data.listingId + '.' + (data.roomId || 'living');
+ const version = original.layoutVersion ? '.layout-' + original.layoutVersion : '';
+ return data.listingId && 'sru.photo-room.' + data.listingId + '.' + (data.roomId || 'living') + version;
 }
 
 let savedFurnitureState = '';
@@ -582,7 +584,7 @@ function addFurniture() {
  const kind = el('furniture-kind').value, catalog = furnitureCatalog[kind];
  const mounted = catalog.mount === 'wall';
  const floor = furnishingFloor();
- const surfaces = mounted ? furnishingWalls() : floor ? [floor] : [];
+ const surfaces = mounted ? previewSurfaces().filter(surface=>surface.kind==='wall'&&surface.enabled) : floor ? [floor] : [];
  const item = findFurniturePosition({
   id:1+Math.max(0,...furnitureItems().map(entry=>entry.id)),
   kind,scale:1,color:catalog.color,
@@ -649,13 +651,26 @@ function setupFurniture() {
 }
 
 const el=id=>document.getElementById(id),original=structuredClone(data.shell);
-let shell=structuredClone(original),photoMode=true,yaw=0,pitch=0,zoom=1.24,pending=false,marking=false,corner=null,cursor=[data.width/2,data.height/2],image=null,imageGeneration=0;
+const completion=original.completion;
+let shell=structuredClone(original),photoMode=false,yaw=-.62,pitch=.52,zoom=1.24,pending=false,marking=false,corner=null,cursor=[data.width/2,data.height/2],image=null,imageGeneration=0;
 const orbitTarget={yaw,pitch,zoom};
 const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
 let lastOrbitFrame=0;
 const photo=el('photo'),cloud=el('cloud'),pc=photo.getContext('2d'),gc=cloud.getContext('2d');for(const c of [photo,cloud]){c.width=data.width;c.height=data.height;}
+const referencePanel=el('photo-reference')||photo.closest('details');
+const geometryPanel=el('geometry-controls')||el('surface').closest('details');
+const referenceStatus=el('photo-status');
 const add=(a,b)=>a.map((x,i)=>x+b[i]),sub=(a,b)=>a.map((x,i)=>x-b[i]),mul=(a,k)=>a.map(x=>x*k),dot=(a,b)=>a.reduce((s,x,i)=>s+x*b[i],0);
 const cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+const orbitBasis=(()=>{
+ const floor=referenceFloor();
+ if(!completion||!floor)return [[1,0,0],[0,1,0],[0,0,1]];
+ const down=mul(floor.normal,-1), initialForward=data.views[0].pose[2].slice(0,3);
+ const levelForward=sub(initialForward,mul(down,dot(initialForward,down)));
+ const length=Math.hypot(...levelForward);
+ const forward=length>.01?mul(levelForward,1/length):floor.v;
+ return [cross(down,forward),down,forward];
+})();
 const face=()=>shell.surfaces[Number(el('surface').value)],opening=()=>face().openings[Number(el('opening').value)],view=()=>data.views[Number(el('view').value)];
 const finishCanvas=el('finish-canvas'), displayControl=el('display');
 const photoOptions=[...displayControl.querySelectorAll('option[value="photo"],option[value="match"]')];
@@ -683,7 +698,7 @@ if(Object.keys(data.finishes||{}).length){
  try{drawFinishes=createPhotoRenderer(finishCanvas,data.finishes,schedule);}catch(error){console.warn('Photo finishes unavailable',error);}
  if(drawFinishes){
   for(const option of photoOptions){option.hidden=false;option.disabled=false;}
-  displayControl.value='match';
+  displayControl.value='photo';
   finishCanvas.addEventListener('webglcontextlost',()=>{disableFinishes();schedule();});
  }
 }
@@ -702,7 +717,8 @@ function pixelProjection(usePhoto){
  const yawCos=Math.cos(yaw),yawSin=Math.sin(yaw),pitchCos=Math.cos(pitch),pitchSin=Math.sin(pitch);
  const focal=data.width*.9, distance=orbitRadius*2.8/zoom;
  return point=>{
-  const [dx,dy,dz]=sub(point,orbitCenter);
+  const relative=sub(point,orbitCenter);
+  const [dx,dy,dz]=orbitBasis.map(axis=>dot(relative,axis));
   const x=yawCos*dx-yawSin*dz;
   const rotatedZ=yawSin*dx+yawCos*dz;
   const y=pitchCos*dy-pitchSin*rotatedZ;
@@ -710,8 +726,9 @@ function pixelProjection(usePhoto){
   return [data.width/2*z+x*focal,data.height/2*z+y*focal,z];
  };
 }
-const automaticSpan = Number(data.scale?.spanMeters);
-const scaleKey = data.listingId && 'sru.photo-scale.' + data.listingId + '.' + data.roomId;
+const automaticSpan = Number(completion?.spanMeters ?? data.scale?.spanMeters);
+const scaleKey = data.listingId && 'sru.photo-scale.' + data.listingId + '.' + data.roomId +
+ (original.layoutVersion ? '.layout-' + original.layoutVersion : '');
 let roomScale = null;
 let orbitCenter = data.center;
 let orbitRadius = data.radius;
@@ -723,20 +740,40 @@ function updateScale(feet, source) {
   : null;
  shell.planningScale = roomScale;
  furnitureCache = null;
- const status = roomScale
+ let status = roomScale
   ? 'Longest floor span ' + feet.toFixed(1) + ' ft · ' + source
   : 'Relative planning scale';
+ if (roomScale && [completion?.widthM,completion?.depthM,completion?.heightM,automaticSpan].every(value=>Number.isFinite(value)&&value>0)) {
+  const dimensions=[completion.widthM,completion.depthM,completion.heightM]
+   .map(meters=>(meters*feet/automaticSpan).toFixed(1)+' ft');
+  const height=completion.ceilingShape==='vaulted'?'peak height':'height';
+  status=dimensions.join(' × ')+` (width × depth × ${height}) · `+source;
+  if(source!=='span entered by user'&&completion.heightSource&&!['listed-height','photo-vault-peak'].includes(completion.heightSource)) {
+   status+=' · estimated height';
+  }else if(source!=='span entered by user'&&completion.heightSource==='photo-vault-peak'){
+   status+=' · estimated peak';
+  }
+ }
  el('room-scale-status').textContent=status;
  el('room-span-ft').value=roomScale ? feet.toFixed(2) : '';
  schedule();
 }
 
 function autoScale() {
- if(original.units==='meters'){
+ if(!completion&&original.units==='meters'){
   updateScale(floorSpan()/.3048,'calibrated reference');
  }else{
-  const source=data.scale?.source;
-  const label=source==='listed-room'?'listing room dimensions':source==='preset'?'typical room estimate':source==='photo-floor-and-typical-area'?'photo proportions with typical room area':source==='photo-floor-and-listing-area'?'photo proportions with estimated listing area':'estimated from listing area';
+  const source=completion?.source||data.scale?.source;
+  const labels={
+   'listed-room':'listed width and depth',
+   'preset':'typical room estimate',
+   'photo-floor-and-typical-area':'photo proportions with typical room area',
+   'photo-floor-and-listing-area':'photo proportions with estimated listing area',
+   'photo-floor-and-listed-height':'photo proportions scaled to listed height',
+   'typical-height-scale':'photo proportions scaled to typical ceiling height',
+   'calibrated-reference':'calibrated reference',
+  };
+  const label=labels[source]||'estimated from listing area';
   updateScale(automaticSpan/.3048,label);
  }
 }
@@ -753,9 +790,14 @@ function fitOrbit() {
  const halfAngle=Math.atan(Math.min(data.width,data.height)/(2*data.width*.9));
  zoom=2.8*Math.sin(halfAngle)*.85;
  orbitTarget.zoom=zoom;
- photoMode=false;
+ showOrbit();
  if(drawFinishes)displayControl.value='photo';
  schedule();
+}
+
+function showOrbit() {
+ photoMode=false;
+ if(displayControl.value==='match')displayControl.value=drawFinishes?'photo':'shell';
 }
 
 let sourceProjection,sceneProjection;
@@ -780,14 +822,26 @@ function previewRay(x,y){
  if(photoMode)return photoRay(x,y);
  function inverse([x,y,z]){
   const rz=-Math.sin(pitch)*y+Math.cos(pitch)*z;
-  return [Math.cos(yaw)*x+Math.sin(yaw)*rz,Math.cos(pitch)*y+Math.sin(pitch)*z,
+  const local=[Math.cos(yaw)*x+Math.sin(yaw)*rz,Math.cos(pitch)*y+Math.sin(pitch)*z,
    -Math.sin(yaw)*x+Math.cos(yaw)*rz];
+  return [0,1,2].map(i=>local.reduce((sum,value,j)=>sum+value*orbitBasis[j][i],0));
  }
  const focal=data.width*.9;
  return {
   origin:add(orbitCenter,inverse([0,0,-orbitRadius*2.8/zoom])),
   direction:inverse([(x-data.width/2)/focal,(y-data.height/2)/focal,1]),
  };
+}
+function previewSurfaces() {
+ if(photoMode || !completion)return shell.surfaces;
+ const eye=previewRay(data.width/2,data.height/2).origin;
+ return shell.surfaces.filter(surface=>{
+  if(surface.kind==='ceiling'||surface.kind==='sloped_ceiling')return false;
+  if(surface.kind!=='wall')return true;
+  const side=dot(sub(eye,world(surface,[0,0])),surface.normal);
+  // Closed rooms have inward-facing planes. Hide walls between the eye and the interior.
+  return side>=-orbitRadius*.015;
+ });
 }
 function animateOrbit(timestamp){
  if(photoMode){lastOrbitFrame=0;return false;}
@@ -831,10 +885,10 @@ function outline(context,points,color,dashed=false){const ps=points.map(p=>proje
 const hasWindowPhotos=Object.keys(data.finishes||{}).some(id=>id.startsWith('window:'));
 
 el('window-photos').onchange=schedule;
-function photoSurfaces(){
- if(!el('window-photos').checked)return shell.surfaces;
+function photoSurfaces(surfaces){
+ if(!el('window-photos').checked)return surfaces;
  const windows=[];
- for(const face of shell.surfaces){
+ for(const face of surfaces){
   if(!face.enabled)continue;
   for(const opening of face.openings){
    const id='window:'+opening.id;
@@ -844,31 +898,42 @@ function photoSurfaces(){
    if(polygon.length>=3)windows.push({...face,id,polygon,openings:[],finishBounds:opening.bounds});
   }
  }
- return shell.surfaces.concat(windows);
+ return surfaces.concat(windows);
 }
 function render(timestamp){
  pending=false;
  if(animateOrbit(timestamp))schedule();
  sourceProjection=pixelProjection(true);
  sceneProjection=photoMode?sourceProjection:pixelProjection(false);
- if(image)pc.drawImage(image,0,0);const f=face();outline(pc,f.polygon.map(p=>world(f,p)),'#ffe174');for(const o of f.openings){const [a,b,c,d]=o.bounds;outline(pc,[[a,b],[c,b],[c,d],[a,d]].map(p=>world(f,p)),o.enabled?'#8ce6f3':'#ff9c91',!o.enabled);}if(corner){const p=project(world(f,corner),true);if(p){pc.fillStyle='#ffe174';pc.fillRect(p[0]-4,p[1]-4,8,8);}}
+ const f=face();
+ if(image&&referencePanel?.open){
+  pc.drawImage(image,0,0);
+  if(marking||geometryPanel?.open){
+   outline(pc,f.polygon.map(p=>world(f,p)),'#ffe174');
+   for(const o of f.openings){const [a,b,c,d]=o.bounds;outline(pc,[[a,b],[c,b],[c,d],[a,d]].map(p=>world(f,p)),o.enabled?'#8ce6f3':'#ff9c91',!o.enabled);}
+   if(corner){const p=project(world(f,corner),true);if(p){pc.fillStyle='#ffe174';pc.fillRect(p[0]-4,p[1]-4,8,8);}}
+  }
+ }
  const display=displayControl.value, textured=['match','photo'].includes(display)&&Boolean(drawFinishes);
- const overPhoto=display==='match'&&photoMode&&Boolean(image)&&textured;
+ const overPhoto=display==='match'&&photoMode&&Boolean(image);
  finishCanvas.hidden=!textured;
- el('finish-note').hidden=!textured;
+ el('finish-note').hidden=!textured&&!overPhoto;
  el('match-note').hidden=!overPhoto;
  el('surface-note').hidden=overPhoto;
  el('windows-control').style.display=overPhoto||!hasWindowPhotos?'none':'';
- el('mode').textContent=overPhoto?'Listing photo + 3D furniture':(textured?'Reconstructed surfaces':'Editable surfaces')+' · '+(photoMode?'Photo camera':'Orbit');
- const objects=placedFurnitureMeshes();
+ el('orbit').hidden=!photoMode;
+ el('mode').textContent=overPhoto?'Listing photo + 3D furniture':photoMode?'Room from the photo camera':completion?'Editable 3D room':'Editable 3D room preview';
+ const surfaces=previewSurfaces(),objects=placedFurnitureMeshes(surfaces);
  if(textured){
   if(overPhoto)gc.drawImage(image,0,0,cloud.width,cloud.height);
-  drawFinishes(photoSurfaces(),roomTriangles,clipPosition,objects,overPhoto);
+  drawFinishes(photoSurfaces(surfaces),roomTriangles,clipPosition,objects,overPhoto);
   return;
  }
- gc.fillStyle='#111820';gc.fillRect(0,0,cloud.width,cloud.height);const items=[],colors={floor:'#bfa987',wall:'#c9d2c7',ceiling:'#e4e4d9',sloped_ceiling:'#b6ccdb'};
- if(display!=='points')for(const s of shell.surfaces)for(const triangle of roomTriangles(s)){const q=triangle.map(p=>project(p));if(q.every(Boolean))items.push({q,z:q.reduce((a,p)=>a+p[2],0)/3,color:s===f?'#e4c56e':colors[s.kind]||'#aab8be'});}
- if(display!=='shell')for(let i=0;i<data.points.length;i++){if(data.confidence[i]<data.cutoffs['75'])continue;const p=project(data.points[i]);if(p&&p[0]>=0&&p[0]<data.width&&p[1]>=0&&p[1]<data.height)items.push({p,z:p[2],color:`rgb(${data.colors[i].join(',')})`});}
+ gc.fillStyle='#111820';gc.fillRect(0,0,cloud.width,cloud.height);
+ if(overPhoto)gc.drawImage(image,0,0,cloud.width,cloud.height);
+ const items=[],colors={floor:'#bfa987',wall:'#c9d2c7',ceiling:'#e4e4d9',sloped_ceiling:'#b6ccdb'};
+ if(!overPhoto&&display!=='points')for(const s of surfaces)for(const triangle of roomTriangles(s)){const q=triangle.map(p=>project(p));if(q.every(Boolean))items.push({q,z:q.reduce((a,p)=>a+p[2],0)/3,color:s===f&&geometryPanel?.open?'#e4c56e':colors[s.kind]||'#aab8be'});}
+ if(!overPhoto&&['points','both'].includes(display))for(let i=0;i<data.points.length;i++){if(data.confidence[i]<data.cutoffs['75'])continue;const p=project(data.points[i]);if(p&&p[0]>=0&&p[0]<data.width&&p[1]>=0&&p[1]<data.height)items.push({p,z:p[2],color:`rgb(${data.colors[i].join(',')})`});}
  for(const {points,rgb} of objects){
   const q=points.map(point=>project(point));
   if(q.every(Boolean))items.push({q,z:q.reduce((sum,p)=>sum+p[2],0)/3,color:`rgb(${rgb.map(value=>Math.round(value*255)).join(',')})`});
@@ -878,33 +943,62 @@ function render(timestamp){
 function schedule(){if(!pending){pending=true;requestAnimationFrame(render);}}
 function say(text){el('status').textContent=text;}
 function populateSurfaces(){el('surface').replaceChildren();for(const [i,f] of shell.surfaces.entries()){const o=document.createElement('option');o.value=i;o.textContent=f.label;el('surface').append(o);}el('joins-control').hidden=!shell.seamRefinement;el('joins').disabled=!shell.seamRefinement;el('joins').checked=shell.seamRefinement?.active!==false;el('joins-note').textContent=shell.seamRefinement?`${shell.seamRefinement.joinedPairs} nearby observed joins refined. Turn off fitted joins to compare the original patches. Moving a surface can reopen a join.`:'';loadFace();}
-function loadFace(){const f=face();el('visible').checked=f.enabled;el('offset').value=(f.offset/(data.radius*2)*100).toFixed(1);el('fit').textContent=`${f.supportPoints.toLocaleString()} supporting samples · Estimated ${f.kind.replace('_',' ')} patch · Scale not measured`;marking=false;corner=null;populateOpenings();schedule();}
+function loadFace(){
+ const f=face();
+ el('visible').checked=f.enabled;
+ el('offset').value=(f.offset/(data.radius*2)*100).toFixed(1);
+ el('fit').textContent=f.status==='inferred_completion'?'Estimated from the surrounding room':
+  `${(f.supportPoints||0).toLocaleString()} supporting samples · Photo-derived ${f.kind.replace('_',' ')}`;
+ marking=false;
+ corner=null;
+ populateOpenings();
+ schedule();
+}
 function populateOpenings(index=0){el('opening').replaceChildren();for(const [i,o] of face().openings.entries()){const option=document.createElement('option');option.value=i;option.textContent=`${o.kind} ${i+1}${o.status==='unconfirmed_candidate'?' · review':''}`;el('opening').append(option);}el('opening').value=String(index);loadOpening();}
 function loadOpening(){const o=opening();for(const id of ['kind','cut','left','top','width','height','remove'])el(id).disabled=!o;el('opening').disabled=!o;if(o){const b=bounds(face()),w=b[2]-b[0],h=b[3]-b[1];el('kind').value=o.kind;el('cut').checked=o.enabled;for(const [id,value] of Object.entries({left:(o.bounds[0]-b[0])/w*100,top:(o.bounds[1]-b[1])/h*100,width:(o.bounds[2]-o.bounds[0])/w*100,height:(o.bounds[3]-o.bounds[1])/h*100}))el(id).value=value.toFixed(1);}else{el('cut').checked=false;for(const id of ['left','top','width','height'])el(id).value='';}schedule();}
 function loadPhoto(){
  const generation=++imageGeneration;
  image=null;
- el('viewer-loading').hidden=false;
+ photo.hidden=true;
+ el('camera').disabled=true;
+ if(referenceStatus){
+  referenceStatus.hidden=false;
+  referenceStatus.textContent='Loading reference photo…';
+ }
+ corner=null;
+ marking=false;
+ if(photoMode){showOrbit();schedule();}
  const next=new Image();
  next.onload=()=>{
   if(generation!==imageGeneration)return;
   image=next;
-  el('viewer-loading').hidden=true;
+  photo.hidden=false;
+  el('camera').disabled=false;
+  if(referenceStatus)referenceStatus.hidden=true;
   schedule();
  };
  next.onerror=()=>{
   if(generation!==imageGeneration)return;
-  el('viewer-loading').hidden=true;
-  showPhotoFallback();
+  const message='This reference photo could not load. Try another angle.';
+  if(referenceStatus)referenceStatus.textContent=message;
+  else say(message);
+  if(photoMode)showOrbit();
   schedule();
  };
  next.src=view().image;
- photoMode=true;
- corner=null;
- marking=false;
- say('Photo view ready. Furniture positions use the estimated room geometry.');
 }
-el('view').replaceChildren();for(const [i,v] of data.views.entries()){const o=document.createElement('option');o.value=i;o.textContent=v.name;el('view').append(o);}el('view').onchange=loadPhoto;el('surface').onchange=loadFace;el('opening').onchange=loadOpening;displayControl.onchange=()=>{if(displayControl.value==='match')photoMode=true;schedule();};
+el('view').replaceChildren();
+for(const [i] of data.views.entries())el('view').add(new Option(`Photo ${i+1}`,i));
+el('view').onchange=loadPhoto;
+if(referencePanel)referencePanel.ontoggle=schedule;
+if(geometryPanel)geometryPanel.ontoggle=schedule;
+el('surface').onchange=loadFace;
+el('opening').onchange=loadOpening;
+displayControl.onchange=()=>{
+ if(displayControl.value==='match'&&image)photoMode=true;
+ else showOrbit();
+ schedule();
+};
 el('joins').onchange=()=>{if(!shell.seamRefinement)return;shell.seamRefinement.active=el('joins').checked;for(const f of shell.surfaces){const polygon=el('joins').checked?f.seamRefinedPolygon:f.seamOriginalPolygon;if(polygon)f.polygon=structuredClone(polygon);}loadFace();say(el('joins').checked?'Fitted observed joins enabled. Unseen boundaries remain unfinished.':'Original observed patches shown for comparison.');};
 el('visible').onchange=()=>{face().enabled=el('visible').checked;if(!furnitureSurface(currentFurniture()))placingFurniture=false;syncFurniture();say('Surface visibility edited. Download to keep changes.');};el('offset').oninput=()=>{const value=Number(el('offset').value);if(Number.isFinite(value)&&Math.abs(value)<=20){face().offset=value/100*data.radius*2;say('Surface position edited. Download to keep changes.');schedule();}};
 el('kind').onchange=()=>{const index=Number(el('opening').value);opening().kind=el('kind').value;populateOpenings(index);say('Opening type edited.');};el('cut').onchange=()=>{opening().enabled=el('cut').checked;opening().status='user_edited_estimate';say('Opening cutout edited. Download to keep changes.');schedule();};
@@ -914,8 +1008,15 @@ function mark(x,y){if(!marking)return;const p=hit(x,y);if(!p){say('This ray does
 el('mark').onclick=()=>{el('photo').closest('details').open=true;marking=!marking;corner=null;say(marking?'On the photo, mark two opposite corners of an opening on the gold outlined surface.':'Opening placement cancelled.');photo.focus();schedule();};photo.onclick=e=>{const b=photo.getBoundingClientRect();mark((e.clientX-b.left)*photo.width/b.width,(e.clientY-b.top)*photo.height/b.height);};photo.onkeydown=e=>{if(!marking)return;const d={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]}[e.key];if(e.key==='Enter'){e.preventDefault();mark(...cursor);}else if(d){e.preventDefault();cursor=cursor.map((v,i)=>Math.max(0,Math.min(i?data.height-1:data.width-1,v+d[i]*(e.shiftKey?10:1))));say(`Photo cursor ${cursor.map(Math.round).join(', ')}. Enter places a corner.`);}};
 el('remove').onclick=()=>{face().openings.splice(Number(el('opening').value),1);populateOpenings();say('Opening removed from these local edits.');};
 el('reset').onclick=()=>{shell=structuredClone(original);shell.planningScale=roomScale;selectedFurniture=null;placingFurniture=false;populateSurfaces();syncFurniture();say('Original room and furniture restored.');};
-el('camera').onclick=()=>{photoMode=true;if(drawFinishes)displayControl.value='match';schedule();};
-el('orbit').onclick=()=>{photoMode=false;schedule();};
+el('camera').onclick=()=>{
+ if(!image)return;
+ photoMode=true;
+ displayControl.value='match';
+ cloud.focus({preventScroll:true});
+ cloud.scrollIntoView({block:'nearest',behavior:reducedMotion.matches?'auto':'smooth'});
+ schedule();
+};
+el('orbit').onclick=()=>{showOrbit();schedule();cloud.focus({preventScroll:true});};
 
 let drag=null;
 function pointerRay(event){
@@ -930,10 +1031,11 @@ cloud.onpointerdown=event=>{
  if(drag||event.button!==0)return;
  cloud.focus({preventScroll:true});
  const ray=pointerRay(event);
+ const surfaces=previewSurfaces();
  if(placingFurniture){
   const item=currentFurniture(), surface=furnitureSurface(item);
   const wallItem=isWallItem(item);
-  const hit=wallItem ? wallAtRay(ray) : surface && surfaceIntersection(ray,surface);
+  const hit=wallItem ? wallAtRay(ray,surfaces) : surface && surfaceIntersection(ray,surface);
   if(!hit){
    el('furniture-status').textContent=wallItem ? 'Click a clear spot on a visible wall.' : 'Click the reconstructed floor.';
    return;
@@ -950,7 +1052,7 @@ cloud.onpointerdown=event=>{
   const span=floorSpan();
   for(const item of furnitureItems()){
    const surface=furnitureSurface(item);
-   if(!furnitureIsVisible(item,surface,span))continue;
+   if(!surfaces.includes(surface)||!furnitureIsVisible(item,surface,span))continue;
    const distance=furnitureHit(ray,item,surface,span);
    if(distance<nearest){picked=item;pickedSurface=surface;nearest=distance;}
   }
@@ -971,7 +1073,7 @@ cloud.onpointermove=event=>{
   if(hit)changeFurniture({u:hit.uv[0]+drag.offset[0],v:hit.uv[1]+drag.offset[1]},false);
   return;
  }
- photoMode=false;
+ showOrbit();
  orbitTarget.yaw+=(event.clientX-drag.x)*.008;
  orbitTarget.pitch=Math.max(-1.4,Math.min(1.4,orbitTarget.pitch+(event.clientY-drag.y)*.008));
  Object.assign(drag,{x:event.clientX,y:event.clientY});
@@ -985,7 +1087,7 @@ cloud.onlostpointercapture=cloud.onpointerup=cloud.onpointercancel=event=>{
 cloud.onwheel=event=>{
  event.preventDefault();
  if(drag?.offset)return;
- photoMode=false;
+ showOrbit();
  const pixels=event.deltaY*(event.deltaMode===1?16:event.deltaMode===2?cloud.clientHeight:1);
  orbitTarget.zoom=Math.max(.3,Math.min(5,orbitTarget.zoom*Math.exp(-pixels*.001)));
  schedule();
@@ -1004,7 +1106,7 @@ cloud.onkeydown=event=>{
   }
   return;
  }
- photoMode=false;
+ showOrbit();
  if(deltas[key]){
   orbitTarget.yaw+=deltas[key][0];
   orbitTarget.pitch=Math.max(-1.4,Math.min(1.4,orbitTarget.pitch+deltas[key][1]));
@@ -1057,6 +1159,7 @@ const roomLinks=Array.isArray(data.roomLinks)?data.roomLinks:[];
 if(roomLinks.length){
  const selector=el('property-room');
  el('property-room-nav').hidden=false;
+ selector.replaceChildren();
  for(const room of roomLinks)selector.add(new Option(room.label,room.href));
  selector.selectedIndex=roomLinks.findIndex(room=>room.id===data.roomId);
  selector.onchange=()=>{
@@ -1100,7 +1203,20 @@ if(original.planningScale?.source==='span entered by user'){
 }
 const requestedView=Number(new URLSearchParams(location.search).get('view'));
 if(Number.isInteger(requestedView)&&requestedView>=0&&requestedView<data.views.length)el('view').value=String(requestedView);
+const views=`${data.views.length} listing ${data.views.length===1?'photo':'photos'}`;
+const evidence=el('room-evidence');
+if(evidence)evidence.textContent=completion
+ ? `Built from ${views}. ${completion.inferredWallCount>0?'Unseen walls use estimated positions.':'Wall positions are estimated from the photos.'}`
+ : `Photo-derived preview from ${views}. Parts of the room may be missing.`;
+el('surface-note').textContent=completion
+ ? 'Finishes blend visible details from the photos. Unseen areas use matching colors.'
+ : 'The preview uses textured surfaces visible in the listing photos.';
+const geometryNote=el('geometry-note');
+if(geometryNote)geometryNote.textContent=completion
+ ? 'The 3D view hides near walls and the ceiling so you can see inside. Geometry downloads include them.'
+ : 'The preview shows estimated surfaces visible in the listing photos.';
 restoreFurniture();
-populateSurfaces();setupFurniture();loadPhoto();
+populateSurfaces();setupFurniture();fitOrbit();loadPhoto();
+el('viewer-loading').hidden=true;
 
 }

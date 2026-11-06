@@ -122,6 +122,7 @@ export async function loadPropertyPhotoRooms(listingId, request = globalThis.fet
       href: '/room-builder/studio/?' + new URLSearchParams({ listing: listingId, room: room.id }),
       photoFiles: Array.isArray(room.photoFiles) ? room.photoFiles.filter(name => typeof name === 'string') : [],
       engineVersion: room.engineVersion || manifest.engineVersion, reviewed: room.reviewed === true,
+      completedLayout: room.geometrySource === 'completed-photo-layout',
     }));
   } catch { return legacy; }
 }

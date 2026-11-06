@@ -10,3 +10,15 @@ test("a property stays in the 3D builder, including ones with photo-matched room
   assert.equal(photoRoomTarget("?listing=hud-413-772606&photo=" + encodeURIComponent(photo)), "");
   assert.equal(photoRoomTarget("?listing=hud-other"), "");
 });
+
+test('completed photo rooms open by default while planning and other rooms stay reachable', () => {
+  const rooms = [{id:'living', engineVersion:4, completedLayout:true, photoFiles:['LR.jpg']},
+                 {id:'kitchen', engineVersion:3, photoFiles:['KIT.jpg']}];
+  const query = '?listing=home';
+  const target = '/room-builder/studio/?listing=home&room=living';
+  assert.equal(photoRoomTarget(query, rooms), target);
+  assert.equal(photoRoomTarget(query + '&photo=https://example.com/LR.jpg', rooms), target);
+  for (const override of ['engine=planning', 'mode=walk', 'room=kitchen', 'photo=unknown.jpg']) {
+    assert.equal(photoRoomTarget(query + '&' + override, rooms), '');
+  }
+});
