@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { listPropertyRooms, missingPlanningRooms, normalizeListingPhotoUrl, reconstructHouse, reconstructRoom } from "./room-pipeline.js";
+import { listPropertyRooms, missingPlanningRooms, normalizeListingPhotoUrl, photoWallDistance, reconstructHouse, reconstructRoom, roomChoiceLabel } from "./room-pipeline.js";
 
 function browserConfig() {
   globalThis.window = {
@@ -240,6 +240,24 @@ test("reads abbreviated HUD photo names and fills rooms the photos do not name",
     "reference-hall-bathroom",
     "reference-shop",
   ]);
+});
+
+test("room choices keep the short name in front of the size note", () => {
+  assert.equal(
+    roomChoiceLabel("Kitchen · photo reference · about 12×10 ft from the listed 1,456 sqft"),
+    "Kitchen"
+  );
+  assert.equal(roomChoiceLabel("Bedroom 2 · about 11×9 ft from the listed 1,495 sqft"), "Bedroom 2");
+  assert.equal(roomChoiceLabel(""), "Room");
+});
+
+test("photo wall distance fills the camera on the tighter axis", () => {
+  const tanV = Math.tan((25 * Math.PI) / 180);
+  const wide = photoWallDistance(5, 2.5, 50, 1.6);
+  const narrow = photoWallDistance(2.2, 2.4, 50, 1.6);
+  assert.ok(Math.abs(wide - 1.25 / tanV) < 1e-9);
+  assert.ok(Math.abs(narrow - 1.1 / (tanV * 1.6)) < 1e-9);
+  assert.ok(narrow < wide);
 });
 
 test("lists living, kitchen, bedrooms, and bathrooms when photos are unnamed", () => {

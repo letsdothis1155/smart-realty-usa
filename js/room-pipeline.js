@@ -212,6 +212,24 @@ export function planningRoom(id, roomType, label, size = null) {
   };
 }
 
+/** Short picker name. Size and source notes stay after the first " · ". */
+export function roomChoiceLabel(label) {
+  const name = String(label || "Room").split(" · ")[0].trim();
+  return name || "Room";
+}
+
+/**
+ * Distance from a wall that fills a perspective camera on the tighter axis.
+ * fovDeg is the vertical field of view. The other axis is cropped.
+ */
+export function photoWallDistance(wallWidth, wallHeight, fovDeg = 50, aspect = 1) {
+  const tanV = Math.tan((Number(fovDeg) * Math.PI) / 360);
+  const tanH = tanV * Math.max(0.2, Number(aspect) || 1);
+  const width = Math.max(0.2, Number(wallWidth) || 0.2);
+  const height = Math.max(0.2, Number(wallHeight) || 0.2);
+  return Math.min(height / 2 / tanV, width / 2 / tanH);
+}
+
 export function applyListedSize(room, listing, index = 0, total = 1) {
   if (!room || room.mode === "vision" || room.mode === "lidar" || room.sizeSource === "listed-sqft") return room;
   const sized = listingRoomSize(listing, room.roomType || "other", index, total);

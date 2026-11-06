@@ -6,7 +6,7 @@
   <meta name="copyright" content="Copyright 2026 Andrew Iredale Jr. All rights reserved. See /terms.html.">
   <title>3D Room · Shop This Room — SMART REALTY.US LLC</title>
   <meta name="description" content="Walk a property-inspired room, place planning models from Best Buy, IKEA, Wayfair, and Home Depot, and estimate the staged space before buying a home." />
-  <link rel="stylesheet" href="/room-builder/room-sim.css?v=20261106fix1" />
+  <link rel="stylesheet" href="/room-builder/room-sim.css?v=20261106photo" />
   <script src="/domain-config.js"></script>
   <script src="/js/analytics.js"></script>
   <script src="/js/listings.js"></script>
@@ -40,6 +40,10 @@
         <span id="simPhotoMatch" class="sim-photo-match" data-state="sample">Checking photo match…</span>
         <div class="sim-photos" id="simPhotos" hidden></div>
         <a class="sim-reviewed" id="simReviewedRoom" hidden>Open photo-matched living room ↗</a>
+        <label class="sim-room-pick">
+          <span>Room</span>
+          <select id="simRoomPick" aria-label="Choose a room"></select>
+        </label>
         <div class="sim-room-controls">
           <nav class="sim-rooms" id="simRooms" aria-label="3D rooms in this house" hidden></nav>
           <button class="sim-chip" id="simAddRoom" type="button" aria-label="Add a room" title="Add a room">+ Room</button>
@@ -173,7 +177,7 @@
   <noscript><p class="sim-loading">JavaScript is required for the interactive 3D room.</p></noscript>
   <script type="module">
     async function startRoomBuilder() {
-      const { bootRoomSim } = await import("/js/room-sim.js?v=20261106list");
+      const { bootRoomSim } = await import("/js/room-sim.js?v=20261106photo");
       await bootRoomSim();
     }
     startRoomBuilder().catch((error) => {

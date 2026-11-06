@@ -152,13 +152,40 @@ body.room-sim {
   height: 100%;
   object-fit: cover;
 }
+.sim-room-pick {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 0.45rem;
+}
+.sim-room-pick span {
+  display: inline;
+  margin: 0;
+  color: #d9deea;
+  font-size: 0.72rem;
+}
+.sim-room-pick select {
+  flex: 1;
+  min-width: 0;
+  min-height: 36px;
+  font: inherit;
+  font-size: 0.78rem;
+  color: #17130b;
+  background: #e8c87a;
+  border: 0;
+  border-radius: 999px;
+  padding: 0.28rem 0.75rem;
+}
 .sim-rooms {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
   margin-top: 0.55rem;
   padding-top: 0.5rem;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
-  overflow-x: auto;
+  max-height: 7.4rem;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 .sim-rooms button {
   flex: 0 0 auto;
@@ -595,6 +622,9 @@ body.room-sim {
   .sim-chip {
     min-height: 44px;
   }
+  .sim-room-pick select {
+    min-height: 44px;
+  }
   .sim-mode-btn {
     justify-content: center;
     padding: 0.4rem 0.25rem;
@@ -728,6 +758,7 @@ body.room-sim {
 .sim-distance-panel[hidden] { display: none; }
 .sim-photo-match { display: inline-flex; width: fit-content; padding: 4px 8px; border-radius: 999px; font-size: 11px; background: #5b2f1f; color: #ffe1d4; }
 .sim-photo-match[data-state="vision"] { background: #173f32; color: #c8ffe8; }
+.sim-photo-match[data-state="photo"] { background: #1d3348; color: #d6ecff; }
 .sim-photo-match[data-state="loading"] { background: #54451d; color: #fff0b9; }
 
 .sim-room-controls { display:flex; align-items:center; gap:8px; min-width:0; }
