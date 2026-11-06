@@ -102,3 +102,26 @@ export const PROPERTY_PHOTO_ROOMS = {
     }
   ]
 };
+
+/** Discover generated room data without adding listing-specific code. */
+export async function loadPropertyPhotoRooms(listingId, request = globalThis.fetch) {
+  if (!/^[a-zA-Z0-9_-]{1,100}$/.test(String(listingId || ''))) return [];
+  const legacy = Object.hasOwn(PROPERTY_PHOTO_ROOMS, listingId) ? PROPERTY_PHOTO_ROOMS[listingId] : [];
+  try {
+    const response = await request(`/models/${listingId}/photo-rooms.json`, { signal: AbortSignal.timeout(3000) });
+    if (response.status === 404) return legacy;
+    if (!response.ok) return legacy;
+    const manifest = await response.json();
+    if (manifest.listingId !== listingId || !Array.isArray(manifest.rooms)) return legacy;
+    // Keep model fetches on our own static model path. Rebuild metadata cannot inject URLs.
+    return manifest.rooms.filter(room =>
+      room.status === 'ready' && /^[a-zA-Z0-9_-]{1,100}$/.test(room.id) &&
+      new RegExp(`^/models/${listingId}/photo-${room.id}-[a-f0-9]{16}\\.json$`).test(room.model)
+    ).map(room => ({
+      id: room.id, label: String(room.label || 'Room'), model: room.model,
+      href: '/room-builder/studio/?' + new URLSearchParams({ listing: listingId, room: room.id }),
+      photoFiles: Array.isArray(room.photoFiles) ? room.photoFiles.filter(name => typeof name === 'string') : [],
+      engineVersion: room.engineVersion || manifest.engineVersion, reviewed: room.reviewed === true,
+    }));
+  } catch { return legacy; }
+}

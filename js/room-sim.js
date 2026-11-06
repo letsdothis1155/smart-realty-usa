@@ -1,4 +1,4 @@
-import { PROPERTY_PHOTO_ROOMS } from "/js/room-photo-previews.mjs?v=2";
+import { loadPropertyPhotoRooms } from "/js/room-photo-previews.mjs?v=3";
 import { initRoomBuilder } from "/js/room-builder.js?v=shared2";
 import { feetAndInches } from "/js/room-distance.mjs?v=20260911b";
 import { DEFAULT_LIVING_ROOM, planningRoom, propertyRoomModel, reconstructHouse, reconstructRoom, roomChoiceLabel } from "/js/room-pipeline.js?v=shared2";
@@ -592,7 +592,7 @@ export async function bootRoomSim() {
     }
   }
   document.getElementById("simListingBar").hidden = false;
-  const photoPreviews=PROPERTY_PHOTO_ROOMS[listingId] || [];
+  const photoPreviews=await loadPropertyPhotoRooms(listingId);
   function photoFileName(url) {
     try {
       return decodeURIComponent(new URL(url, location.origin).pathname.split("/").at(-1) || "");
