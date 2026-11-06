@@ -1,3 +1,4 @@
+import { PROPERTY_PHOTO_ROOMS } from "/js/room-photo-previews.mjs?v=20261106b";
 import { initRoomBuilder } from "/js/room-builder.js?v=20261105a";
 import { feetAndInches } from "/js/room-distance.mjs?v=20260911b";
 import { DEFAULT_LIVING_ROOM, missingPlanningRooms, planningRoom, reconstructHouse, reconstructRoom } from "/js/room-pipeline.js?v=20261105a";
@@ -583,10 +584,17 @@ export async function bootRoomSim() {
     }
   }
   document.getElementById("simListingBar").hidden = false;
-  if (listingId === "hud-413-772606") {
-    const link = document.getElementById("simReviewedRoom");
-    link.href = "/room-builder/reviewed/hud-413-772606-living.html";
-    link.hidden = false;
+  const photoPreviews=PROPERTY_PHOTO_ROOMS[listingId] || [];
+  function showRoomPreview(room, urls) {
+    const link=document.getElementById("simReviewedRoom");
+    const files=urls.map(url=>new URL(url).pathname.split("/").at(-1));
+    const preview=photoPreviews.find(entry=>entry.photoFiles.some(name=>files.includes(name))) ||
+      photoPreviews.find(entry=>room.id===entry.id || room.id===`reference-${entry.id}` || room.id===`plan-${entry.id}`);
+    link.hidden=!preview;
+    if(preview){
+      link.href=preview.href;
+      link.textContent=`Open photo-matched ${preview.label.toLowerCase()} ↗`;
+    }
   }
   function showPhotoMatch(room) {
     const matchStatus = document.getElementById("simPhotoMatch");
@@ -687,6 +695,7 @@ export async function bootRoomSim() {
     activeRoomId = room.id || `room-${rooms.indexOf(room) + 1}`;
     builder.applyReconstruction(room);
     const urls = roomPhotos(room);
+    showRoomPreview(room,urls);
     if (urls.length) {
       originalImage.src = urls[0];
       originalButton.disabled = false;
