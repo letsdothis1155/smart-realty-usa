@@ -1,0 +1,730 @@
+{
+  "listingId": "hud-413-772606",
+  "smartRealtyId": "hud-413-772606",
+  "sqft": 1456,
+  "estimated": true,
+  "fitsListing": true,
+  "totalSqft": 1456,
+  "note": "Sizes are a split of the listed 1,456 sqft. This listing has no per-room dimensions. Depth Anything and MiDaS were not run. The 80 in door and 36 in counter were not measured in the photos. Wall and floor colors are the average of each room photo. Furniture, cabinets, and windows were not detected. This is not a measured scan.",
+  "license": "Copyright 2026 Andrew Iredale Jr / SMART REALTY.US LLC. All rights reserved.",
+  "glb": "/models/hud-413-772606/house.glb",
+  "access": "sample",
+  "start": {
+    "id": "living",
+    "x": 3.1598886075949353,
+    "y": 1.55,
+    "z": -1.8288000000000002,
+    "yaw": 0
+  },
+  "rooms": [
+    {
+      "id": "living",
+      "label": "Living room",
+      "type": "living",
+      "row": "south",
+      "estimated": true,
+      "sizeSource": "estimated",
+      "x": 0,
+      "z": -3.6576000000000004,
+      "w": 6.319777215189871,
+      "d": 3.6576000000000004,
+      "widthM": 6.319777215189871,
+      "depthM": 3.6576000000000004,
+      "heightM": 2.4384,
+      "widthFt": 20.734177215189863,
+      "depthFt": 12,
+      "doorX": 3.1598886075949353,
+      "doorZ": 0,
+      "doorW": 0.8128,
+      "doorH": 2.032,
+      "photoWall": "minZ",
+      "furniture": "not detected",
+      "cabinets": "not detected",
+      "windows": "not detected",
+      "photo": "https://res.cloudinary.com/yardi/image/upload/q_auto,f_auto,c_limit/d_hhs:themes:common:images:NoImage.jpg/hhs/Living_room_816648_464717697.jpg",
+      "color": [
+        0.5568627450980392,
+        0.5450980392156862,
+        0.5372549019607843
+      ]
+    },
+    {
+      "id": "kitchen",
+      "label": "Kitchen",
+      "type": "kitchen",
+      "row": "south",
+      "estimated": true,
+      "sizeSource": "estimated",
+      "x": 6.319777215189871,
+      "z": -3.6576000000000004,
+      "w": 4.21318481012658,
+      "d": 3.6576000000000004,
+      "widthM": 4.21318481012658,
+      "depthM": 3.6576000000000004,
+      "heightM": 2.4384,
+      "widthFt": 13.822784810126574,
+      "depthFt": 12,
+      "doorX": 8.42636962025316,
+      "doorZ": 0,
+      "doorW": 0.8128,
+      "doorH": 2.032,
+      "photoWall": "minZ",
+      "furniture": "not detected",
+      "cabinets": "not detected",
+      "windows": "not detected",
+      "photo": "https://res.cloudinary.com/yardi/image/upload/q_auto,f_auto,c_limit/d_hhs:themes:common:images:NoImage.jpg/hhs/Kitchen_816648_245544855.jpg",
+      "color": [
+        0.5176470588235295,
+        0.4823529411764706,
+        0.4627450980392157
+      ]
+    },
+    {
+      "id": "dining",
+      "label": "Dining area",
+      "type": "dining",
+      "row": "south",
+      "estimated": true,
+      "sizeSource": "estimated",
+      "x": 10.53296202531645,
+      "z": -3.6576000000000004,
+      "w": 2.8087898734177204,
+      "d": 3.6576000000000004,
+      "widthM": 2.8087898734177204,
+      "depthM": 3.6576000000000004,
+      "heightM": 2.4384,
+      "widthFt": 9.215189873417717,
+      "depthFt": 12,
+      "doorX": 11.93735696202531,
+      "doorZ": 0,
+      "doorW": 0.8128,
+      "doorH": 2.032,
+      "photoWall": "minZ",
+      "furniture": "not detected",
+      "cabinets": "not detected",
+      "windows": "not detected",
+      "photo": "https://res.cloudinary.com/yardi/image/upload/q_auto,f_auto,c_limit/d_hhs:themes:common:images:NoImage.jpg/hhs/Eating_space_816648_228444448.jpg",
+      "color": [
+        0.41568627450980394,
+        0.3803921568627451,
+        0.3411764705882353
+      ]
+    },
+    {
+      "id": "utility",
+      "label": "Utility room",
+      "type": "utility",
+      "row": "south",
+      "estimated": true,
+      "sizeSource": "estimated",
+      "x": 13.34175189873417,
+      "z": -3.6576000000000004,
+      "w": 2.10659240506329,
+      "d": 3.6576000000000004,
+      "widthM": 2.10659240506329,
+      "depthM": 3.6576000000000004,
+      "heightM": 2.4384,
+      "widthFt": 6.911392405063287,
+      "depthFt": 12,
+      "doorX": 14.395048101265814,
+      "doorZ": 0,
+      "doorW": 0.8128,
+      "doorH": 2.032,
+      "photoWall": "minZ",
+      "furniture": "not detected",
+      "cabinets": "not detected",
+      "windows": "not detected",
+      "photo": "https://res.cloudinary.com/yardi/image/upload/q_auto,f_auto,c_limit/d_hhs:themes:common:images:NoImage.jpg/hhs/utility_room_816648_929781356.jpg",
+      "color": [
+        0.43529411764705883,
+        0.4235294117647059,
+        0.4235294117647059
+      ]
+    },
+    {
+      "id": "primary-bedroom",
+      "label": "Primary bedroom",
+      "type": "bedroom",
+      "row": "north",
+      "estimated": true,
+      "sizeSource": "estimated",
+      "x": 0,
+      "z": 1.2192,
+      "w": 5.017150027517885,
+      "d": 3.6576000000000004,
+      "widthM": 5.017150027517885,
+      "depthM": 3.6576000000000004,
+      "heightM": 2.4384,
+      "widthFt": 16.460465969546867,
+      "depthFt": 12,
+      "doorX": 2.5085750137589424,
+      "doorZ": 1.2192,
+      "doorW": 0.8128,
+      "doorH": 2.032,
+      "photoWall": "maxZ",
+      "furniture": "not detected",
+      "cabinets": "not detected",
+      "windows": "not detected",
+      "photo": "https://res.cloudinary.com/yardi/image/upload/q_auto,f_auto,c_limit/d_hhs:themes:common:images:NoImage.jpg/hhs/Master_bedroom_816648_478831611.jpg",
+      "color": [
+        0.6,
+        0.596078431372549,
+        0.596078431372549
+      ]
+    },
+    {
+      "id": "bedroom-1",
+      "label": "Bedroom 1",
+      "type": "bedroom",
+      "row": "north",
+      "estimated": true,
+      "sizeSource": "estimated",
+      "x": 5.017150027517885,
+      "z": 1.2192,
+      "w": 3.4601034672537136,
+      "d": 3.6576000000000004,
+      "widthM": 3.4601034672537136,
+      "depthM": 3.6576000000000004,
+      "heightM": 2.4384,
+      "widthFt": 11.352045496239217,
+      "depthFt": 12,
+      "doorX": 6.7472017611447415,
+      "doorZ": 1.2192,
+      "doorW": 0.8128,
+      "doorH": 2.032,
+      "photoWall": "maxZ",
+      "furniture": "not detected",
+      "cabinets": "not detected",
+      "windows": "not detected",
+      "photo": "https://res.cloudinary.com/yardi/image/upload/q_auto,f_auto,c_limit/d_hhs:themes:common:images:NoImage.jpg/hhs/Bedroom_1_816648_863846879.jpg",
+      "color": [
+        0.4823529411764706,
+        0.4666666666666667,
+        0.4745098039215686
+      ]
+    },
+    {
+      "id": "bedroom-2",
+      "label": "Bedroom 2",
+      "type": "bedroom",
+      "row": "north",
+      "estimated": true,
+      "sizeSource": "estimated",
+      "x": 8.477253494771599,
+      "z": 1.2192,
+      "w": 3.4601034672537136,
+      "d": 3.6576000000000004,
+      "widthM": 3.4601034672537136,
+      "depthM": 3.6576000000000004,
+      "heightM": 2.4384,
+      "widthFt": 11.352045496239217,
+      "depthFt": 12,
+      "doorX": 10.207305228398456,
+      "doorZ": 1.2192,
+      "doorW": 0.8128,
+      "doorH": 2.032,
+      "photoWall": "maxZ",
+      "furniture": "not detected",
+      "cabinets": "not detected",
+      "windows": "not detected",
+      "photo": "https://res.cloudinary.com/yardi/image/upload/q_auto,f_auto,c_limit/d_hhs:themes:common:images:NoImage.jpg/hhs/Bedroom_2_816648_933622323.jpg",
+      "color": [
+        0.5372549019607843,
+        0.5137254901960784,
+        0.5058823529411764
+      ]
+    },
+    {
+      "id": "primary-bathroom",
+      "label": "Primary bathroom",
+      "type": "bathroom",
+      "row": "north",
+      "estimated": true,
+      "sizeSource": "estimated",
+      "x": 11.937356962025312,
+      "z": 1.2192,
+      "w": 2.10659240506329,
+      "d": 3.6576000000000004,
+      "widthM": 2.10659240506329,
+      "depthM": 3.6576000000000004,
+      "heightM": 2.4384,
+      "widthFt": 6.911392405063287,
+      "depthFt": 12,
+      "doorX": 12.990653164556957,
+      "doorZ": 1.2192,
+      "doorW": 0.8128,
+      "doorH": 2.032,
+      "photoWall": "maxZ",
+      "furniture": "not detected",
+      "cabinets": "not detected",
+      "windows": "not detected",
+      "photo": "https://res.cloudinary.com/yardi/image/upload/q_auto,f_auto,c_limit/d_hhs:themes:common:images:NoImage.jpg/hhs/Master_bathroom__816648_741646386.jpg",
+      "color": [
+        0.6666666666666666,
+        0.6666666666666666,
+        0.6549019607843137
+      ]
+    },
+    {
+      "id": "hall-bathroom",
+      "label": "Hall bathroom",
+      "type": "bathroom",
+      "row": "north",
+      "estimated": true,
+      "sizeSource": "estimated",
+      "x": 14.043949367088603,
+      "z": 1.2192,
+      "w": 2.10659240506329,
+      "d": 3.6576000000000004,
+      "widthM": 2.10659240506329,
+      "depthM": 3.6576000000000004,
+      "heightM": 2.4384,
+      "widthFt": 6.911392405063287,
+      "depthFt": 12,
+      "doorX": 15.097245569620247,
+      "doorZ": 1.2192,
+      "doorW": 0.8128,
+      "doorH": 2.032,
+      "photoWall": "maxZ",
+      "furniture": "not detected",
+      "cabinets": "not detected",
+      "windows": "not detected",
+      "photo": "https://res.cloudinary.com/yardi/image/upload/q_auto,f_auto,c_limit/d_hhs:themes:common:images:NoImage.jpg/hhs/Full_bathroom_816648_813882787.jpg",
+      "color": [
+        0.5568627450980392,
+        0.5529411764705883,
+        0.5176470588235295
+      ]
+    }
+  ],
+  "hall": {
+    "id": "hall",
+    "label": "Hall",
+    "estimated": true,
+    "sizeSource": "estimated",
+    "x": 0,
+    "z": 0,
+    "w": 16.150541772151893,
+    "d": 1.2192,
+    "widthM": 16.150541772151893,
+    "depthM": 1.2192,
+    "heightM": 2.4384,
+    "widthFt": 52.98734177215188,
+    "depthFt": 4,
+    "photoWall": "minX",
+    "furniture": "not detected",
+    "cabinets": "not detected",
+    "windows": "not detected",
+    "photo": "https://res.cloudinary.com/yardi/image/upload/q_auto,f_auto,c_limit/d_hhs:themes:common:images:NoImage.jpg/hhs/Hall_816648_432624766.jpg"
+  },
+  "walls": [
+    {
+      "axis": "z",
+      "z": -3.6576000000000004,
+      "x0": 0,
+      "x1": 6.319777215189871,
+      "roomId": "living",
+      "role": "photo"
+    },
+    {
+      "axis": "z",
+      "z": 0,
+      "x0": 0,
+      "x1": 6.319777215189871,
+      "doorX": 3.1598886075949353,
+      "doorW": 0.8128,
+      "roomId": "living",
+      "role": "door"
+    },
+    {
+      "axis": "x",
+      "x": 0,
+      "z0": -3.6576000000000004,
+      "z1": 0,
+      "roomId": "living",
+      "role": "side"
+    },
+    {
+      "axis": "x",
+      "x": 6.319777215189871,
+      "z0": -3.6576000000000004,
+      "z1": 0,
+      "roomId": "living",
+      "role": "side"
+    },
+    {
+      "axis": "z",
+      "z": -3.6576000000000004,
+      "x0": 6.319777215189871,
+      "x1": 10.53296202531645,
+      "roomId": "kitchen",
+      "role": "photo"
+    },
+    {
+      "axis": "z",
+      "z": 0,
+      "x0": 6.319777215189871,
+      "x1": 10.53296202531645,
+      "doorX": 8.42636962025316,
+      "doorW": 0.8128,
+      "roomId": "kitchen",
+      "role": "door"
+    },
+    {
+      "axis": "x",
+      "x": 6.319777215189871,
+      "z0": -3.6576000000000004,
+      "z1": 0,
+      "roomId": "kitchen",
+      "role": "side"
+    },
+    {
+      "axis": "x",
+      "x": 10.53296202531645,
+      "z0": -3.6576000000000004,
+      "z1": 0,
+      "roomId": "kitchen",
+      "role": "side"
+    },
+    {
+      "axis": "z",
+      "z": -3.6576000000000004,
+      "x0": 10.53296202531645,
+      "x1": 13.34175189873417,
+      "roomId": "dining",
+      "role": "photo"
+    },
+    {
+      "axis": "z",
+      "z": 0,
+      "x0": 10.53296202531645,
+      "x1": 13.34175189873417,
+      "doorX": 11.93735696202531,
+      "doorW": 0.8128,
+      "roomId": "dining",
+      "role": "door"
+    },
+    {
+      "axis": "x",
+      "x": 10.53296202531645,
+      "z0": -3.6576000000000004,
+      "z1": 0,
+      "roomId": "dining",
+      "role": "side"
+    },
+    {
+      "axis": "x",
+      "x": 13.34175189873417,
+      "z0": -3.6576000000000004,
+      "z1": 0,
+      "roomId": "dining",
+      "role": "side"
+    },
+    {
+      "axis": "z",
+      "z": -3.6576000000000004,
+      "x0": 13.34175189873417,
+      "x1": 15.44834430379746,
+      "roomId": "utility",
+      "role": "photo"
+    },
+    {
+      "axis": "z",
+      "z": 0,
+      "x0": 13.34175189873417,
+      "x1": 15.44834430379746,
+      "doorX": 14.395048101265814,
+      "doorW": 0.8128,
+      "roomId": "utility",
+      "role": "door"
+    },
+    {
+      "axis": "x",
+      "x": 13.34175189873417,
+      "z0": -3.6576000000000004,
+      "z1": 0,
+      "roomId": "utility",
+      "role": "side"
+    },
+    {
+      "axis": "x",
+      "x": 15.44834430379746,
+      "z0": -3.6576000000000004,
+      "z1": 0,
+      "roomId": "utility",
+      "role": "side"
+    },
+    {
+      "axis": "z",
+      "z": 4.8768,
+      "x0": 0,
+      "x1": 5.017150027517885,
+      "roomId": "primary-bedroom",
+      "role": "photo"
+    },
+    {
+      "axis": "z",
+      "z": 1.2192,
+      "x0": 0,
+      "x1": 5.017150027517885,
+      "doorX": 2.5085750137589424,
+      "doorW": 0.8128,
+      "roomId": "primary-bedroom",
+      "role": "door"
+    },
+    {
+      "axis": "x",
+      "x": 0,
+      "z0": 1.2192,
+      "z1": 4.8768,
+      "roomId": "primary-bedroom",
+      "role": "side"
+    },
+    {
+      "axis": "x",
+      "x": 5.017150027517885,
+      "z0": 1.2192,
+      "z1": 4.8768,
+      "roomId": "primary-bedroom",
+      "role": "side"
+    },
+    {
+      "axis": "z",
+      "z": 4.8768,
+      "x0": 5.017150027517885,
+      "x1": 8.477253494771599,
+      "roomId": "bedroom-1",
+      "role": "photo"
+    },
+    {
+      "axis": "z",
+      "z": 1.2192,
+      "x0": 5.017150027517885,
+      "x1": 8.477253494771599,
+      "doorX": 6.7472017611447415,
+      "doorW": 0.8128,
+      "roomId": "bedroom-1",
+      "role": "door"
+    },
+    {
+      "axis": "x",
+      "x": 5.017150027517885,
+      "z0": 1.2192,
+      "z1": 4.8768,
+      "roomId": "bedroom-1",
+      "role": "side"
+    },
+    {
+      "axis": "x",
+      "x": 8.477253494771599,
+      "z0": 1.2192,
+      "z1": 4.8768,
+      "roomId": "bedroom-1",
+      "role": "side"
+    },
+    {
+      "axis": "z",
+      "z": 4.8768,
+      "x0": 8.477253494771599,
+      "x1": 11.937356962025312,
+      "roomId": "bedroom-2",
+      "role": "photo"
+    },
+    {
+      "axis": "z",
+      "z": 1.2192,
+      "x0": 8.477253494771599,
+      "x1": 11.937356962025312,
+      "doorX": 10.207305228398456,
+      "doorW": 0.8128,
+      "roomId": "bedroom-2",
+      "role": "door"
+    },
+    {
+      "axis": "x",
+      "x": 8.477253494771599,
+      "z0": 1.2192,
+      "z1": 4.8768,
+      "roomId": "bedroom-2",
+      "role": "side"
+    },
+    {
+      "axis": "x",
+      "x": 11.937356962025312,
+      "z0": 1.2192,
+      "z1": 4.8768,
+      "roomId": "bedroom-2",
+      "role": "side"
+    },
+    {
+      "axis": "z",
+      "z": 4.8768,
+      "x0": 11.937356962025312,
+      "x1": 14.043949367088603,
+      "roomId": "primary-bathroom",
+      "role": "photo"
+    },
+    {
+      "axis": "z",
+      "z": 1.2192,
+      "x0": 11.937356962025312,
+      "x1": 14.043949367088603,
+      "doorX": 12.990653164556957,
+      "doorW": 0.8128,
+      "roomId": "primary-bathroom",
+      "role": "door"
+    },
+    {
+      "axis": "x",
+      "x": 11.937356962025312,
+      "z0": 1.2192,
+      "z1": 4.8768,
+      "roomId": "primary-bathroom",
+      "role": "side"
+    },
+    {
+      "axis": "x",
+      "x": 14.043949367088603,
+      "z0": 1.2192,
+      "z1": 4.8768,
+      "roomId": "primary-bathroom",
+      "role": "side"
+    },
+    {
+      "axis": "z",
+      "z": 4.8768,
+      "x0": 14.043949367088603,
+      "x1": 16.150541772151893,
+      "roomId": "hall-bathroom",
+      "role": "photo"
+    },
+    {
+      "axis": "z",
+      "z": 1.2192,
+      "x0": 14.043949367088603,
+      "x1": 16.150541772151893,
+      "doorX": 15.097245569620247,
+      "doorW": 0.8128,
+      "roomId": "hall-bathroom",
+      "role": "door"
+    },
+    {
+      "axis": "x",
+      "x": 14.043949367088603,
+      "z0": 1.2192,
+      "z1": 4.8768,
+      "roomId": "hall-bathroom",
+      "role": "side"
+    },
+    {
+      "axis": "x",
+      "x": 16.150541772151893,
+      "z0": 1.2192,
+      "z1": 4.8768,
+      "roomId": "hall-bathroom",
+      "role": "side"
+    },
+    {
+      "axis": "x",
+      "x": 0,
+      "z0": 0,
+      "z1": 1.2192,
+      "roomId": "hall",
+      "role": "end"
+    },
+    {
+      "axis": "x",
+      "x": 16.150541772151893,
+      "z0": 0,
+      "z1": 1.2192,
+      "roomId": "hall",
+      "role": "end"
+    },
+    {
+      "axis": "z",
+      "z": 0,
+      "x0": 15.44834430379746,
+      "x1": 16.150541772151893,
+      "roomId": "hall",
+      "role": "solid"
+    }
+  ],
+  "rects": [
+    {
+      "id": "living",
+      "x": 0,
+      "z": -3.6576000000000004,
+      "w": 6.319777215189871,
+      "d": 3.6576000000000004
+    },
+    {
+      "id": "kitchen",
+      "x": 6.319777215189871,
+      "z": -3.6576000000000004,
+      "w": 4.21318481012658,
+      "d": 3.6576000000000004
+    },
+    {
+      "id": "dining",
+      "x": 10.53296202531645,
+      "z": -3.6576000000000004,
+      "w": 2.8087898734177204,
+      "d": 3.6576000000000004
+    },
+    {
+      "id": "utility",
+      "x": 13.34175189873417,
+      "z": -3.6576000000000004,
+      "w": 2.10659240506329,
+      "d": 3.6576000000000004
+    },
+    {
+      "id": "primary-bedroom",
+      "x": 0,
+      "z": 1.2192,
+      "w": 5.017150027517885,
+      "d": 3.6576000000000004
+    },
+    {
+      "id": "bedroom-1",
+      "x": 5.017150027517885,
+      "z": 1.2192,
+      "w": 3.4601034672537136,
+      "d": 3.6576000000000004
+    },
+    {
+      "id": "bedroom-2",
+      "x": 8.477253494771599,
+      "z": 1.2192,
+      "w": 3.4601034672537136,
+      "d": 3.6576000000000004
+    },
+    {
+      "id": "primary-bathroom",
+      "x": 11.937356962025312,
+      "z": 1.2192,
+      "w": 2.10659240506329,
+      "d": 3.6576000000000004
+    },
+    {
+      "id": "hall-bathroom",
+      "x": 14.043949367088603,
+      "z": 1.2192,
+      "w": 2.10659240506329,
+      "d": 3.6576000000000004
+    },
+    {
+      "id": "hall",
+      "x": 0,
+      "z": 0,
+      "w": 16.150541772151893,
+      "d": 1.2192
+    }
+  ],
+  "references": {
+    "doorWidthM": 0.8128,
+    "doorHeightM": 2.032,
+    "counterHeightM": 0.9144,
+    "note": "An 80 in door and a 36 in counter are scale references only. This plan did not measure them in a photo."
+  }
+}
