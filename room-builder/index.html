@@ -173,13 +173,7 @@
   <noscript><p class="sim-loading">JavaScript is required for the interactive 3D room.</p></noscript>
   <script type="module">
     async function startRoomBuilder() {
-      const { photoRoomTarget } = await import("/js/room-entry.mjs?v=20261106fix1");
-      const target = photoRoomTarget(location.search);
-      if (target) {
-        location.replace(target);
-        return;
-      }
-      const { bootRoomSim } = await import("/js/room-sim.js?v=20261106rooms");
+      const { bootRoomSim } = await import("/js/room-sim.js?v=20261106list");
       await bootRoomSim();
     }
     startRoomBuilder().catch((error) => {

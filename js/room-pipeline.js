@@ -224,25 +224,93 @@ export function applyListedSize(room, listing, index = 0, total = 1) {
   };
 }
 
-function namedRoomPhoto(sourcePhotoUrl) {
+function photoStem(photoUrl) {
+  let name = "";
   try {
-    const name = decodeURIComponent(new URL(sourcePhotoUrl).pathname.split("/").at(-1)).toLowerCase();
-    const definitions = [
-      [/^(?:master|primary)[ _-]+bath(?:room)?(?:[ _.-]|$)/, "primary-bathroom", "Primary bathroom", "bathroom"],
-      [/^(?:full|half|hall)[ _-]+bath(?:room)?(?:[ _.-]|$)/, "hall-bathroom", "Hall bathroom", "bathroom"],
-      [/^(?:master|primary)[ _-]+bedroom(?:[ _.-]|$)/, "primary-bedroom", "Primary bedroom", "bedroom"],
-      [/^living[ _-]+room(?:[ _.-]|$)/, "living", "Living room", "living"],
-      [/^kitchen(?:[ _.-]|$)/, "kitchen", "Kitchen", "kitchen"],
-      [/^(?:eating[ _-]+space|dining[ _-]+room)(?:[ _.-]|$)/, "dining", "Dining area", "dining"],
-      [/^(?:utility[ _-]+room|laundry)(?:[ _.-]|$)/, "utility", "Utility room", "other"],
-      [/^(?:hall|hallway)(?:[ _.-]|$)/, "hall", "Hallway", "other"],
-    ];
-    const known = definitions.find(([pattern]) => pattern.test(name));
-    if (known) return known.slice(1);
-    const bedroom = name.match(/^bedroom[ _-]+(\d{1,2})(?:[ _.-]|$)/);
-    if (bedroom) return [`bedroom-${bedroom[1]}`, `Bedroom ${bedroom[1]}`, "bedroom"];
-  } catch { /* Unnamed photos remain individual references. */ }
-  return null;
+    name = decodeURIComponent(new URL(photoUrl, "https://smartrealty.us/").pathname.split("/").at(-1) || "");
+  } catch {
+    return "";
+  }
+  let stem = name.toLowerCase().replace(/\.[a-z0-9]+$/, "");
+  stem = stem.replace(/_+\d{5,}.*$/, "");
+  stem = stem.replace(/[()]/g, "");
+  stem = stem.replace(/[\s-]+/g, "_").replace(/_+/g, "_").replace(/^_|_$/g, "");
+  for (let pass = 0; pass < 3; pass += 1) {
+    stem = stem.replace(/_(?:other|copy|medium|edit|edited|g|use)(?:_\d+)?$/, "");
+  }
+  return stem.replace(/_+$/g, "");
+}
+
+/** Map a listing photo filename to one room. Exterior and unnamed shots are not rooms. */
+export function classifyRoomPhoto(photoUrl) {
+  const stem = photoStem(photoUrl);
+  if (!stem || /^(?:img|dsc|image|photo|pic|i\d+|\d+)/.test(stem)) return null;
+  const exterior = /^(?:front|ftont|back|rear|side|yard|aerial|street|outbuildings?|exterior|patio|deck|porch|driveway)(?:_|$)/;
+  if ((exterior.test(stem) && !/(?:bed|bath|kit|living|dining)/.test(stem)) || /front_and_side|back_patio|outbuilding/.test(stem)) {
+    return null;
+  }
+  const numbered = stem.match(/^(?:bdr|br|bed|bedroom)_(\d{1,2})$/);
+  if (numbered) return { id: `bedroom-${Number(numbered[1])}`, label: `Bedroom ${Number(numbered[1])}`, roomType: "bedroom" };
+  const numberedBath = stem.match(/^(?:ba|bath|bathroom)_(\d{1,2})$/);
+  if (numberedBath) return { id: `bathroom-${Number(numberedBath[1])}`, label: `Bathroom ${Number(numberedBath[1])}`, roomType: "bathroom" };
+  const named = [
+    [/^(?:master|primary|mbr)_(?:bath|bathroom)$/, "primary-bathroom", "Primary bathroom", "bathroom"],
+    [/^(?:master|primary|mbr)(?:_bed(?:room)?)?(?:_\d+)?$/, "primary-bedroom", "Primary bedroom", "bedroom"],
+    [/^(?:hall|full|half)_(?:bath|bathroom)$/, "hall-bathroom", "Hall bathroom", "bathroom"],
+    [/^(?:bath|bathroom)$/, "bathroom-1", "Bathroom", "bathroom"],
+    [/^(?:living_room|living|lr)(?:_\d+)?$/, "living", "Living room", "living"],
+    [/^(?:kitchen|kit)(?:_\d+)?$/, "kitchen", "Kitchen", "kitchen"],
+    [/^(?:eating_space|dining(?:_room|_area)?)(?:_\d+)?$/, "dining", "Dining area", "dining"],
+    [/^(?:utility|laundry)(?:_room)?(?:_\d+)?$/, "utility", "Utility room", "other"],
+    [/^(?:hall|hallway)(?:_\d+)?$/, "hall", "Hallway", "other"],
+    [/^(basement|office|den|shop|garage|bonus)(?:_room)?(?:_\d+)?$/, null, null, "other"],
+  ].find(([pattern]) => pattern.test(stem));
+  if (!named) return null;
+  if (named[1]) return { id: named[1], label: named[2], roomType: named[3] };
+  const word = stem.match(/^(basement|office|den|shop|garage|bonus)/)[1];
+  const label = word.charAt(0).toUpperCase() + word.slice(1);
+  return { id: word, label, roomType: "other" };
+}
+
+function namedRoomPhoto(sourcePhotoUrl) {
+  const found = classifyRoomPhoto(sourcePhotoUrl);
+  return found ? [found.id, found.label, found.roomType] : null;
+}
+
+function propertyRoomOrder(room) {
+  const typeRank = { living: 0, kitchen: 1, dining: 2, bedroom: 3, bathroom: 4, other: 5 };
+  const id = String(room?.id || "");
+  const number = Number((id.match(/(\d+)$/) || [])[1] || 50);
+  const rank = /primary/.test(id) ? 0 : number;
+  return (typeRank[room?.roomType] ?? 9) * 100 + rank;
+}
+
+/**
+ * Every room that belongs on a property: named listing photos, plus living,
+ * kitchen, bedrooms, and bathrooms taken from the listing when a photo did not
+ * name them. One button per room. Loose photos are not rooms.
+ */
+export function listPropertyRooms(listing, photoUrls = []) {
+  const photos = [...new Set((Array.isArray(photoUrls) ? photoUrls : []).filter(Boolean))];
+  const groups = new Map();
+  photos.forEach((url, index) => {
+    const found = classifyRoomPhoto(url);
+    if (!found) return;
+    const id = `reference-${found.id}`;
+    if (!groups.has(id)) groups.set(id, { ...found, urls: [], indices: [] });
+    const group = groups.get(id);
+    group.urls.push(url);
+    group.indices.push(index);
+  });
+  const named = [...groups.values()].map((group) => ({
+    ...planningRoom(`reference-${group.id}`, group.roomType, `${group.label} · photo reference`),
+    mode: "fallback",
+    sourcePhotoUrl: group.urls[0],
+    sourcePhotoUrls: group.urls,
+    photoIndices: group.indices,
+  }));
+  return [...named, ...missingPlanningRooms(listing, named)]
+    .sort((a, b) => propertyRoomOrder(a) - propertyRoomOrder(b) || String(a.label).localeCompare(String(b.label)));
 }
 
 function groupReferenceRooms(rooms) {

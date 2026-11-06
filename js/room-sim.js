@@ -1,7 +1,7 @@
 import { PROPERTY_PHOTO_ROOMS } from "/js/room-photo-previews.mjs?v=20261106b";
 import { initRoomBuilder } from "/js/room-builder.js?v=20261105a";
 import { feetAndInches } from "/js/room-distance.mjs?v=20260911b";
-import { applyListedSize, DEFAULT_LIVING_ROOM, missingPlanningRooms, planningRoom, reconstructHouse, reconstructRoom } from "/js/room-pipeline.js?v=20261106rooms";
+import { applyListedSize, DEFAULT_LIVING_ROOM, listPropertyRooms, planningRoom, reconstructHouse, reconstructRoom } from "/js/room-pipeline.js?v=20261106list";
 import { readRoomPlanFile } from "/js/roomplan-import.mjs?v=20260915a";
 import { CATALOG_TREE, SAMPLE_PRODUCTS, VENDOR_OPTIONS, productsInGroup, money } from "/js/room-catalog.js?v=20261106rooms";
 
@@ -593,9 +593,17 @@ export async function bootRoomSim() {
   }
   document.getElementById("simListingBar").hidden = false;
   const photoPreviews=PROPERTY_PHOTO_ROOMS[listingId] || [];
+  function photoFileName(url) {
+    try {
+      return decodeURIComponent(new URL(url, location.origin).pathname.split("/").at(-1) || "");
+    } catch {
+      return "";
+    }
+  }
   function showRoomPreview(room, urls) {
     const link=document.getElementById("simReviewedRoom");
-    const files=urls.map(url=>new URL(url).pathname.split("/").at(-1));
+    if (!link) return;
+    const files=urls.map(photoFileName).filter(Boolean);
     const preview=photoPreviews.find(entry=>entry.photoFiles.some(name=>files.includes(name))) ||
       photoPreviews.find(entry=>room.id===entry.id || room.id===`reference-${entry.id}` || room.id===`plan-${entry.id}`);
     link.hidden=!preview;
@@ -623,11 +631,8 @@ export async function bootRoomSim() {
   }
 
   const resolved = [...new Set(photos.map(absPhoto).filter(Boolean))];
-  if (hud.loading) hud.loading.textContent = "Preparing rooms from listing photos…";
-  const house = await reconstructHouse({ photoUrls: resolved, listingId });
-  const rooms = [...house.rooms.filter((room) => room.mode === "vision" || room.id.startsWith("reference-")),
-    ...missingPlanningRooms(listing, house.rooms),
-    ...house.rooms.filter((room) => room.mode !== "vision" && !room.id.startsWith("reference-"))];
+  if (hud.loading) hud.loading.textContent = "Loading rooms…";
+  const rooms = listPropertyRooms(listing, resolved);
   if (!rooms.length) rooms.push({ ...DEFAULT_LIVING_ROOM, id: "sample-room" });
   const seenByType = {};
   for (let i = 0; i < rooms.length; i += 1) {
@@ -674,9 +679,9 @@ export async function bootRoomSim() {
         const picked = btn.getAttribute("data-photo");
         originalImage.src = picked;
         const next = [picked, ...urls.filter((u) => u !== picked)];
-        if (room.mode === "vision") builder.setListingPhotos(next);
+        builder.setListingPhotos(next.slice(0, 4));
         strip.querySelectorAll(".sim-photo").forEach((b) => b.classList.toggle("is-on", b === btn));
-        // Imported measurements stay authoritative when browsing references.
+        // Measured and planning shells stay put. A photo estimate replaces them only after a vision result.
         if (room.mode !== "vision") return;
         if (hud.hint) hud.hint.textContent = "Analyzing selected room view…";
         try {
@@ -718,12 +723,11 @@ export async function bootRoomSim() {
     if (urls.length) {
       originalImage.src = urls[0];
       originalButton.disabled = false;
-      builder.setListingPhotos(room.mode === "vision" ? urls : []);
     } else {
       originalImage.removeAttribute("src");
       originalButton.disabled = true;
-      builder.setListingPhotos([]);
     }
+    builder.setListingPhotos(urls.slice(0, 4));
     renderPhotoStrip(urls, urls[0], room);
     showPhotoMatch(room);
     const deptFor = { bedroom: "bedroom", bathroom: "bath", living: "living", dining: "living", kitchen: "living" };
@@ -780,9 +784,23 @@ export async function bootRoomSim() {
     queueRoom(room).catch(console.error);
   });
   document.getElementById("simCancelRoom").addEventListener("click", () => roomDialog.close());
+  const requestedRoom = params.get("room") || "";
   const requestedPhoto = absPhoto(photoUrl);
-  const initial = (requestedPhoto && rooms.find((room) => roomPhotos(room).includes(requestedPhoto))) || rooms[0];
+  const initial = (requestedRoom && rooms.find((room) => room.id === requestedRoom || room.id === `reference-${requestedRoom}` || room.roomType === requestedRoom))
+    || (requestedPhoto && rooms.find((room) => roomPhotos(room).includes(requestedPhoto)))
+    || rooms.find((room) => room.roomType === "living")
+    || rooms[0];
   const restored = await queueRoom(initial);
+  reconstructHouse({ photoUrls: resolved, listingId }).then((house) => {
+    const visionRooms = (house?.rooms || []).filter((room) => room.mode === "vision");
+    visionRooms.forEach((vision) => {
+      const match = rooms.find((room) => room.mode !== "lidar" && room.mode !== "vision" && room.roomType === vision.roomType);
+      if (!match) return;
+      const kept = { id: match.id, label: match.label, photoIndices: match.photoIndices, sourcePhotoUrls: match.sourcePhotoUrls };
+      Object.assign(match, vision, kept);
+      if (activeRoomId === match.id && builder.placedList().length === 0) builder.applyReconstruction(match);
+    });
+  }).catch(() => {});
 
   const lidarInput = document.getElementById("simLidarFile");
   document.getElementById("simLidar")?.addEventListener("click", () => lidarInput?.click());
