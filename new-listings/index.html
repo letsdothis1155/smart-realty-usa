@@ -166,8 +166,9 @@
         if (!u) return "";
         return /^(https?:)?\/\//i.test(u) || u.startsWith("/") ? u : `/${u}`;
       }
-      function sampleRoomHref(returnTo) {
-        return `/room-builder/?demo=1&from=${encodeURIComponent(returnTo)}`;
+      function builderHref(listing, returnTo) {
+        if (!listing.id || listing.source === "court" || (listing.entityKind && listing.entityKind !== "home")) return "";
+        return `/room-builder/?listing=${encodeURIComponent(listing.id)}&from=${encodeURIComponent(returnTo)}`;
       }
 
       function card(listing) {
@@ -179,9 +180,7 @@
         const qs = queryFromForm();
         qs.set("id", listing.id);
         const returnTo = `/new-listings/?${qs.toString()}`;
-        const simHref = listing.canView3D && listing.hasListingPhotos !== false && listing.primaryImageSource !== "street_view"
-          ? `/room-builder/?listing=${encodeURIComponent(listing.id)}${listing.image ? `&photo=${encodeURIComponent(absUrl(listing.image))}` : ""}&from=${encodeURIComponent(returnTo)}`
-          : "";
+        const simHref = builderHref(listing, returnTo);
         el.innerHTML = `
           <div class="nl-media">${(listing.displayImage && listing.displayImage.src) || listing.image ? `<img src="${esc(absUrl((listing.displayImage && listing.displayImage.src) || listing.image))}" alt="${esc(listing.address || listing.title || "Home")}" loading="lazy" />` : `<img src="/images/photo-unavailable.svg" alt="Photo unavailable" />`}${listing.primaryImageSource === "street_view" ? `<span class="sv-badge">Street View</span><span class="sv-attr">© Google</span>` : ""}</div>
           <div class="nl-body">
@@ -195,7 +194,7 @@
               <a class="btn btn-outline btn-sm" href="${returnTo}">View home</a>
               ${simHref
                 ? `<a class="btn btn-primary btn-sm" href="${simHref}">Visualize this home</a>`
-                : `<a class="btn btn-outline btn-sm" href="${sampleRoomHref(returnTo)}" title="Opens a generic sample room, not this property's layout">Try sample 3D room</a>`}
+                : ""}
             </div>
           </div>
         `;
@@ -245,8 +244,7 @@
         const photos = (listing.images && listing.images.length ? listing.images : listing.image ? [listing.image] : [])
           .filter(Boolean);
         const street = listing.primaryImageSource === "street_view";
-        const can3d = listing.canView3D && listing.hasListingPhotos !== false && !street;
-        const photo = photos[0] ? absUrl(photos[0]) : "";
+        const simHref = builderHref(listing, location.pathname + location.search);
         el.classList.remove("hidden");
         el.innerHTML = `
           <p class="nl-source">${esc(listing.source || "")}${listing.mlsSourceName ? " · " + esc(listing.mlsSourceName) : ""}</p>
@@ -258,9 +256,7 @@
           <div class="nl-gallery">${photos.map((u) => `<img src="${esc(absUrl(u))}" alt="" />`).join("") || `<img src="/images/photo-unavailable.svg" alt="Photo unavailable" />`}</div>
           ${street ? `<p class="nl-meta">Street View is a fallback image, not an official listing photo.</p>` : ""}
           <div class="nl-actions">
-            ${can3d
-              ? `<a class="btn btn-primary" href="/room-builder/?listing=${encodeURIComponent(listing.id)}${photo ? `&photo=${encodeURIComponent(photo)}` : ""}&from=${encodeURIComponent(location.pathname + location.search)}">Open in 3D Room Simulator</a>`
-              : `<a class="btn btn-outline" href="${sampleRoomHref(location.pathname + location.search)}">Try a sample 3D room</a>`}
+            ${simHref ? `<a class="btn btn-primary" href="${simHref}">Open in 3D Room Simulator</a>` : ""}
             <a class="btn btn-outline" href="/showing/?property=${encodeURIComponent(listing.address || listing.title || "")}&amp;city=${encodeURIComponent(listing.city || "")}">Request a showing</a>
             ${listing.sourceUrl ? `<a class="btn btn-ghost" href="${esc(listing.sourceUrl)}" target="_blank" rel="noopener">Source listing</a>` : ""}
           </div>

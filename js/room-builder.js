@@ -4,10 +4,10 @@ import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/+esm";
 import { footprintMeasurement } from "/js/room-distance.mjs?v=20260911b";
 import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js/+esm";
 import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js/+esm";
-import { buildFurnitureMesh, tintPlacement } from "/js/room-furniture.js?v=20260824j";
-import { DEFAULT_LAYOUT, findProduct, normalizeProduct } from "/js/room-catalog.js?v=20260824j";
-import { DEFAULT_LIVING_ROOM, FINISH_PRESETS, ROOM_PRESETS } from "/js/room-pipeline.js?v=20260914e";
-import { boxInsidePolygon, normalizeFloorPolygon, pointInPolygon } from "/js/room-geometry.mjs?v=20260914a";
+import { buildFurnitureMesh, tintPlacement } from "/js/room-furniture.js?v=20261105a";
+import { DEFAULT_LAYOUT, findProduct, normalizeProduct } from "/js/room-catalog.js?v=20261105a";
+import { DEFAULT_LIVING_ROOM, FINISH_PRESETS, ROOM_PRESETS } from "/js/room-pipeline.js?v=20261105a";
+import { boxInsidePolygon, normalizeFloorPolygon, pointInPolygon, polygonArea } from "/js/room-geometry.mjs?v=20260914a";
 
 const IN_TO_M = 0.0254;
 const gltfLoader = new GLTFLoader();
@@ -170,6 +170,8 @@ export function initRoomBuilder(canvas, options = {}) {
   const windowLights = [];
   const cutawayMeshes = [];
   const listingPhotoMeshes = [];
+  let wallEdges = [];
+  let wallPlan = DEFAULT_LIVING_ROOM.walls;
   let pendingListingPhotos = [];
   let photoPaletteRequest = 0;
   function matchPhotoPalette(url) {
@@ -307,7 +309,11 @@ export function initRoomBuilder(canvas, options = {}) {
     roomWidth = Number(opts.width) || roomWidth;
     roomDepth = Number(opts.depth) || roomDepth;
     roomHeight = Number(opts.height) || roomHeight;
-    floorPolygon = normalizeFloorPolygon(opts.floorPolygon, roomWidth, roomDepth);
+    const resized = opts.width !== undefined || opts.depth !== undefined;
+    if (resized || opts.floorPolygon !== undefined) {
+      floorPolygon = normalizeFloorPolygon(opts.floorPolygon, roomWidth, roomDepth);
+      if (polygonArea(floorPolygon) < 0) floorPolygon = [...floorPolygon].reverse();
+    }
     if (opts.photoUrl !== undefined) photoUrl = opts.photoUrl || "";
     const inferredFinish = {
       oak: "oak",
@@ -318,7 +324,7 @@ export function initRoomBuilder(canvas, options = {}) {
       other: "linen",
     }[opts.floor?.finish];
     if (opts.finish || inferredFinish) finishId = opts.finish || inferredFinish;
-    const wallPlan = Array.isArray(opts.walls) ? opts.walls : DEFAULT_LIVING_ROOM.walls;
+    if (Array.isArray(opts.walls)) wallPlan = opts.walls;
     const wallDetails = (id) => wallPlan.find((entry) => entry?.id === id) || { id, windows: 0, door: false };
     disposeObjectResources(shellGroup, {
       geometries: true,
@@ -372,18 +378,28 @@ export function initRoomBuilder(canvas, options = {}) {
       return m;
     }
 
-    const wallEdges = floorPolygon.map((start, index) => {
+    wallEdges = floorPolygon.map((start, index) => {
       const end = floorPolygon[(index + 1) % floorPolygon.length];
       const dx = end.x - start.x;
       const dz = end.z - start.z;
       const length = Math.hypot(dx, dz);
       const mesh = wall(length, roomHeight, (start.x + end.x) / 2, roomHeight / 2, (start.z + end.z) / 2, -Math.atan2(dz, dx));
-      return { start, end, length, mesh, midZ: (start.z + end.z) / 2 };
+      return { start, length, mesh, tx: dx / length, tz: dz / length, midZ: (start.z + end.z) / 2, openings: [] };
     });
     southWall = wallEdges.reduce((south, edge) => edge.midZ > south.midZ ? edge : south, wallEdges[0]).mesh;
     cutawayMeshes.push(southWall);
 
+    function recordOpening(x, z, rotation, width, bottom, height) {
+      const edge = wallEdges.find((wall) =>
+        Math.abs((x - wall.start.x) * wall.tz - (z - wall.start.z) * wall.tx) < 0.12 &&
+        wall.tx * Math.cos(rotation) - wall.tz * Math.sin(rotation) > 0.99);
+      if (!edge) return;
+      const along = (x - edge.start.x) * edge.tx + (z - edge.start.z) * edge.tz;
+      edge.openings.push({ left: along - width / 2, right: along + width / 2, bottom, top: bottom + height });
+    }
+
     function addWindow(x, z, rotY, width = 1.15, height = 1.35, sill = 0.95) {
+      recordOpening(x, z, rotY, width + 0.08, sill - 0.04, height + 0.08);
       const frame = new THREE.Mesh(
         new THREE.BoxGeometry(width + 0.08, height + 0.08, 0.06),
         new THREE.MeshStandardMaterial({ color: "#efeae0", roughness: 0.5 })
@@ -442,6 +458,7 @@ export function initRoomBuilder(canvas, options = {}) {
       const x = id === "west" ? -roomWidth / 2 : id === "east" ? roomWidth / 2 : offset;
       const z = id === "north" ? -roomDepth / 2 : id === "south" ? roomDepth / 2 : offset;
       const rotation = id === "west" ? Math.PI / 2 : id === "east" ? -Math.PI / 2 : id === "south" ? Math.PI : 0;
+      recordOpening(x, z, rotation, 0.92, 0, 2.05);
       const door = new THREE.Mesh(new THREE.BoxGeometry(0.92, 2.05, 0.06),
         new THREE.MeshStandardMaterial({ color: "#6b4a32", roughness: 0.55 }));
       door.position.set(x, 1.025, z);
@@ -468,6 +485,11 @@ export function initRoomBuilder(canvas, options = {}) {
 
     listingPhotoMeshes.forEach((m) => shellGroup.remove(m));
     listingPhotoMeshes.length = 0;
+    for (const item of itemsGroup.children) {
+      if (item.userData.product?.meshStyle !== "tv") continue;
+      item.userData.tvEdge = null;
+      if (!snapTelevision(item)) item.visible = false;
+    }
     applyCutaway(cutaway);
     setTimeOfDay(hour);
     if (pendingListingPhotos.length) mountListingPhotos(pendingListingPhotos);
@@ -479,6 +501,9 @@ export function initRoomBuilder(canvas, options = {}) {
     cutawayMeshes.forEach((m) => {
       if (m) m.visible = !on;
     });
+    for (const item of itemsGroup.children) {
+      if (item.userData.product?.meshStyle === "tv") item.visible = Boolean(item.userData.tvEdge?.mesh.visible);
+    }
   }
 
   rebuildShell(options);
@@ -659,6 +684,72 @@ export function initRoomBuilder(canvas, options = {}) {
     }
   }
 
+  function televisionFit(mesh, edge, along) {
+    const fp = mesh.userData.footprint;
+    const half = fp.w * mesh.scale.x / 2;
+    const height = fp.h * mesh.scale.y;
+    const bottom = Math.min(1.18, roomHeight - height - 0.12);
+    if (bottom < 0.35 || along - half < 0.025 || along + half > edge.length - 0.025) return null;
+    const blocked = edge.openings.some((opening) => along + half > opening.left &&
+      along - half < opening.right && bottom + height > opening.bottom && bottom < opening.top);
+    if (blocked) return null;
+    const overlap = itemsGroup.children.some((other) => other !== mesh && !other.userData.ghost &&
+      other.userData.tvEdge === edge && Math.abs(other.userData.tvAlong - along) < half + other.userData.footprint.w * other.scale.x / 2);
+    return overlap ? null : bottom;
+  }
+
+  function snapTelevision(mesh, hit = null) {
+    const fp = mesh.userData.footprint;
+    let best = null;
+    for (const edge of hit ? [hit.edge] : wallEdges) {
+      const { start, tx, tz, length } = edge;
+      const point = hit?.point || mesh.position;
+      const along = (point.x - start.x) * tx + (point.z - start.z) * tz;
+      const margin = fp.w * mesh.scale.x / 2 + 0.025;
+      const samples = hit ? [along] : [Math.max(margin, Math.min(length - margin, along)),
+        ...Array.from({ length: 19 }, (_, i) => length * (i + 1) / 20)];
+      for (const candidate of samples) {
+        const bottom = televisionFit(mesh, edge, candidate);
+        if (bottom === null) continue;
+        const x = start.x + candidate * tx, z = start.z + candidate * tz;
+        const distance = Math.hypot(point.x - x, point.z - z) + (edge.mesh.visible ? 0 : 10);
+        if (!best || distance < best.distance) best = { edge, candidate, bottom, x, z, distance };
+      }
+    }
+    if (!best) return false;
+    const { edge, candidate, bottom, x, z } = best;
+    const inset = fp.d * mesh.scale.z / 2 + 0.004;
+    mesh.position.set(x - edge.tz * inset, bottom, z + edge.tx * inset);
+    mesh.rotation.y = edge.mesh.rotation.y;
+    mesh.userData.tvEdge = edge;
+    mesh.userData.tvAlong = candidate;
+    mesh.visible = edge.mesh.visible;
+    return true;
+  }
+
+  function televisionWallHit(event) {
+    pointerToRay(event);
+    const ray = raycaster.ray;
+    let best = null;
+    for (const edge of wallEdges) {
+      if (!edge.mesh.visible) continue;
+      const normal = new THREE.Vector3(-edge.tz, 0, edge.tx);
+      if (ray.direction.dot(normal) >= -0.00001) continue;
+      const plane = new THREE.Plane().setFromNormalAndCoplanarPoint(normal, edge.mesh.position);
+      const point = ray.intersectPlane(plane, new THREE.Vector3());
+      if (!point || point.y < 0 || point.y > roomHeight) continue;
+      if (ray.origin.y > 0 && ray.direction.y < 0) {
+        const floor = ray.at(-ray.origin.y / ray.direction.y, new THREE.Vector3());
+        if (floor.distanceTo(ray.origin) < point.distanceTo(ray.origin) && pointInPolygon(floor, floorPolygon)) continue;
+      }
+      const along = (point.x - edge.start.x) * edge.tx + (point.z - edge.start.z) * edge.tz;
+      if (along < 0 || along > edge.length) continue;
+      const distance = point.distanceTo(ray.origin);
+      if (!best || distance < best.distance) best = { edge, point, distance };
+    }
+    return best;
+  }
+
   function snapWall(mesh, product) {
     if (!(product.wallMounted || product.wallAffinity || product.snap === "wall")) return;
     const fp = worldFootprint(mesh);
@@ -773,11 +864,18 @@ export function initRoomBuilder(canvas, options = {}) {
     if (!opts.silent) pushUndo();
     const x = opts.x ?? 0;
     const z = opts.z ?? 0;
-    clampToRoom(mesh, x, z);
+    if (p.meshStyle === "tv") mesh.position.set(x, 0, z);
+    else clampToRoom(mesh, x, z);
     mesh.position.y = opts.y != null ? opts.y : restY(p, mesh);
     if (opts.rot != null) mesh.rotation.y = opts.rot;
     if (opts.scale) mesh.scale.setScalar(opts.scale);
-    if (!opts.skipSnap) snapWall(mesh, p);
+    if (p.meshStyle === "tv") {
+      if (!snapTelevision(mesh, opts.tvHit)) {
+        disposeMesh(mesh);
+        if (!opts.silent) onBusy(false);
+        return null;
+      }
+    } else if (!opts.skipSnap) snapWall(mesh, p);
     itemsGroup.add(mesh);
     items.set(instanceId, mesh);
     if (!opts.silent) selectItem(instanceId);
@@ -847,7 +945,7 @@ export function initRoomBuilder(canvas, options = {}) {
 
   function rotateSelected(delta = ROT_SNAP) {
     const mesh = items.get(selectedId);
-    if (!mesh) return;
+    if (!mesh || mesh.userData.product.meshStyle === "tv") return;
     pushUndo();
     mesh.rotation.y += delta;
     snapWall(mesh, mesh.userData.product);
@@ -856,7 +954,7 @@ export function initRoomBuilder(canvas, options = {}) {
 
   function scaleSelected(factor) {
     const mesh = items.get(selectedId);
-    if (!mesh) return;
+    if (!mesh || mesh.userData.product.meshStyle === "tv") return;
     pushUndo();
     const next = Math.max(0.5, Math.min(2.2, mesh.scale.x * factor));
     mesh.scale.setScalar(next);
@@ -927,6 +1025,7 @@ export function initRoomBuilder(canvas, options = {}) {
     pointerToRay(event);
     const meshes = [];
     for (const mesh of items.values()) {
+      if (!mesh.visible) continue;
       mesh.traverse((ch) => {
         if (ch.isMesh) meshes.push(ch);
       });
@@ -945,7 +1044,10 @@ export function initRoomBuilder(canvas, options = {}) {
     return null;
   }
 
+  let placementGeneration = 0;
+
   function clearGhost() {
+    placementGeneration += 1;
     if (ghost) {
       itemsGroup.remove(ghost);
       disposeMesh(ghost);
@@ -960,7 +1062,14 @@ export function initRoomBuilder(canvas, options = {}) {
     const p = normalizeProduct(product) || product;
     placing = p;
     onBusy(true);
-    ghost = await buildMesh(p);
+    const generation = placementGeneration;
+    const preview = await buildMesh(p);
+    if (generation !== placementGeneration) {
+      disposeMesh(preview);
+      onBusy(false);
+      return;
+    }
+    ghost = preview;
     ghost.userData.product = { ...p, instanceId: "ghost" };
     ghost.userData.ghost = true;
     ghost.userData.valid = true;
@@ -995,7 +1104,8 @@ export function initRoomBuilder(canvas, options = {}) {
       clampToRoom(ghost, spot.x, spot.z);
       if (!collides(ghost, null)) break;
     }
-    markValidity(ghost, null);
+    if (p.meshStyle === "tv") ghost.visible = snapTelevision(ghost);
+    else markValidity(ghost, null);
     onBusy(false);
     selectItem(null);
   }
@@ -1013,15 +1123,16 @@ export function initRoomBuilder(canvas, options = {}) {
       return;
     }
     if (placing && ghost) {
-      const hit = floorHit(event);
-      if (hit && ghost.userData.valid !== false) {
+      const hit = placing.meshStyle === "tv" ? televisionWallHit(event) : floorHit(event);
+      const valid = placing.meshStyle === "tv" ? hit && snapTelevision(ghost, hit) : ghost.userData.valid !== false;
+      if (hit && valid) {
         const p = placing;
         const x = ghost.position.x;
         const z = ghost.position.z;
         const y = ghost.position.y;
         const rot = ghost.rotation.y;
         clearGhost();
-        addItem(p, { x, z, y, rot });
+        addItem(p, { x, z, y, rot, tvHit: p.meshStyle === "tv" ? hit : null });
       }
       return;
     }
@@ -1048,6 +1159,11 @@ export function initRoomBuilder(canvas, options = {}) {
       return;
     }
     if (placing && ghost && mode !== "walk") {
+      if (placing.meshStyle === "tv") {
+        const hit = televisionWallHit(event);
+        ghost.visible = Boolean(hit && snapTelevision(ghost, hit));
+        return;
+      }
       const hit = floorHit(event);
       if (!hit) return;
       ghost.position.y = restY(placing, ghost);
@@ -1060,6 +1176,11 @@ export function initRoomBuilder(canvas, options = {}) {
     if (!dragId) return;
     const mesh = items.get(dragId);
     if (!mesh) return;
+    if (mesh.userData.product.meshStyle === "tv") {
+      const hit = televisionWallHit(event);
+      if (hit && snapTelevision(mesh, hit)) dragMoved = true;
+      return;
+    }
     const hit = floorHit(event);
     if (!hit) return;
     dragMoved = true;
@@ -1168,8 +1289,11 @@ export function initRoomBuilder(canvas, options = {}) {
     return true;
   }
 
-  function clearRoom() {
-    pushUndo();
+  function clearRoom({ resetHistory = false } = {}) {
+    if (resetHistory) {
+      undo.length = 0;
+      redo.length = 0;
+    } else pushUndo();
     cancelPlace();
     for (const id of [...items.keys()]) removeItem(id, true);
     selectItem(null);
@@ -1224,7 +1348,7 @@ export function initRoomBuilder(canvas, options = {}) {
   function exportDesign() {
     return {
       version: 1,
-      reconstruction: { width: roomWidth, depth: roomDepth, height: roomHeight, floorPolygon, photoUrl, finish: finishId },
+      reconstruction: { width: roomWidth, depth: roomDepth, height: roomHeight, floorPolygon, photoUrl, finish: finishId, walls: wallPlan },
       hour,
       items: snapshot(),
       total: roomTotal(),

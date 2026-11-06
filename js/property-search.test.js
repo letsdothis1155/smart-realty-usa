@@ -81,15 +81,16 @@ test('property type filter distinguishes estate, condo, and house', () => {
   assert.equal(S.filterListings(rows, S.parseQuery(''), { propertyType: 'house' }).some((p) => p.title === 'Miami Edge Condo Loft'), false);
 });
 
-test('room simulator href is empty without a usable photo and carries listing context', () => {
+test('room simulator href retains listing context with or without a photo', () => {
   assert.equal(S.roomSimulatorHref({ id: 'court-1', source: 'court', image: 'https://x/a.jpg' }), '');
   const href = S.roomSimulatorHref(
-    { id: 'sr-019', source: 'demo', image: 'images/listing-19.jpg' },
+    { id: 'sr-019', title: 'Louisville Brownstone', source: 'demo', image: 'images/listing-19.jpg' },
     { from: '/?q=Louisville#listings' },
   );
   assert.match(href, /\/room-builder\/\?listing=sr-019/);
   assert.match(href, /photo=/);
   assert.match(href, /from=/);
+  assert.equal(S.roomSimulatorHref({ id: "hud-123", title: "123 Main St", source: "hud", primaryImageSource: "street_view", image: "https://maps.googleapis.com/maps/api/streetview" }), "/room-builder/?listing=hud-123");
 });
 
 test('demo named homes stay listable without a house number', () => {

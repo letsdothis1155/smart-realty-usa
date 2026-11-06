@@ -67,7 +67,7 @@
     if (p.image) imgs.unshift(p.image);
     return imgs.some(function (img) {
       if (!img || String(img).indexOf("data:image/svg") === 0) return false;
-      if (/NoImage|placeholder|courthouse|circuit.?court|photo-unavailable/i.test(img)) return false;
+      if (/courthouse|circuit.?court/i.test(img) || /(?:^|\/)(?:NoImage|placeholder|photo-unavailable)(?:\.[a-z]+)?(?:[?#]|$)/i.test(img)) return false;
       if (/maps\.googleapis\.com\/maps\/api\/streetview/i.test(img)) return false;
       if (p.imageSource === "street_view") return false;
       if (p.primaryImageSource === "street_view" && !p.hasListingPhotos) return false;
@@ -284,10 +284,10 @@
 
   function roomSimulatorHref(p, extra) {
     extra = extra || {};
-    if (!p || !hasUsableRoomPhoto(p)) return "";
+    if (!p?.id || !isListableHome(p) || p.source === "court" || p.entityKind && p.entityKind !== "home") return "";
     var photo = extra.photo || (Array.isArray(p.images) && p.images[0]) || p.image || "";
     var href = "/room-builder/?listing=" + encodeURIComponent(p.id);
-    if (photo) href += "&photo=" + encodeURIComponent(photo);
+    if (photo && hasUsableRoomPhoto({ ...p, images: [photo], image: photo })) href += "&photo=" + encodeURIComponent(photo);
     if (extra.from) href += "&from=" + encodeURIComponent(extra.from);
     return href;
   }
