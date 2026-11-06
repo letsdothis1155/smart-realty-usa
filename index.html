@@ -140,7 +140,7 @@
         <span class="open-landing-note">Demo catalog below is labeled demo. It is not for sale.</span>
       </p>
       <div class="open-landing-actions">
-        <a class="btn btn-primary btn-sm" href="https://buy.stripe.com/7sY9AVdfx0edbKqfhTebu00" target="_blank" rel="noopener">Pay $150 with Stripe</a>
+        <a class="btn btn-primary btn-sm" href="https://buy.stripe.com/fZu6oHex027ie3Ua4s4sE01" target="_blank" rel="noopener">Pay $1 for one headline</a>
         <a class="btn btn-ghost btn-sm" href="hire/">Request a quote</a>
         <button type="button" class="btn btn-ghost btn-sm" id="dismissOpenBanner" aria-label="Dismiss notice">Dismiss</button>
       </div>
@@ -229,7 +229,7 @@
           <button type="button" class="btn btn-ghost btn-sm btn-sm-auth" id="signOutBtn">Sign out</button>
         </div>
         <a class="btn btn-ghost btn-sm btn-sm-auth" id="signUpNav" href="account.html">Account</a>
-        <a class="btn btn-ghost btn-sm btn-sm-auth hidden" id="signInNav" href="auth.html?next=index.html">Sign in</a>
+        <a class="btn btn-ghost btn-sm btn-sm-auth hidden" id="signInNav" href="account.html">Account</a>
         <button class="btn btn-icon" id="openFavDrawer" type="button" aria-label="Saved homes" title="Saved homes" data-requires-auth data-gate-title="Sign in to see saved homes">
           ♥ <span class="count-badge hidden" id="favCount">0</span>
         </button>
@@ -268,19 +268,19 @@
             <span class="gradient-text">Copy you still edit.</span>
           </h1>
           <div class="hero-sub fade-up delay-2">
-            <p>Listing copy is <strong>$150</strong>, paid on Stripe. You still edit every fact.</p>
+            <p>One headline is <strong>$1</strong>. The full listing-copy pack is <strong>$150</strong>. Both are paid on Stripe. You still edit every fact. <strong>Use the $1 button below to continue your Grok subscription.</strong></p>
             <p><a href="apps/daily-cache-wiper/">Daily Cache Wiper</a> is <strong>$2/month</strong> after a 7-day trial, billed by Google Play. Demo homes below are not for sale.</p>
           </div>
           <div class="hero-cta fade-up delay-3">
-            <a href="https://buy.stripe.com/7sY9AVdfx0edbKqfhTebu00" class="btn btn-primary btn-lg" target="_blank" rel="noopener">Pay $150 with Stripe</a>
-            <a href="hire/" class="btn btn-outline btn-lg">Request a quote — no charge</a>
+            <a href="https://buy.stripe.com/fZu6oHex027ie3Ua4s4sE01" class="btn btn-primary btn-lg" target="_blank" rel="noopener" onclick="window.SRU_ANALYTICS?.track?.('stripe_cta_clicked', {amount:1,product:'grok_renewal',path:location.pathname});window.SRU_ANALYTICS?.track?.('grok_funded', {amount:1});">Continue Grok — Pay $1</a>
+            <a href="https://buy.stripe.com/7sY9AVdfx0edbKqfhTebu00" class="btn btn-outline btn-lg" target="_blank" rel="noopener" onclick="window.SRU_ANALYTICS?.track?.('stripe_cta_clicked', {amount:150,product:'listing_copy',path:location.pathname})">Pay $150 with Stripe</a>
             <a href="advertise/" class="btn btn-ghost btn-lg">Advertise</a>
           </div>
           <p class="hero-sub fade-up delay-3"><a href="paid/">Already paid? Send the property facts.</a> Stripe does not collect them.</p>
           <div class="hero-stats fade-up delay-4">
             <div class="stat">
-              <strong>$150</strong>
-              <span>Listing copy pack</span>
+              <strong>$1</strong>
+              <span>Continue Grok subscription</span>
             </div>
             <div class="stat">
               <strong>$0</strong>
@@ -308,8 +308,8 @@
             <div class="offer"><span>Pay</span><strong>Stripe checkout</strong></div>
           </div>
           <div class="hero-panel-actions">
-            <a class="btn btn-primary btn-sm" href="https://buy.stripe.com/7sY9AVdfx0edbKqfhTebu00" target="_blank" rel="noopener">Pay $150 with Stripe</a>
-            <a class="btn btn-outline btn-sm" href="hire/">Request a quote — no charge</a>
+            <a class="btn btn-primary btn-sm" href="https://buy.stripe.com/fZu6oHex027ie3Ua4s4sE01" target="_blank" rel="noopener" onclick="window.SRU_ANALYTICS?.track?.('stripe_cta_clicked', {amount:1,product:'headline',path:location.pathname})">Pay $1 for one headline</a>
+            <a class="btn btn-outline btn-sm" href="https://buy.stripe.com/7sY9AVdfx0edbKqfhTebu00" target="_blank" rel="noopener" onclick="window.SRU_ANALYTICS?.track?.('stripe_cta_clicked', {amount:150,product:'listing_copy',path:location.pathname})">Pay $150 with Stripe</a>
             <a class="btn btn-ghost btn-sm" href="copy/">Try a free draft</a>
           </div>
         </aside>
@@ -1009,16 +1009,16 @@
           <div class="biz-card glass">
             <span class="biz-step">02</span>
             <strong>Accounting / billing</strong>
-            <p>Invoices bill from the LLC. Pay by emailed instructions. This site does not collect cards or bank numbers.</p>
+            <p>The $150 listing-copy button charges a card on Stripe. This page never sees the card number. A quote request does not charge you.</p>
           </div>
           <div class="biz-card glass">
             <span class="biz-step">03</span>
             <strong>Customer accounts</strong>
-            <p>Sign in by email magic link—no password to create or remember. Supabase Auth manages the session while Smart Realty stores only the member profile and features you choose to use.</p>
+            <p>There is no member login on this site. Send your name and email and Andrew writes back. No password is collected.</p>
           </div>
         </div>
         <div class="biz-actions">
-          <a class="btn btn-primary" href="auth.html">Sign in free</a>
+          <a class="btn btn-primary" href="account.html">Request an account</a>
           <a class="btn btn-outline" href="invoice/">Print an invoice</a>
           <button type="button" class="btn btn-ghost" id="openDunsGuide">Owner D‑U‑N‑S® checklist</button>
         </div>
@@ -1046,8 +1046,8 @@
           </div>
           <div class="sec-card glass">
             <div class="sec-icon">🔐</div>
-            <h4>Passwordless by design</h4>
-            <p>Email magic links replace passwords. Member records are protected by Supabase Row Level Security.</p>
+            <h4>No passwords stored here</h4>
+            <p>Account requests are emailed to the owner. This site does not create a login or keep a password.</p>
           </div>
           <div class="sec-card glass">
             <div class="sec-icon">₿</div>
@@ -1066,8 +1066,8 @@
           </div>
           <div class="sec-card glass">
             <div class="sec-icon">✅</div>
-            <h4>Licensing in progress</h4>
-            <p>Listings showcase the pricing model today. Closing a real transaction requires state brokerage licensing, which we're pursuing next.</p>
+            <h4>Not a brokerage</h4>
+            <p>Demo listings show the pricing model. Closing a sale needs a state brokerage license. This company does not have one, and it does not take a commission.</p>
           </div>
         </div>
       </div>
@@ -1084,7 +1084,7 @@
             Use the form for a reply. The chat is a demo helper, not a desk.
           </p>
           <div class="support-channels">
-            <a href="tel:+18007627879" class="support-card glass">
+            <a href="tel:+15025391090" class="support-card glass">
               <span class="sc-icon">📞</span>
               <div>
                 <strong>Phone</strong>
@@ -1185,9 +1185,9 @@
         <a href="start/">Start</a>
         <a href="buy/">Buy</a>
         <a href="sell/">Sell</a>
-        <a href="rent/">Rent</a>
-        <a href="showing/">Showing</a>
-        <a href="list/">List a property</a>
+        <a href="#rentals">Stay &amp; buy (demo)</a>
+        <a href="hire/">Listing copy</a>
+        <a href="sell/">Not a listing agent</a>
         <a href="#markets">Louisville</a>
       </div>
       <div>
@@ -1204,7 +1204,7 @@
         <a href="#business">LLC facts</a>
         <a href="#security">Trust center</a>
         <a href="#support">Contact</a>
-        <a href="auth.html">Sign in</a>
+        <a href="account.html">Request an account</a>
         <a href="privacy.html">Privacy</a>
         <a href="terms.html">Terms</a>
         <p>502-539-1090</p>
@@ -1217,11 +1217,12 @@
       <div class="waitlist-card glass">
         <div>
           <p class="eyebrow">Paid add-on service</p>
-          <h3>Hire listing copy — $150</h3>
-          <p class="waitlist-sub">SMART REALTY.US LLC writes headlines and a description you can edit. The Stripe button charges $150 now. The request form does not. Cards are processed by Stripe, not this site. This is copywriting only: not a sale, appraisal, or guaranteed listing result.</p>
+          <h3>One headline — $1, or the full pack — $150</h3>
+          <p class="waitlist-sub">SMART REALTY.US LLC writes copy you can edit. The $1 button charges $1 now for one headline. The $150 button charges $150 for the full pack. Neither request form charges you. Cards are processed by Stripe, not this site. This is copywriting only: not a sale, appraisal, or guaranteed listing result.</p>
         </div>
         <div class="g-cta-row">
-          <a class="btn btn-primary" href="https://buy.stripe.com/7sY9AVdfx0edbKqfhTebu00" target="_blank" rel="noopener">Pay $150 with Stripe</a>
+          <a class="btn btn-primary" href="https://buy.stripe.com/fZu6oHex027ie3Ua4s4sE01" target="_blank" rel="noopener" onclick="window.SRU_ANALYTICS?.track?.('stripe_cta_clicked', {amount:1,product:'headline',path:location.pathname})">Pay $1 for one headline</a>
+          <a class="btn btn-outline" href="https://buy.stripe.com/7sY9AVdfx0edbKqfhTebu00" target="_blank" rel="noopener" onclick="window.SRU_ANALYTICS?.track?.('stripe_cta_clicked', {amount:150,product:'listing_copy',path:location.pathname})">Pay $150 with Stripe</a>
           <a class="btn btn-outline" href="hire/">Request a quote — no charge</a>
           <a class="btn btn-ghost" href="copy/">Write a draft</a>
         </div>
@@ -1248,8 +1249,7 @@
       <a href="terms.html">Terms of Use</a>
       <a href="#security">Security</a>
       <a href="#waitlist">Early access</a>
-      <a href="account.html">Account</a>
-      <a href="auth.html">Sign in</a>
+      <a href="account.html">Request an account</a>
     </div>
     <div class="container footer-bottom">
       <p>© 2026 SMART REALTY.US LLC · Louisville, KY · <strong>Public demo</strong> · All Rights Reserved.</p>
@@ -1427,8 +1427,8 @@
         Create a free account or sign in to save progress. You can also continue as a guest for this demo.
       </p>
       <div class="soft-auth-actions">
-        <a class="btn btn-primary btn-block" id="softAuthSignup" href="auth.html?next=index.html">Create free account</a>
-        <a class="btn btn-ghost btn-block" id="softAuthSignin" href="auth.html?next=index.html">Sign in</a>
+        <a class="btn btn-primary btn-block" id="softAuthSignup" href="account.html">Request an account</a>
+        <a class="btn btn-ghost btn-block" id="softAuthSignin" href="account.html">Request an account</a>
         <button type="button" class="btn btn-outline btn-block" id="softAuthGuest">Continue as guest</button>
       </div>
       <p class="soft-auth-foot">Demo only · Not a live brokerage transaction</p>
