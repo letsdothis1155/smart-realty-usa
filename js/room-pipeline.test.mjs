@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { missingPlanningRooms, normalizeListingPhotoUrl, reconstructHouse, reconstructRoom } from "./room-pipeline.js";
+import { listPropertyRooms, missingPlanningRooms, normalizeListingPhotoUrl, reconstructHouse, reconstructRoom } from "./room-pipeline.js";
 
 function browserConfig() {
   globalThis.window = {
@@ -164,4 +164,91 @@ test("keeps a photo-analyzed room instead of adding a second template", () => {
   ]);
   assert.equal(rooms.filter((room) => room.roomType === "bedroom").length, 0);
   assert.equal(rooms.find((room) => room.roomType === "living").sizeSource, "listed-sqft");
+});
+
+test("lists every named room on a property and skips exterior photos", () => {
+  const listing = { beds: 3, baths: 2, sqft: 1456 };
+  const photos = [
+    "Front_816648_322987517.jpg",
+    "Front_and_side_816648_815940133.jpg",
+    "Back_816648_808128586.jpg",
+    "Yard_816648_800775385.jpg",
+    "Outbuildings_816648_592051287.jpg",
+    "Living_room_816648_464717697.jpg",
+    "living_room_2_816648_957795975.jpg",
+    "Living_room_other_816648_467866297.jpg",
+    "Kitchen_816648_245544855.jpg",
+    "Kitchen_2_816648_880863790.jpg",
+    "Kitchen_other_816648_875656326.jpg",
+    "Eating_space_816648_228444448.jpg",
+    "Hall_816648_432624766.jpg",
+    "Master_bedroom_816648_478831611.jpg",
+    "Master_bedroom_2_816648_472511470.jpg",
+    "Master_bathroom__816648_741646386.jpg",
+    "utility_room_816648_929781356.jpg",
+    "utility_room_other_816648_986604687.jpg",
+    "Bedroom_1_816648_863846879.jpg",
+    "Bedroom_2_816648_933622323.jpg",
+    "Full_bathroom_816648_813882787.jpg",
+    "Full_bathroom_other_816648_577997996.jpg",
+  ];
+  const rooms = listPropertyRooms(listing, photos);
+  const ids = rooms.map((room) => room.id);
+  assert.deepEqual(ids, [
+    "reference-living",
+    "reference-kitchen",
+    "reference-dining",
+    "reference-primary-bedroom",
+    "reference-bedroom-1",
+    "reference-bedroom-2",
+    "reference-primary-bathroom",
+    "reference-hall-bathroom",
+    "reference-hall",
+    "reference-utility",
+  ]);
+  assert.equal(rooms.find((room) => room.id === "reference-kitchen").sourcePhotoUrls.length, 3);
+  assert.equal(rooms.find((room) => room.id === "reference-living").photoIndices.length, 3);
+  assert.equal(rooms.some((room) => /photo \d/i.test(room.label)), false);
+  assert.equal(rooms.some((room) => room.roomType === "bedroom"), true);
+  assert.equal(rooms.filter((room) => room.roomType === "bedroom").length, 3);
+  assert.equal(rooms.filter((room) => room.roomType === "bathroom").length, 2);
+});
+
+test("reads abbreviated HUD photo names and fills rooms the photos do not name", () => {
+  const listing = { beds: 3, baths: 2, sqft: 1495 };
+  const photos = [
+    "https://res.cloudinary.com/yardi/image/upload/hhs/ftont_g2_use_596461_639551419.jpg",
+    "https://res.cloudinary.com/yardi/image/upload/hhs/back_patio_596461_128711486.jpg",
+    "https://res.cloudinary.com/yardi/image/upload/hhs/bdr_2_g_596461_275099997.jpg",
+    "https://res.cloudinary.com/yardi/image/upload/hhs/bedroom_1_g_596461_599271901.jpg",
+    "https://res.cloudinary.com/yardi/image/upload/hhs/hall_bath_g_596461_187637170.jpg",
+    "https://res.cloudinary.com/yardi/image/upload/hhs/kit_g_596461_390048129.jpg",
+    "https://res.cloudinary.com/yardi/image/upload/hhs/lr_g_596461_431229384.jpg",
+    "https://res.cloudinary.com/yardi/image/upload/hhs/master_bath_g_596461_47279565.jpg",
+    "https://res.cloudinary.com/yardi/image/upload/hhs/master_g_596461_1.jpg",
+    "https://res.cloudinary.com/yardi/image/upload/hhs/shop_596461_9.jpg",
+    "https://res.cloudinary.com/yardi/image/upload/hhs/img_5113_616407_1.jpg",
+  ];
+  const rooms = listPropertyRooms(listing, photos);
+  assert.deepEqual(rooms.map((room) => room.id), [
+    "reference-living",
+    "reference-kitchen",
+    "reference-primary-bedroom",
+    "reference-bedroom-1",
+    "reference-bedroom-2",
+    "reference-primary-bathroom",
+    "reference-hall-bathroom",
+    "reference-shop",
+  ]);
+});
+
+test("lists living, kitchen, bedrooms, and bathrooms when photos are unnamed", () => {
+  const rooms = listPropertyRooms(
+    { beds: 3, baths: 2, sqft: 1650 },
+    ["images/mansion-1.jpg", "images/gallery/g-01.jpg", "interior.jpg"]
+  );
+  assert.deepEqual(rooms.map((room) => room.roomType), [
+    "living", "kitchen", "bedroom", "bedroom", "bedroom", "bathroom", "bathroom",
+  ]);
+  assert.equal(rooms.some((room) => room.id.startsWith("reference-")), false);
 });
