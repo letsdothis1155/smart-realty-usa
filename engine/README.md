@@ -26,6 +26,14 @@ The default batch builds data-derived layouts and does not copy provider photos 
 
 ## Audit
 
+### Photo pipeline, version 3
+
+`node engine/photo-jobs.mjs --input listings.json --output photo-jobs.json` prepares data for every listing through the same sizing and room-grouping code. The private local worker consumes these jobs, reconstructs photo-derived surfaces, checks every camera, retries a weak ordering once, and caches unchanged inputs. It writes a content-addressed model and `/models/LISTING_ID/photo-rooms.json`. The studio and property builder discover that manifest automatically. A new listing requires no registry edit or custom scene. The inference worker stays outside this public repository; it is currently a local process, not a hosted API.
+
+Fixed: manual per-listing model registration; repetitive inference for unchanged inputs; one failed camera ordering stopping a room; scale labels confusing typical room sizes with listing-derived estimates. Inferred room proportions now use the observed floor while preserving the shared plan's estimated area. Stated room measurements retain priority. Each model records its engine version, source evidence, and unverified-scale status. Missing photos or failed geometry use the existing photo fallback.
+
+Still open: visual grouping for unnamed photos, measured calibration, complete unseen geometry, automatic hosted processing when listings change, and physical-device checks. Public browser code and public models can be copied; keeping inference source private protects that source, not the downloadable viewer or model data.
+
 | Found | Repair |
 | --- | --- |
 | Six photo pages each shipped a copy of the viewer and its controls | Shared one studio and retained the old URLs as redirects |

@@ -2,9 +2,9 @@ async function startPhotoRoom() {
  const params=new URLSearchParams(location.search);
  const embedded=document.getElementById('editor-data').textContent.trim();
  if(embedded){ bootPhotoRoom(JSON.parse(embedded)); return; }
- const {PROPERTY_PHOTO_ROOMS}=await import('/js/room-photo-previews.mjs?v=2');
+ const {loadPropertyPhotoRooms}=await import('/js/room-photo-previews.mjs?v=3');
  const listing=params.get('listing');
- const rooms=Object.hasOwn(PROPERTY_PHOTO_ROOMS,listing)?PROPERTY_PHOTO_ROOMS[listing]:[];
+ const rooms=await loadPropertyPhotoRooms(listing);
  const entry=rooms.find(room=>room.id===params.get('room'));
  if(!entry)throw new Error('Room model is unavailable');
  const response=await fetch(entry.model,{signal:AbortSignal.timeout(8000)});
@@ -735,7 +735,9 @@ function autoScale() {
  if(original.units==='meters'){
   updateScale(floorSpan()/.3048,'calibrated reference');
  }else{
-  updateScale(automaticSpan/.3048,data.scale?.source==='listed-room'?'listing room dimensions':'estimated from listing area');
+  const source=data.scale?.source;
+  const label=source==='listed-room'?'listing room dimensions':source==='preset'?'typical room estimate':source==='photo-floor-and-typical-area'?'photo proportions with typical room area':source==='photo-floor-and-listing-area'?'photo proportions with estimated listing area':'estimated from listing area';
+  updateScale(automaticSpan/.3048,label);
  }
 }
 
