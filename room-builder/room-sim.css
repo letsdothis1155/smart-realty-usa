@@ -729,3 +729,9 @@ body.room-sim {
 .sim-photo-match { display: inline-flex; width: fit-content; padding: 4px 8px; border-radius: 999px; font-size: 11px; background: #5b2f1f; color: #ffe1d4; }
 .sim-photo-match[data-state="vision"] { background: #173f32; color: #c8ffe8; }
 .sim-photo-match[data-state="loading"] { background: #54451d; color: #fff0b9; }
+
+.sim-room-controls { display:flex; align-items:center; gap:8px; min-width:0; }
+.sim-room-controls .sim-rooms { flex:1; min-width:0; }
+.sim-room-controls #simAddRoom { flex:none; }
+.sim-reviewed { display:inline-block; margin:5px 0; color:#ffdf8d; text-decoration:underline; }
+.sim-reviewed[hidden] { display:none; }

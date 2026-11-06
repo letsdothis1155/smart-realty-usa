@@ -150,11 +150,12 @@ function tv(w, h, d, product) {
   const g = new THREE.Group();
   const bezel = mat("#111113", { roughness: 0.35, metalness: 0.4 });
   const screen = mat("#0a1628", { roughness: 0.2, metalness: 0.1, emissive: "#1a3a68", emissiveIntensity: 0.25 });
-  const stand = mat("#2a2a2c", { roughness: 0.4, metalness: 0.5 });
-  add(g, geo.box, bezel, 0, h / 2, 0, w, h, Math.max(d, 0.04));
-  add(g, geo.box, screen, 0, h / 2, d / 2 + 0.005, w * 0.94, h * 0.9, 0.01);
-  add(g, geo.box, stand, 0, 0.02, 0.02, w * 0.28, 0.03, d + 0.08);
-  return footprint(g, w, Math.max(d, 0.12), h);
+  const oled = product.id === "lg-c4-65";
+  const back = mat("#27292d", { roughness: 0.55 });
+  add(g, geo.box, back, 0, h * 0.41, -d * 0.15, w * (oled ? 0.58 : 0.85), h * (oled ? 0.55 : 0.78), d * 0.7);
+  add(g, geo.box, bezel, 0, h / 2, d * 0.32, w, h, d * 0.34);
+  add(g, geo.box, screen, 0, h / 2, d * 0.495, w * (oled ? 0.985 : 0.97), h * 0.965, d * 0.01);
+  return footprint(g, w, d, h);
 }
 
 function tvStand(w, h, d, product) {

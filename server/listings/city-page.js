@@ -15,7 +15,7 @@ function money(n) {
 function listingCard(l) {
   const display = l.displayImage || {};
   const img = display.src || l.image || (l.images && l.images[0]) || "/images/photo-unavailable.svg";
-  const can3d = l.canView3D && l.hasListingPhotos !== false && l.primaryImageSource !== "street_view";
+  const can3d = l.id && l.source !== "court" && (!l.entityKind || l.entityKind === "home");
   const badges = [];
   if (l.isNew) badges.push("New");
   if (l.priceReduced) badges.push("Price Reduced");
@@ -30,7 +30,7 @@ function listingCard(l) {
       <div class="nl-meta">${l.beds || "—"} bd · ${l.baths || "—"} ba · ${l.sqft ? Number(l.sqft).toLocaleString() + " sqft" : "—"} · ${esc(l.propertyType || "")}</div>
       <div class="nl-actions">
         <a class="btn btn-ghost btn-sm" href="/new-listings/?id=${encodeURIComponent(l.id)}">View Home</a>
-        ${can3d ? `<a class="btn btn-primary btn-sm" href="/room-builder/?listing=${encodeURIComponent(l.id)}${l.image ? `&photo=${encodeURIComponent(l.image)}` : ""}">View in 3D</a>` : ""}
+        ${can3d ? `<a class="btn btn-primary btn-sm" href="/room-builder/?listing=${encodeURIComponent(l.id)}">View in 3D</a>` : ""}
       </div>
     </div>
   </article>`;

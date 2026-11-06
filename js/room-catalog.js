@@ -36,6 +36,7 @@ function product(row) {
     modelSource: "procedural",
     glbUrl: "",
     ...row,
+    ...(row.meshStyle === "tv" ? { wallMounted: true, snap: "wall" } : {}),
   };
 }
 
@@ -657,6 +658,9 @@ SAMPLE_PRODUCTS.unshift(
   product({ id: "ikea-poang-59305928", sku: "593.059.28", category: "chair", group: "chair", meshStyle: "chair", name: "POÄNG armchair · birch / light beige", brand: "IKEA", store: "IKEA", vendor: "ikea", productUrl: "https://www.ikea.com/us/en/p/poaeng-armchair-birch-veneer-knisa-light-beige-s59305928/", price: 149, widthIn: 26.75, depthIn: 32.25, heightIn: 39.375, swatch: "#d5cbb7", snap: "floor", dimensionsSource: "retailer", priceCheckedAt: "2026-11-04" }),
   product({ id: "ikea-lack-table-30449908", sku: "304.499.08", category: "table", group: "table", meshStyle: "side-table", name: "LACK side table · white", brand: "IKEA", store: "IKEA", vendor: "ikea", productUrl: "https://www.ikea.com/us/en/p/lack-side-table-white-30449908/", price: 15, priceIsEstimate: true, widthIn: 21.625, depthIn: 21.625, heightIn: 17.75, swatch: "#f5f4ef", snap: "floor", dimensionsSource: "retailer" }),
   product({ id: "samsung-q60d-65", sku: "QN65Q60DAFXZA", category: "tv", group: "tv", meshStyle: "tv", name: "Samsung Q60D 65-inch QLED TV", brand: "Samsung", store: "Best Buy", vendor: "best-buy", productUrl: "https://www.bestbuy.com/site/lwpdp?skuId=11058420", price: 749, priceIsEstimate: true, widthIn: 57.1, heightIn: 34.3, depthIn: 10.8, swatch: "#171719", snap: "floor", sitOnHeightM: 0.5, wallAffinity: true, dimensionsSource: "retailer" }),
+  product({ id: "samsung-q6f-55", sku: "QN55Q6FAAFXZA", category: "tv", group: "tv", meshStyle: "tv", name: "Samsung Q6F 55-inch QLED TV", brand: "Samsung", store: "Samsung", vendor: "samsung", productUrl: "https://www.samsung.com/us/tvs/qled-tv/55-inch-class-qled-4k-tv-sku-qn55q6faafxza/", widthIn: 48.2, heightIn: 27.9, depthIn: 3, dimensionsSource: "retailer", swatch: "#262c35" }),
+  product({ id: "lg-c4-65", sku: "OLED65C4PUA", category: "tv", group: "tv", meshStyle: "tv", name: "LG C4 65-inch OLED TV", brand: "LG", store: "LG", vendor: "lg", productUrl: "https://www.lg.com/us/tvs/lg-oled65c4pua-oled-4k-tv", widthIn: 56.7, heightIn: 32.5, depthIn: 1.8, dimensionsSource: "retailer", swatch: "#1e2229" }),
+  product({ id: "ikea-lack-40104294", sku: "401.042.94", category: "table", group: "table", meshStyle: "coffee-table", name: "LACK coffee table · black-brown", brand: "IKEA", store: "IKEA", vendor: "ikea", productUrl: "https://www.ikea.com/us/en/p/lack-coffee-table-black-brown-40104294/", widthIn: 35.375, heightIn: 17.75, depthIn: 21.625, dimensionsSource: "retailer", swatch: "#382e2a" }),
   product({ id: "ikea-kivik-39440593", sku: "394.405.93", modelId: "sofa-linen", category: "sofa", group: "sofa", meshStyle: "sofa", name: "KIVIK sofa · Tibbleby beige/gray", brand: "IKEA", store: "IKEA", vendor: "ikea", productUrl: "https://www.ikea.com/us/en/p/kivik-sofa-tibbleby-beige-gray-s39440593/", price: 799, widthIn: 89.75, depthIn: 37.375, heightIn: 32.625, swatch: "#a6a39b", snap: "floor", dimensionsSource: "retailer", modelSource: "procedural", modelDisclaimer: "Dimensioned planning visualization", priceCheckedAt: "2026-11-02" }),
   product({ id: "ikea-lack-60566062", sku: "605.660.62", modelId: "tv-stand-walnut", category: "tv-stand", group: "tv-stand", meshStyle: "tv-stand", name: "LACK TV unit · black-brown", brand: "IKEA", store: "IKEA", vendor: "ikea", productUrl: "https://www.ikea.com/us/en/p/lack-tv-unit-black-brown-60566062/", price: 64.99, widthIn: 63, depthIn: 13.75, heightIn: 14.125, swatch: "#302821", snap: "floor", dimensionsSource: "retailer", modelSource: "procedural", modelDisclaimer: "Dimensioned planning visualization", priceCheckedAt: "2026-11-02" })
 );
@@ -666,6 +670,8 @@ export const PRODUCT_BY_ID = Object.fromEntries(SAMPLE_PRODUCTS.map((p) => [p.id
 export const VENDOR_OPTIONS = [
   { id: "all", label: "All vendors" },
   { id: "best-buy", label: "Best Buy" },
+  { id: "samsung", label: "Samsung" },
+  { id: "lg", label: "LG" },
   { id: "ikea", label: "IKEA" },
   { id: "wayfair", label: "Wayfair" },
   { id: "home-depot", label: "Home Depot" },
@@ -715,20 +721,22 @@ export function normalizeProduct(raw = {}) {
     raw.group ||
     known?.group ||
     (category === "sofa" && /section/i.test(raw.name || "") ? "sectional" : category === "cabinet" ? "tv-stand" : category);
+  const style = raw.meshStyle || known?.meshStyle || meshStyleFor(category, raw.name);
+  const television = style === "tv";
   return {
     ...(known || {}),
     ...raw,
     category,
     group: groupGuess,
-    meshStyle: raw.meshStyle || known?.meshStyle || meshStyleFor(category, raw.name),
+    meshStyle: style,
     store: raw.store || raw.retailer || raw.vendor || "Catalog",
     retailer: raw.retailer || raw.store || raw.vendor || "Catalog",
     monetized: !!raw.monetized,
     widthIn: Number(raw.widthIn || known?.widthIn) || 24,
     heightIn: Number(raw.heightIn || known?.heightIn) || 24,
     depthIn: Number(raw.depthIn || known?.depthIn) || 24,
-    snap: raw.snap || known?.snap || (category === "art" ? "wall" : "floor"),
-    wallMounted: !!(raw.wallMounted || known?.wallMounted),
+    snap: television ? "wall" : raw.snap || known?.snap || (category === "art" ? "wall" : "floor"),
+    wallMounted: television || !!(raw.wallMounted || known?.wallMounted),
   };
 }
 

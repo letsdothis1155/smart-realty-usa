@@ -1,8 +1,8 @@
-import { initRoomBuilder } from "/js/room-builder.js?v=20260914e";
+import { initRoomBuilder } from "/js/room-builder.js?v=20261105a";
 import { feetAndInches } from "/js/room-distance.mjs?v=20260911b";
-import { reconstructHouse, reconstructRoom } from "/js/room-pipeline.js?v=20260914e";
+import { DEFAULT_LIVING_ROOM, missingPlanningRooms, planningRoom, reconstructHouse, reconstructRoom } from "/js/room-pipeline.js?v=20261105a";
 import { readRoomPlanFile } from "/js/roomplan-import.mjs?v=20260915a";
-import { CATALOG_TREE, SAMPLE_PRODUCTS, VENDOR_OPTIONS, productsInGroup, money } from "/js/room-catalog.js?v=20260824j";
+import { CATALOG_TREE, SAMPLE_PRODUCTS, VENDOR_OPTIONS, productsInGroup, money } from "/js/room-catalog.js?v=20261105a";
 
 function track(event, props) {
   window.SRU_ANALYTICS?.track(event, props);
@@ -13,6 +13,10 @@ function track(event, props) {
     body: JSON.stringify({ event, props }),
     keepalive: true,
   }).catch(() => {});
+}
+
+function priceLabel(item) {
+  return Number(item.price) > 0 ? `~${money(item.price)}` : "Check retailer price";
 }
 
 function esc(s) {
@@ -37,22 +41,22 @@ function apiOrigin() {
 }
 
 function listingPhotos(listing = {}) {
-  const images = Array.isArray(listing.images) ? listing.images.slice() : [];
-  if (listing.image) images.unshift(listing.image);
+  const images = [...(Array.isArray(listing.images) ? listing.images : []),
+    ...(Array.isArray(listing.galleryImages) ? listing.galleryImages : [])];
   const street = listing.primaryImageSource === "street_view" || listing.imageSource === "street_view";
-  return [...new Set(images.filter(Boolean))].filter((src) => {
-    if (/maps\.googleapis\.com\/maps\/api\/streetview/i.test(src)) return false;
-    if (street && src === listing.image && images.length === 1) return false;
-    return true;
-  });
+  if (listing.image && !street) images.unshift(listing.image);
+  return images.map(absPhoto).filter(Boolean);
 }
 
-function absPhoto(u) {
-  if (!u) return "";
-  if (/^(https?:|data:)/i.test(u)) return u;
-  if (u.startsWith("//")) return `${location.protocol}${u}`;
-  if (u.startsWith("/")) return `${location.origin}${u}`;
-  return `${location.origin}/${u}`;
+function absPhoto(value) {
+  if (!value || typeof value !== "string") return "";
+  try {
+    const url = new URL(value, location.origin + "/");
+    if (!["http:", "https:"].includes(url.protocol) || url.username || url.password) return "";
+    if (url.hostname === "maps.googleapis.com" && url.pathname.includes("/streetview")) return "";
+    if (/(^|\/)(NoImage|placeholder|photo-unavailable)(\.[a-z]+)?$/i.test(url.pathname)) return "";
+    return url.href;
+  } catch { return ""; }
 }
 
 function persistKey(listingId, roomId = "sample-living") {
@@ -220,7 +224,7 @@ export async function bootRoomSim() {
     }
     hud.float.hidden = false;
     hud.float.querySelector("h3").textContent = product.name;
-    hud.float.querySelector(".price").textContent = `~${money(product.price)} planning estimate`;
+    hud.float.querySelector(".price").textContent = priceLabel(product);
     hud.float.querySelector(".meta").textContent = [
       product.store,
       [product.widthIn, product.heightIn, product.depthIn].filter(Boolean).join(" × ") + " in",
@@ -228,6 +232,7 @@ export async function bootRoomSim() {
     ]
       .filter(Boolean)
       .join(" · ");
+    hud.float.querySelector('[data-act="rotate"]').disabled = product.meshStyle === "tv";
     const buy = hud.float.querySelector(".buy");
     const href = product.affiliateUrl || product.productUrl || "";
     buy.href = href || "#";
@@ -286,7 +291,7 @@ export async function bootRoomSim() {
           <strong>${esc(p.name)}</strong>
           <small class="vendor">${esc(p.store)}</small>
           <small>Planning model · check retailer</small>
-          <div class="row"><span>~${money(p.price)}</span><small>Place</small></div>
+          <div class="row"><span>${priceLabel(p)}</span><small>Place</small></div>
         </button>`
       )
       .join("");
@@ -340,7 +345,9 @@ export async function bootRoomSim() {
     }
     await builder.beginPlace(product);
     hud.catalog.classList.remove("is-open");
-    if (hud.hint) hud.hint.textContent = "Move the preview · green is clear · click to place · Esc cancels";
+    if (hud.hint) hud.hint.textContent = product.meshStyle === "tv"
+      ? "Click a clear wall to mount the TV · Esc cancels"
+      : "Move the preview · green is clear · click to place · Esc cancels";
     track("product_added_to_room", { sku: product.sku, preview: true });
   });
 
@@ -496,7 +503,7 @@ export async function bootRoomSim() {
     if (!act || !selected) return;
     if (act === "rotate") builder.rotateSelected(Math.PI / 2);
     if (act === "move") {
-      if (hud.hint) hud.hint.textContent = "Drag the piece across the floor · it snaps to walls";
+      if (hud.hint) hud.hint.textContent = selected.meshStyle === "tv" ? "Drag the TV along a clear wall" : "Drag the piece across the floor";
     }
     if (act === "delete") {
       builder.removeItem(selected.instanceId);
@@ -522,7 +529,12 @@ export async function bootRoomSim() {
     const items = builder.placedList();
     const total = builder.roomTotal();
     const list = items
-      .map((p) => `<li><span>${esc(p.name)} · ${esc(p.store)}</span><span>~${money(p.price)}</span></li>`)
+      .map((p) => {
+        const label = esc(p.name) + " · " + esc(p.store);
+        const url = absPhoto(p.affiliateUrl || p.productUrl);
+        const link = url ? `<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${label}</a>` : label;
+        return `<li><span>${link}</span><span>${priceLabel(p)}</span></li>`;
+      })
       .join("");
     hud.sheet.querySelector(".lines").innerHTML = list || "<li><span>Empty room</span><span>$0</span></li>";
     hud.sheet.querySelector(".grand").textContent = `PLANNING TOTAL — ~${money(total)}`;
@@ -551,7 +563,7 @@ export async function bootRoomSim() {
       listingTitle = listing.address || listing.title || "Property";
       const gallery = listingPhotos(listing);
       if (gallery.length) photos = gallery;
-      if (photoUrl) photos = [photoUrl, ...photos.filter((url) => url !== photoUrl)];
+
       const loc = listing.location || [listing.city, listing.state, listing.postalCode].filter(Boolean).join(" ");
       const facts = [
         listing.listPrice ? money(listing.listPrice) : "",
@@ -570,6 +582,12 @@ export async function bootRoomSim() {
       document.title = `3D Room · ${listingTitle} — Smart Realty USA`;
     }
   }
+  document.getElementById("simListingBar").hidden = false;
+  if (listingId === "hud-413-772606") {
+    const link = document.getElementById("simReviewedRoom");
+    link.href = "/room-builder/reviewed/hud-413-772606-living.html";
+    link.hidden = false;
+  }
   function showPhotoMatch(room) {
     const matchStatus = document.getElementById("simPhotoMatch");
     if (!matchStatus) return;
@@ -578,17 +596,27 @@ export async function bootRoomSim() {
       ? "Measured LiDAR / RoomPlan geometry · imported locally"
       : room.mode === "vision"
       ? `AI estimate from ${room.sourcePhotoUrls?.length || 1} photo${room.sourcePhotoUrls?.length === 1 ? "" : "s"} · ${room.analysis?.confidence || "low"} confidence`
+      : room.mode === "planning"
+        ? "Editable planning template · room dimensions unverified"
       : room.analysis?.errorCode === "openai_credits_exhausted"
-        ? "AI credits unavailable · sample room shown"
+        ? "Photo analysis unavailable · reference photo with a sample shell"
         : "Sample room · photo analysis unavailable";
     matchStatus.title = room.label || "";
   }
 
-  const resolved = photos.map(absPhoto).filter(Boolean).slice(0, 8);
+  const resolved = [...new Set(photos.map(absPhoto).filter(Boolean))];
   const house = await reconstructHouse({ photoUrls: resolved, listingId });
-  const rooms = (house.rooms || []).map((room) => house.errorCode
-    ? { ...room, analysis: { ...room.analysis, errorCode: house.errorCode } }
-    : room);
+  const rooms = [...house.rooms.filter((room) => room.mode === "vision" || room.id.startsWith("reference-")),
+    ...missingPlanningRooms(listing, house.rooms),
+    ...house.rooms.filter((room) => room.mode !== "vision" && !room.id.startsWith("reference-"))];
+  if (!rooms.length) rooms.push({ ...DEFAULT_LIVING_ROOM, id: "sample-room" });
+  const customKey = `sru.room.list.${listingId || "sample"}`;
+  let customRooms = [];
+  try {
+    const stored = JSON.parse(localStorage.getItem(customKey) || "[]");
+    if (Array.isArray(stored)) customRooms = stored.filter((room) => room?.id && room?.label);
+  } catch { /* Storage can be disabled. */ }
+  rooms.push(...customRooms.map((room) => planningRoom(room.id, "other", room.label)));
   const originalImage = document.getElementById("simOriginalImage");
   const originalButton = document.getElementById("simOriginalPhoto");
   originalButton.addEventListener("click", () => document.getElementById("simPhotoDialog").showModal());
@@ -619,10 +647,10 @@ export async function bootRoomSim() {
         const picked = btn.getAttribute("data-photo");
         originalImage.src = picked;
         const next = [picked, ...urls.filter((u) => u !== picked)];
-        builder.setListingPhotos(next);
+        if (room.mode === "vision") builder.setListingPhotos(next);
         strip.querySelectorAll(".sim-photo").forEach((b) => b.classList.toggle("is-on", b === btn));
         // Imported measurements stay authoritative when browsing references.
-        if (room.mode === "lidar") return;
+        if (room.mode !== "vision") return;
         if (hud.hint) hud.hint.textContent = "Analyzing selected room view…";
         try {
           const analyzed = await reconstructRoom({ photoUrl: picked, photoUrls: next, listingId, roomType: room.roomType });
@@ -634,7 +662,7 @@ export async function bootRoomSim() {
           const updated = { ...analyzed, id: room.id, photoIndices: room.photoIndices };
           Object.assign(room, updated);
           builder.applyReconstruction(updated);
-          builder.setListingPhotos(next);
+          if (room.mode === "vision") builder.setListingPhotos(next);
           showPhotoMatch(updated);
           if (hud.hint) hud.hint.textContent = "Selected view analyzed · room dimensions estimated";
         } catch {
@@ -644,20 +672,29 @@ export async function bootRoomSim() {
     });
   }
 
-  async function selectRoom(room, { furnish = false } = {}) {
+  let roomSwitch = Promise.resolve();
+  function queueRoom(room) {
+    roomSwitch = roomSwitch.catch(console.error).then(() => selectRoom(room));
+    return roomSwitch;
+  }
+
+  async function selectRoom(room) {
     if (!room) return false;
     ++photoAnalysisRequest;
     if (readyToSave) saveDesign();
     readyToSave = false;
+    builder.clearRoom({ resetHistory: true });
     activeRoomId = room.id || `room-${rooms.indexOf(room) + 1}`;
     builder.applyReconstruction(room);
     const urls = roomPhotos(room);
     if (urls.length) {
       originalImage.src = urls[0];
       originalButton.disabled = false;
-      builder.setListingPhotos(urls);
+      builder.setListingPhotos(room.mode === "vision" ? urls : []);
     } else {
+      originalImage.removeAttribute("src");
       originalButton.disabled = true;
+      builder.setListingPhotos([]);
     }
     renderPhotoStrip(urls, urls[0], room);
     showPhotoMatch(room);
@@ -672,9 +709,6 @@ export async function bootRoomSim() {
       const saved = raw ? JSON.parse(raw) : null;
       if (saved && Array.isArray(saved.items)) restored = await builder.loadDesign(saved);
     } catch { restored = false; }
-    if (!restored && furnish) {
-      try { await builder.autoFurnish(); } catch (error) { console.error(error); }
-    }
     readyToSave = true;
     saveDesign();
     refreshTotal();
@@ -683,17 +717,37 @@ export async function bootRoomSim() {
   }
 
   const roomNav = document.getElementById("simRooms");
-  if (roomNav && rooms.length) {
+  function appendRoom(room) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.dataset.houseRoom = room.id;
+    button.setAttribute("aria-pressed", "false");
+    button.textContent = room.label;
+    button.addEventListener("click", () => queueRoom(room).catch(console.error));
     roomNav.hidden = false;
-    roomNav.innerHTML = rooms.map((room, index) => {
-      const id = room.id || `room-${index + 1}`;
-      return `<button type="button" data-house-room="${esc(id)}" aria-pressed="false">${esc(room.label || `Room ${index + 1}`)}</button>`;
-    }).join("");
-    roomNav.querySelectorAll("[data-house-room]").forEach((button, index) => {
-      button.addEventListener("click", () => selectRoom(rooms[index]).catch(console.error));
-    });
+    roomNav.append(button);
   }
-  const restored = await selectRoom(rooms[0]);
+  rooms.forEach(appendRoom);
+  const roomDialog = document.getElementById("simAddRoomDialog");
+  const roomName = document.getElementById("simRoomName");
+  document.getElementById("simAddRoom").addEventListener("click", () => roomDialog.showModal());
+  roomDialog.querySelector("form").addEventListener("submit", (event) => {
+    event.preventDefault();
+    const name = roomName.value.trim();
+    if (!name) return;
+    const room = planningRoom(`custom-${crypto.randomUUID()}`, "other", `${name} · template`);
+    customRooms.push({ id: room.id, label: room.label });
+    try { localStorage.setItem(customKey, JSON.stringify(customRooms)); } catch { /* Storage can be disabled. */ }
+    rooms.push(room);
+    appendRoom(room);
+    roomName.value = "";
+    roomDialog.close();
+    queueRoom(room).catch(console.error);
+  });
+  document.getElementById("simCancelRoom").addEventListener("click", () => roomDialog.close());
+  const requestedPhoto = absPhoto(photoUrl);
+  const initial = (requestedPhoto && rooms.find((room) => roomPhotos(room).includes(requestedPhoto))) || rooms[0];
+  const restored = await queueRoom(initial);
 
   const lidarInput = document.getElementById("simLidarFile");
   document.getElementById("simLidar")?.addEventListener("click", () => lidarInput?.click());
@@ -704,16 +758,8 @@ export async function bootRoomSim() {
     try {
       const lidarRoom = await readRoomPlanFile(file);
       rooms.push(lidarRoom);
-      const button = document.createElement("button");
-      button.type = "button";
-      button.dataset.houseRoom = lidarRoom.id;
-      button.setAttribute("aria-pressed", "false");
-      button.textContent = lidarRoom.label;
-      button.addEventListener("click", () => selectRoom(lidarRoom).catch(console.error));
-      roomNav.hidden = false;
-      roomNav.append(button);
-      await selectRoom(lidarRoom);
-      builder.clearRoom();
+      appendRoom(lidarRoom);
+      await queueRoom(lidarRoom);
       hud.hint.textContent = "Measured empty shell imported locally · ready to build";
       track("lidar_room_imported", { listingId, vertices: lidarRoom.floorPolygon.length });
     } catch (error) {
@@ -734,7 +780,7 @@ export async function bootRoomSim() {
   track("3d_preview_open", { listingId });
   if (hud.hint) hud.hint.textContent = restored
     ? "Restored your saved layout for this room · switch rooms anytime"
-    : "Empty photo-estimated shell ready · add furniture or use AUTO FURNISH";
+    : "Room ready · add furniture or choose another room";
   refreshTotal();
   builder.resize();
   if (!restored) builder.setTimeOfDay(14);

@@ -371,6 +371,7 @@
             : ""
         }
         <div class="detail-actions">
+          <a class="btn-outline" href="/room-builder/?listing=${encodeURIComponent(p.id)}&amp;from=%2Fm%2F">Open 3D room builder</a>
           <button type="button" class="btn-btc" id="dBtc">₿ Buy with Bitcoin (demo)</button>
           <button type="button" class="btn-tonal" id="dFav">${on ? "♥ Saved" : "♡ Save home"}</button>
           <button type="button" class="btn-outline" id="dChat">Message support</button>

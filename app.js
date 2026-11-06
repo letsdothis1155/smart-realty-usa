@@ -317,8 +317,7 @@ function simulatorHrefFor(p) {
       from: `${location.pathname}${location.search}#listings`,
     });
   }
-  if (!(window.SRUSearch && SRUSearch.hasUsableRoomPhoto(p) && photo)) return "";
-  return `/room-builder/?listing=${encodeURIComponent(p.id)}&photo=${encodeURIComponent(photo)}`;
+  return "";
 }
 
 function listingCardHtml(p) {
