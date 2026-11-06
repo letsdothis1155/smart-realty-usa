@@ -2,7 +2,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { propertyRoomModel, classifyRoomPhoto, roomChoiceLabel } from '../js/room-pipeline.js';
 
-export const PHOTO_ENGINE_VERSION = 3;
+export const PHOTO_ENGINE_VERSION = 4;
 
 /** Data-only contract for the private reconstruction worker. No inference runs in the browser. */
 export function planPhotoJobs(listing) {
@@ -12,21 +12,28 @@ export function planPhotoJobs(listing) {
     ...(Array.isArray(listing.galleryImages) ? listing.galleryImages : [])])]
     .filter(photo => typeof photo === 'string');
   const { rooms } = propertyRoomModel(listing, photos);
+  const ceilingFt = Number(listing.ceilingFt ?? listing.ceilingHeightFt);
   return {
     schemaVersion: 1, engineVersion: PHOTO_ENGINE_VERSION, listingId: id,
     propertyLabel: String(listing.address || listing.title || id),
     // Unnamed images need a visual room classifier; do not merge them into a guessed room.
     unassignedPhotos: photos.filter(photo => !classifyRoomPhoto(photo)),
-    rooms: rooms.map(room => ({
+    rooms: rooms.map(room => {
+      const roomId = room.id.replace(/^reference-/, '');
+      const listedRoom = Array.isArray(listing.roomSizes) ? listing.roomSizes.find(size => size?.id === roomId) : null;
+      const roomHeightFt = Number(listedRoom?.heightFt ?? listedRoom?.ceilingHeightFt);
+      const heightFt = roomHeightFt >= 7 && roomHeightFt <= 20 ? roomHeightFt : ceilingFt;
+      const listedHeight = heightFt >= 7 && heightFt <= 20;
+      return {
       id: room.id.replace(/^reference-/, ''), label: roomChoiceLabel(room.label),
       roomType: room.roomType, photos: room.sourcePhotoUrls || [],
       groupingSource: room.sourcePhotoUrls?.length ? 'photo-filename' : 'listing-room-count',
       dimensions: {
-        widthM: room.width, depthM: room.depth, heightM: room.height,
+        widthM: room.width, depthM: room.depth, heightM: listedHeight ? heightFt * .3048 : room.height,
         spanMeters: Math.max(room.width, room.depth),
-        source: room.sizeSource || 'preset', metricVerified: false,
+        source: room.sizeSource || 'preset', heightSource: listedHeight ? 'listed-height' : 'standard', metricVerified: false,
       },
-    })),
+    }; }),
   };
 }
 

@@ -34,6 +34,12 @@ Fixed: manual per-listing model registration; repetitive inference for unchanged
 
 Still open: visual grouping for unnamed photos, measured calibration, complete unseen geometry, automatic hosted processing when listings change, and physical-device checks. Public browser code and public models can be copied; keeping inference source private protects that source, not the downloadable viewer or model data.
 
+### Completed room layouts, version 4
+
+The private worker completes compatible observed patches into one editable floor, wall perimeter, and ceiling in the original camera coordinates. It uses stated width, length, and ceiling height when available; otherwise it estimates the dimensions from photo geometry and listing area. Strong evidence can retain a vaulted ceiling. Checked windows survive layout completion; unseen areas receive plausible boundaries and nearby finish colors. The model carries its source evidence and estimated status.
+
+When a completed room is available, the builder opens it directly. It starts in a cutaway orbit, with original listing views available for comparison. The cutaway only changes visibility while orbiting; exports keep the room geometry. Missing or low-quality photo models retain the existing fallback, and the planning editor remains available from the studio.
+
 | Found | Repair |
 | --- | --- |
 | Six photo pages each shipped a copy of the viewer and its controls | Shared one studio and retained the old URLs as redirects |

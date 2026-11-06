@@ -20,11 +20,14 @@ test('all listings share one room job contract; no room sizes required', () => {
 
 test('measured listing room dimensions take priority over area estimates', () => {
   const job = planPhotoJobs({ id: 'sized', sqft: 2000, beds: 2, baths: 1,
-    roomSizes: [{ id: 'living', widthFt: 20, lengthFt: 12 }],
+    ceilingFt: 8, roomSizes: [{ id: 'living', widthFt: 20, lengthFt: 12, heightFt: 10 }],
     images: ['https://example.com/lr_123456_1.jpg'] });
   const room = job.rooms.find(room => room.id === 'living');
   assert.equal(room.dimensions.source, 'listed-room');
   assert.ok(Math.abs(room.dimensions.spanMeters - 6.096) < .001);
+  assert.ok(Math.abs(room.dimensions.heightM - 3.048) < .001);
+  assert.equal(room.dimensions.heightSource, 'listed-height');
+  assert.equal(job.rooms.find(room => room.roomType === 'kitchen').dimensions.heightM, 2.4384);
 });
 
 test('job paths cannot escape the model directory', () => {
