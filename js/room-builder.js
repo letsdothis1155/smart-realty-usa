@@ -6,7 +6,7 @@ import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.160.0/exampl
 import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js/+esm";
 import { buildFurnitureMesh, tintPlacement } from "/js/room-furniture.js?v=20261106rooms";
 import { DEFAULT_LAYOUT, findProduct, normalizeProduct } from "/js/room-catalog.js?v=20261106rooms";
-import { DEFAULT_LIVING_ROOM, FINISH_PRESETS, ROOM_PRESETS } from "/js/room-pipeline.js?v=20261106rooms";
+import { DEFAULT_LIVING_ROOM, FINISH_PRESETS, ROOM_PRESETS, photoWallDistance } from "/js/room-pipeline.js?v=20261106photo";
 import { boxInsidePolygon, normalizeFloorPolygon, pointInPolygon, polygonArea } from "/js/room-geometry.mjs?v=20260914a";
 
 const IN_TO_M = 0.0254;
@@ -174,6 +174,9 @@ export function initRoomBuilder(canvas, options = {}) {
   let wallPlan = DEFAULT_LIVING_ROOM.walls;
   let pendingListingPhotos = [];
   let photoPaletteRequest = 0;
+  let photoWallRequest = 0;
+  let photoWallMesh = null;
+  let holdPhotoFrame = false;
   function matchPhotoPalette(url) {
     const request = ++photoPaletteRequest;
     const image = new Image();
@@ -204,6 +207,7 @@ export function initRoomBuilder(canvas, options = {}) {
         const wall = medianColor(7, 20);
         const floor = medianColor(37, 47);
         shellGroup.traverse((mesh) => {
+          if (mesh.userData.role === "photo-wall") return;
           const color = mesh.userData.role === "wall" ? wall : mesh.userData.role === "floor" ? floor : null;
           if (color && mesh.material?.color) mesh.material.color.copy(color);
         });
@@ -214,58 +218,127 @@ export function initRoomBuilder(canvas, options = {}) {
   let southWall = null;
   let ceilingMesh = null;
 
-  function makePhotoFrame(url, w, h) {
-    const g = new THREE.Group();
-    const wood = new THREE.MeshStandardMaterial({ color: "#3f3228", roughness: 0.55, metalness: 0.08 });
-    const frame = new THREE.Mesh(new THREE.BoxGeometry(w + 0.08, h + 0.08, 0.045), wood);
-    frame.castShadow = true;
-    g.add(frame);
-    const mat = new THREE.MeshStandardMaterial({ color: "#1c1c1e", roughness: 0.65 });
-    const pic = new THREE.Mesh(new THREE.PlaneGeometry(w, h), mat);
-    pic.position.z = 0.024;
-    g.add(pic);
-    const loader = new THREE.TextureLoader();
-    loader.setCrossOrigin("anonymous");
-    loader.load(
-      url,
-      (tex) => {
-        if (g.userData.resourcesDisposed) {
-          tex.dispose();
-          return;
-        }
-        tex.colorSpace = THREE.SRGBColorSpace;
-        pic.material.dispose();
-        pic.material = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.78 });
-      },
-      undefined,
-      () => {}
-    );
-    g.userData.role = "listing-photo";
-    return g;
-  }
-
-  function mountListingPhotos(urls = []) {
-    ++photoPaletteRequest;
-    pendingListingPhotos = (urls || []).filter(Boolean).slice(0, 4);
-    listingPhotoMeshes.forEach((m) => {
-      shellGroup.remove(m);
-      disposeObjectResources(m, {
+  function clearListingPhotoMeshes() {
+    photoWallMesh = null;
+    listingPhotoMeshes.forEach((mesh) => {
+      shellGroup.remove(mesh);
+      disposeObjectResources(mesh, {
         geometries: true,
         retainedTextures: new Set([floorTex, wallTex]),
       });
     });
     listingPhotoMeshes.length = 0;
+    canvas.dataset.photoWall = "0";
+    canvas.dataset.photoFacing = "";
+  }
+
+  function coverListingTexture(tex, planeW, planeH) {
+    const imageAspect = (tex.image?.width || 1) / (tex.image?.height || 1);
+    const planeAspect = Math.max(0.2, planeW) / Math.max(0.2, planeH);
+    tex.wrapS = THREE.ClampToEdgeWrapping;
+    tex.wrapT = THREE.ClampToEdgeWrapping;
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.center.set(0, 0);
+    if (imageAspect > planeAspect) {
+      const repeatX = planeAspect / imageAspect;
+      tex.repeat.set(repeatX, 1);
+      tex.offset.set((1 - repeatX) / 2, 0);
+    } else {
+      const repeatY = imageAspect / planeAspect;
+      tex.repeat.set(1, repeatY);
+      tex.offset.set(0, (1 - repeatY) / 2);
+    }
+  }
+
+  // PlaneGeometry faces local +Z. Wall meshes are already rotated so that
+  // local +Z points into the room. A north rectangle has rotation.y = 0,
+  // so into-room is (0, 0, 1) and the camera sits at a greater z than the wall.
+  function framePhotoCamera() {
+    if (!photoWallMesh || mode !== "orbit" || !controls) return;
+    const intoRoom = new THREE.Vector3(0, 0, 1).applyQuaternion(photoWallMesh.quaternion);
+    const aspect = Math.max(0.2, perspectiveCamera.aspect || 1);
+    const span = photoWallMesh.userData.span || roomWidth;
+    const dist = Math.max(0.55, photoWallDistance(span, roomHeight, perspectiveCamera.fov, aspect) * 0.9);
+    const aim = photoWallMesh.position.clone();
+    perspectiveCamera.position.copy(aim).addScaledVector(intoRoom, dist);
+    controls.target.copy(aim);
+    perspectiveCamera.lookAt(aim);
+    controls.minDistance = Math.min(1.6, Math.max(0.45, dist * 0.45));
+    controls.update();
+    holdPhotoFrame = true;
+    const facing = intoRoom.dot(perspectiveCamera.position.clone().sub(controls.target));
+    canvas.dataset.photoWall = "1";
+    canvas.dataset.photoFacing = facing.toFixed(3);
+  }
+
+  function concealOpeningsOnPhotoWall(wallMesh) {
+    const intoRoom = new THREE.Vector3(0, 0, 1).applyQuaternion(wallMesh.quaternion);
+    shellGroup.traverse((obj) => {
+      if (obj.userData.role !== "window" && obj.userData.role !== "door") return;
+      const along = obj.position.clone().sub(wallMesh.position).dot(intoRoom);
+      if (along > -0.08 && along < 0.35) obj.visible = false;
+    });
+  }
+
+  function mountListingPhotos(urls = [], options = {}) {
+    const request = ++photoWallRequest;
+    ++photoPaletteRequest;
+    pendingListingPhotos = (urls || []).filter(Boolean).slice(0, 4);
+    clearListingPhotoMeshes();
+    const frameCamera = options.frameCamera === true || (options.frameCamera == null && holdPhotoFrame);
     const list = pendingListingPhotos;
-    if (!list.length) return;
+    if (!list.length) {
+      holdPhotoFrame = false;
+      if (controls) controls.minDistance = 1.6;
+      if (frameCamera && mode === "orbit" && controls) {
+        perspectiveCamera.position.set(3.4, 3.55, 7.35);
+        controls.target.set(0, 1.05, 0);
+        perspectiveCamera.lookAt(0, 1, 0);
+        controls.update();
+      }
+      return;
+    }
     const url = list[0];
     matchPhotoPalette(url);
-    const w = Math.min(1.35, roomWidth * 0.24);
-    const h = 0.9;
-    const frame = makePhotoFrame(url, w, h);
-    frame.position.set(-roomWidth * 0.32, 1.62, -roomDepth / 2 + 0.05);
-    frame.rotation.y = 0;
-    shellGroup.add(frame);
-    listingPhotoMeshes.push(frame);
+    const edge = wallEdges.reduce((far, item) => (item.midZ < far.midZ ? item : far), wallEdges[0]);
+    if (!edge?.mesh) return;
+    const span = edge.length;
+    const plane = new THREE.Mesh(
+      new THREE.PlaneGeometry(span, roomHeight),
+      new THREE.MeshBasicMaterial({ color: "#d9d3c7", toneMapped: false, fog: false })
+    );
+    plane.position.copy(edge.mesh.position);
+    plane.quaternion.copy(edge.mesh.quaternion);
+    const intoRoom = new THREE.Vector3(0, 0, 1).applyQuaternion(edge.mesh.quaternion);
+    plane.position.addScaledVector(intoRoom, 0.05);
+    plane.userData.role = "photo-wall";
+    plane.userData.span = span;
+    plane.renderOrder = 2;
+    shellGroup.add(plane);
+    listingPhotoMeshes.push(plane);
+    photoWallMesh = plane;
+    concealOpeningsOnPhotoWall(edge.mesh);
+    const loader = new THREE.TextureLoader();
+    loader.setCrossOrigin("anonymous");
+    loader.load(
+      url,
+      (tex) => {
+        if (request !== photoWallRequest || plane.userData.resourcesDisposed) {
+          tex.dispose();
+          return;
+        }
+        coverListingTexture(tex, span, roomHeight);
+        plane.material.color.set("#ffffff");
+        plane.material.map = tex;
+        plane.material.needsUpdate = true;
+      },
+      undefined,
+      () => {}
+    );
+    if (frameCamera) framePhotoCamera();
+    else if (photoWallMesh) {
+      canvas.dataset.photoWall = "1";
+    }
   }
 
   function rebuildMeasurements() {
@@ -407,6 +480,7 @@ export function initRoomBuilder(canvas, options = {}) {
       frame.position.set(x, sill + height / 2, z);
       frame.rotation.y = rotY;
       frame.translateZ(0.03);
+      frame.userData.role = "window";
       shellGroup.add(frame);
       const glass = new THREE.Mesh(
         new THREE.PlaneGeometry(width, height),
@@ -435,6 +509,7 @@ export function initRoomBuilder(canvas, options = {}) {
       mullion.position.copy(frame.position);
       mullion.rotation.y = rotY;
       mullion.translateZ(0.05);
+      mullion.userData.role = "window";
       shellGroup.add(mullion);
     }
 
@@ -464,6 +539,7 @@ export function initRoomBuilder(canvas, options = {}) {
       door.position.set(x, 1.025, z);
       door.rotation.y = rotation;
       door.translateZ(-0.03);
+      door.userData.role = "door";
       shellGroup.add(door);
       if (id === "south") cutawayMeshes.push(door);
     }
@@ -483,7 +559,7 @@ export function initRoomBuilder(canvas, options = {}) {
     shellGroup.add(ceilingMesh);
     cutawayMeshes.push(ceilingMesh);
 
-    listingPhotoMeshes.forEach((m) => shellGroup.remove(m));
+    photoWallMesh = null;
     listingPhotoMeshes.length = 0;
     for (const item of itemsGroup.children) {
       if (item.userData.product?.meshStyle !== "tv") continue;
@@ -517,6 +593,9 @@ export function initRoomBuilder(canvas, options = {}) {
   controls.target.set(0, 1.05, 0);
   controls.touches = { ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_PAN };
   controls.screenSpacePanning = true;
+  controls.addEventListener("start", () => {
+    holdPhotoFrame = false;
+  });
 
   const walkRig = new THREE.Object3D();
   walkRig.position.set(0, 1.58, roomDepth / 2 - 0.9);
@@ -568,12 +647,16 @@ export function initRoomBuilder(canvas, options = {}) {
     } else {
       walkPitch.remove(camera);
       scene.add(camera);
-      camera.position.set(3.4, 3.55, 7.35);
-      camera.lookAt(0, 1, 0);
-      controls.target.set(0, 1.05, 0);
       controls.enabled = true;
       applyCutaway(true);
       mode = "orbit";
+      if (photoWallMesh) framePhotoCamera();
+      else {
+        camera.position.set(3.4, 3.55, 7.35);
+        camera.lookAt(0, 1, 0);
+        controls.target.set(0, 1.05, 0);
+        controls.update();
+      }
     }
     onModeChange(mode);
     return mode;
@@ -614,6 +697,7 @@ export function initRoomBuilder(canvas, options = {}) {
     } else camera.aspect = w / h;
     camera.updateProjectionMatrix();
     renderer.setSize(w, h, false);
+    if (holdPhotoFrame && mode === "orbit") framePhotoCamera();
   }
   window.addEventListener("resize", resize);
   requestAnimationFrame(resize);

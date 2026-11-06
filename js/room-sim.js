@@ -1,7 +1,7 @@
 import { PROPERTY_PHOTO_ROOMS } from "/js/room-photo-previews.mjs?v=20261106b";
-import { initRoomBuilder } from "/js/room-builder.js?v=20261105a";
+import { initRoomBuilder } from "/js/room-builder.js?v=20261106photo";
 import { feetAndInches } from "/js/room-distance.mjs?v=20260911b";
-import { applyListedSize, DEFAULT_LIVING_ROOM, listPropertyRooms, planningRoom, reconstructHouse, reconstructRoom } from "/js/room-pipeline.js?v=20261106list";
+import { applyListedSize, DEFAULT_LIVING_ROOM, listPropertyRooms, planningRoom, reconstructHouse, reconstructRoom, roomChoiceLabel } from "/js/room-pipeline.js?v=20261106photo";
 import { readRoomPlanFile } from "/js/roomplan-import.mjs?v=20260915a";
 import { CATALOG_TREE, SAMPLE_PRODUCTS, VENDOR_OPTIONS, productsInGroup, money } from "/js/room-catalog.js?v=20261106rooms";
 
@@ -615,13 +615,21 @@ export async function bootRoomSim() {
   function showPhotoMatch(room) {
     const matchStatus = document.getElementById("simPhotoMatch");
     if (!matchStatus) return;
-    matchStatus.dataset.state = ["vision", "lidar"].includes(room.mode) ? "vision" : "sample";
+    const photos = roomPhotos(room);
+    const listedSize = room.sizeSource === "listed-sqft"
+      ? `about ${Math.round(room.width / 0.3048)}×${Math.round(room.depth / 0.3048)} ft from the listed ${Number(room.listedSqft).toLocaleString("en-US")} sqft · not a measured scan`
+      : "";
+    matchStatus.dataset.state = ["vision", "lidar"].includes(room.mode) ? "vision" : photos.length ? "photo" : "sample";
     matchStatus.textContent = room.mode === "lidar"
       ? "Measured LiDAR / RoomPlan geometry · imported locally"
       : room.mode === "vision"
       ? `AI estimate from ${room.sourcePhotoUrls?.length || 1} photo${room.sourcePhotoUrls?.length === 1 ? "" : "s"} · ${room.analysis?.confidence || "low"} confidence`
-      : room.sizeSource === "listed-sqft"
-        ? `About ${Math.round(room.width / 0.3048)}×${Math.round(room.depth / 0.3048)} ft from the listed ${Number(room.listedSqft).toLocaleString("en-US")} sqft · not a measured scan`
+      : photos.length && listedSize
+        ? `Listing photo on the far wall · ${listedSize}`
+      : photos.length
+        ? "Listing photo on the far wall · room dimensions unverified · not a measured scan"
+      : listedSize
+        ? `No listing photo for this room · ${listedSize.charAt(0).toUpperCase()}${listedSize.slice(1)}`
       : room.mode === "planning"
         ? "Editable planning template · room dimensions unverified"
       : room.analysis?.errorCode === "openai_credits_exhausted"
@@ -679,7 +687,7 @@ export async function bootRoomSim() {
         const picked = btn.getAttribute("data-photo");
         originalImage.src = picked;
         const next = [picked, ...urls.filter((u) => u !== picked)];
-        builder.setListingPhotos(next.slice(0, 4));
+        builder.setListingPhotos(next.slice(0, 4), { frameCamera: false });
         strip.querySelectorAll(".sim-photo").forEach((b) => b.classList.toggle("is-on", b === btn));
         // Measured and planning shells stay put. A photo estimate replaces them only after a vision result.
         if (room.mode !== "vision") return;
@@ -694,7 +702,7 @@ export async function bootRoomSim() {
           const updated = { ...analyzed, id: room.id, photoIndices: room.photoIndices };
           Object.assign(room, updated);
           builder.applyReconstruction(updated);
-          if (room.mode === "vision") builder.setListingPhotos(next);
+          if (room.mode === "vision") builder.setListingPhotos(next, { frameCamera: false });
           showPhotoMatch(updated);
           if (hud.hint) hud.hint.textContent = "Selected view analyzed · room dimensions estimated";
         } catch {
@@ -717,6 +725,7 @@ export async function bootRoomSim() {
     readyToSave = false;
     builder.clearRoom({ resetHistory: true });
     activeRoomId = room.id || `room-${rooms.indexOf(room) + 1}`;
+    builder.setListingPhotos([], { frameCamera: false });
     builder.applyReconstruction(room);
     const urls = roomPhotos(room);
     showRoomPreview(room,urls);
@@ -727,7 +736,7 @@ export async function bootRoomSim() {
       originalImage.removeAttribute("src");
       originalButton.disabled = true;
     }
-    builder.setListingPhotos(urls.slice(0, 4));
+    builder.setListingPhotos(urls.slice(0, 4), { frameCamera: true });
     renderPhotoStrip(urls, urls[0], room);
     showPhotoMatch(room);
     const deptFor = { bedroom: "bedroom", bathroom: "bath", living: "living", dining: "living", kitchen: "living" };
@@ -742,6 +751,8 @@ export async function bootRoomSim() {
       button.classList.toggle("is-on", selected);
       button.setAttribute("aria-pressed", String(selected));
     });
+    const roomPick = document.getElementById("simRoomPick");
+    if (roomPick && roomPick.value !== activeRoomId) roomPick.value = activeRoomId;
     let restored = false;
     try {
       const raw = localStorage.getItem(persistKey(listingId, activeRoomId));
@@ -756,17 +767,33 @@ export async function bootRoomSim() {
   }
 
   const roomNav = document.getElementById("simRooms");
+  const roomPick = document.getElementById("simRoomPick");
   function appendRoom(room) {
+    const choice = roomChoiceLabel(room.label);
     const button = document.createElement("button");
     button.type = "button";
     button.dataset.houseRoom = room.id;
     button.setAttribute("aria-pressed", "false");
-    button.textContent = room.label;
+    button.textContent = choice;
+    button.title = room.label;
     button.addEventListener("click", () => queueRoom(room).catch(console.error));
     roomNav.hidden = false;
     roomNav.append(button);
+    if (roomPick) {
+      const option = document.createElement("option");
+      option.value = room.id;
+      option.textContent = choice;
+      option.title = room.label;
+      roomPick.append(option);
+      roomPick.hidden = false;
+    }
   }
   rooms.forEach(appendRoom);
+  roomPick?.addEventListener("change", () => {
+    const room = rooms.find((item) => item.id === roomPick.value);
+    if (!room || room.id === activeRoomId) return;
+    queueRoom(room).catch(console.error);
+  });
   const roomDialog = document.getElementById("simAddRoomDialog");
   const roomName = document.getElementById("simRoomName");
   document.getElementById("simAddRoom").addEventListener("click", () => roomDialog.showModal());
@@ -835,7 +862,9 @@ export async function bootRoomSim() {
     if (onboard && !localStorage.getItem("sru.room.onboarded")) onboard.hidden = false;
   } catch { if (onboard) onboard.hidden = false; }
   track("3d_preview_open", { listingId });
-  if (hud.hint) hud.hint.textContent = restored
+  if (hud.hint) hud.hint.textContent = roomPhotos(initial).length
+    ? "Listing photo is on the far wall · drag to orbit · place furniture in this room"
+    : restored
     ? "Restored your saved layout for this room · switch rooms anytime"
     : "Room ready · add furniture or choose another room";
   refreshTotal();
