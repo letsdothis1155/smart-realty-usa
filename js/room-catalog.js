@@ -10,7 +10,7 @@ function vendorFor(row) {
   if (/^(tv|speaker|gaming)$/.test(group)) {
     return { store: "Best Buy", vendor: "best-buy", productUrl: `https://www.bestbuy.com/site/searchpage.jsp?st=${query}` };
   }
-  if (/^(sofa|sectional|table|rug|shelves)$/.test(group)) {
+  if (/^(sofa|sectional|table|rug|shelves|bed|dresser|bath)$/.test(group)) {
     return { store: "IKEA", vendor: "ikea", productUrl: `https://www.ikea.com/us/en/search/?q=${query}` };
   }
   if (group === "plant") {
@@ -51,6 +51,21 @@ export const CATALOG_TREE = [
       { id: "table", label: "Tables" },
       { id: "rug", label: "Rugs" },
       { id: "lamp", label: "Lamps" },
+    ],
+  },
+  {
+    id: "bedroom",
+    label: "Bedroom",
+    groups: [
+      { id: "bed", label: "Beds" },
+      { id: "dresser", label: "Nightstands" },
+    ],
+  },
+  {
+    id: "bath",
+    label: "Bath",
+    groups: [
+      { id: "bath", label: "Bath storage" },
     ],
   },
   {
@@ -655,6 +670,9 @@ export const SAMPLE_PRODUCTS = [
 // Retailer dimensions drive these editable planning meshes. Product pages
 // remain the source of truth for current prices, stock, and finishes.
 SAMPLE_PRODUCTS.unshift(
+  product({ id: "ikea-malm-90249483", sku: "902.494.83", category: "bed", group: "bed", meshStyle: "bed", name: "MALM bed frame · white · Queen", brand: "IKEA", store: "IKEA", vendor: "ikea", productUrl: "https://www.ikea.com/us/en/p/malm-bed-frame-white-90249483/", price: 234, priceIsEstimate: true, widthIn: 66.125, depthIn: 83.125, heightIn: 39.375, swatch: "#f4f1ea", snap: "floor", dimensionsSource: "retailer", modelDisclaimer: "Frame only. Mattress and slats are sold separately.", priceCheckedAt: "2026-11-06" }),
+  product({ id: "ikea-bath-storage", sku: "IKEA-BATH-SEARCH", category: "bath", group: "bath", meshStyle: "bookshelf", name: "Bathroom storage", brand: "IKEA", store: "IKEA", vendor: "ikea", productUrl: "https://www.ikea.com/us/en/search/?q=bathroom%20storage", price: 0, widthIn: 16, depthIn: 14, heightIn: 36, swatch: "#f4f1ea", snap: "floor", dimensionsSource: "planning", modelDisclaimer: "Planning size only. Pick the exact cabinet on IKEA." }),
+  product({ id: "ikea-lack-night-30449908", sku: "304.499.08", category: "dresser", group: "dresser", meshStyle: "side-table", name: "LACK side table · white", brand: "IKEA", store: "IKEA", vendor: "ikea", productUrl: "https://www.ikea.com/us/en/p/lack-side-table-white-30449908/", price: 15, priceIsEstimate: true, widthIn: 21.625, depthIn: 21.625, heightIn: 17.75, swatch: "#f5f4ef", snap: "floor", dimensionsSource: "retailer" }),
   product({ id: "ikea-poang-59305928", sku: "593.059.28", category: "chair", group: "chair", meshStyle: "chair", name: "POÄNG armchair · birch / light beige", brand: "IKEA", store: "IKEA", vendor: "ikea", productUrl: "https://www.ikea.com/us/en/p/poaeng-armchair-birch-veneer-knisa-light-beige-s59305928/", price: 149, widthIn: 26.75, depthIn: 32.25, heightIn: 39.375, swatch: "#d5cbb7", snap: "floor", dimensionsSource: "retailer", priceCheckedAt: "2026-11-04" }),
   product({ id: "ikea-lack-table-30449908", sku: "304.499.08", category: "table", group: "table", meshStyle: "side-table", name: "LACK side table · white", brand: "IKEA", store: "IKEA", vendor: "ikea", productUrl: "https://www.ikea.com/us/en/p/lack-side-table-white-30449908/", price: 15, priceIsEstimate: true, widthIn: 21.625, depthIn: 21.625, heightIn: 17.75, swatch: "#f5f4ef", snap: "floor", dimensionsSource: "retailer" }),
   product({ id: "samsung-q60d-65", sku: "QN65Q60DAFXZA", category: "tv", group: "tv", meshStyle: "tv", name: "Samsung Q60D 65-inch QLED TV", brand: "Samsung", store: "Best Buy", vendor: "best-buy", productUrl: "https://www.bestbuy.com/site/lwpdp?skuId=11058420", price: 749, priceIsEstimate: true, widthIn: 57.1, heightIn: 34.3, depthIn: 10.8, swatch: "#171719", snap: "floor", sitOnHeightM: 0.5, wallAffinity: true, dimensionsSource: "retailer" }),

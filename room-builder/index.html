@@ -165,7 +165,7 @@
         <h2>Shop this room</h2>
         <p class="grand">PLANNING TOTAL — ~$0</p>
         <ol class="lines"></ol>
-        <p class="sim-note">Prices are planning estimates, not live quotes. Follow the item links so you can confirm the exact model, price, delivery, and availability. Smart Realty has no retailer affiliation or commission relationship today.</p>
+        <p class="sim-note">Place a piece to see its size in this room before you buy. Prices stay on the retailer’s page. Opening a store records the introduction for SMART REALTY.US LLC. That retailer pays a commission only when its program is connected and attributes a purchase. No retailer program is connected yet, and this site does not charge you.</p>
         <button type="button" class="sim-mode-btn" id="simSheetClose">Close</button>
       </div>
     </div>
@@ -179,7 +179,7 @@
         location.replace(target);
         return;
       }
-      const { bootRoomSim } = await import("/js/room-sim.js?v=20261106fix1");
+      const { bootRoomSim } = await import("/js/room-sim.js?v=20261106rooms");
       await bootRoomSim();
     }
     startRoomBuilder().catch((error) => {

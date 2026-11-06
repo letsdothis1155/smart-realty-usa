@@ -136,11 +136,91 @@ export async function reconstructRoom({ photoUrl = "", photoUrls = [], listingId
   return base;
 }
 
-export function planningRoom(id, roomType, label) {
+const M_PER_FT = 0.3048;
+const SQM_PER_SQFT = 0.092903;
+
+const ROOM_LOOK = {
+  living: { finish: "oak", aspect: 1.28, share: 0.22, min: 160, max: 520, height: 2.72 },
+  kitchen: { finish: "oak", aspect: 1.15, share: 0.12, min: 90, max: 280, height: 2.55 },
+  dining: { finish: "oak", aspect: 1.2, share: 0.1, min: 100, max: 260, height: 2.7 },
+  bedroom: { finish: "linen", aspect: 1.22, share: 0, min: 90, max: 360, height: 2.55 },
+  bathroom: { finish: "slate", aspect: 1.2, share: 0, min: 35, max: 90, height: 2.45 },
+  other: { finish: "linen", aspect: 1.15, share: 0.06, min: 50, max: 160, height: 2.55 },
+};
+
+function clampSpan(meters) {
+  return Math.min(14.5, Math.max(2.05, meters));
+}
+
+function spanFromArea(areaSqft, aspect) {
+  const areaM = Math.max(areaSqft, 40) * SQM_PER_SQFT;
   return {
-    ...DEFAULT_LIVING_ROOM, ...ROOM_PRESETS[roomType], id, label,
-    mode: "planning", floorPolygon: undefined, walls: [],
+    width: Number(clampSpan(Math.sqrt(areaM * aspect)).toFixed(2)),
+    depth: Number(clampSpan(Math.sqrt(areaM / aspect)).toFixed(2)),
+  };
+}
+
+/** Estimate one room from the home's listed square footage. Not a measurement. */
+export function listingRoomSize(listing, roomType, index = 0, total = 1) {
+  const look = ROOM_LOOK[roomType] || ROOM_LOOK.other;
+  const preset = ROOM_PRESETS[roomType] || ROOM_PRESETS.other;
+  const base = {
+    width: preset.width,
+    depth: preset.depth,
+    height: preset.height || 2.55,
+    finish: look.finish,
+    sizeSource: "preset",
+  };
+  const sqft = Number(listing?.sqft);
+  if (!Number.isFinite(sqft) || sqft < 200) return base;
+  const usable = sqft * 0.7;
+  const count = Math.max(1, total);
+  let area;
+  if (roomType === "bedroom") {
+    const bathCount = Math.min(30, Math.max(1, Math.ceil(Number(listing.baths) || 1)));
+    const reserved = (ROOM_LOOK.living.share + ROOM_LOOK.kitchen.share) * usable + bathCount * 55;
+    const pool = Math.max(usable * 0.34, usable - reserved);
+    const weight = index === 0 ? 1.45 : 1;
+    const weightSum = 1.45 + Math.max(0, count - 1);
+    area = (pool * weight) / weightSum;
+  } else if (roomType === "bathroom") {
+    area = 48 * (index === 0 ? 1.35 : 1) * (sqft > 4000 ? 1.25 : 1);
+  } else {
+    area = look.share * usable;
+  }
+  area = Math.min(look.max, Math.max(look.min, area));
+  return {
+    ...spanFromArea(area, look.aspect),
+    height: look.height,
+    finish: look.finish,
+    sizeSource: "listed-sqft",
+    listedSqft: Math.round(sqft),
+  };
+}
+
+export function planningRoom(id, roomType, label, size = null) {
+  return {
+    ...DEFAULT_LIVING_ROOM,
+    ...(ROOM_PRESETS[roomType] || ROOM_PRESETS.other),
+    ...(size || {}),
+    id,
+    label,
+    mode: "planning",
+    floorPolygon: undefined,
+    walls: [],
     photoIndices: [],
+  };
+}
+
+export function applyListedSize(room, listing, index = 0, total = 1) {
+  if (!room || room.mode === "vision" || room.mode === "lidar" || room.sizeSource === "listed-sqft") return room;
+  const sized = listingRoomSize(listing, room.roomType || "other", index, total);
+  if (sized.sizeSource !== "listed-sqft") return room;
+  const feet = `${Math.round(sized.width / M_PER_FT)}×${Math.round(sized.depth / M_PER_FT)} ft`;
+  return {
+    ...room,
+    ...sized,
+    label: `${room.label || "Room"} · about ${feet} from the listed ${sized.listedSqft.toLocaleString("en-US")} sqft`,
   };
 }
 
@@ -199,7 +279,13 @@ export function missingPlanningRooms(listing, rooms) {
     const analyzed = rooms.filter((room) => (room.mode === "vision" || room.id.startsWith("reference-")) &&
       (room.roomType === type || room.label?.toLowerCase().includes(type))).length;
     for (let i = analyzed; i < total; i += 1) {
-      result.push(planningRoom(`plan-${type}-${i + 1}`, type, `${label}${total > 1 ? ` ${i + 1}` : ""} · template`));
+      const name = `${label}${total > 1 ? ` ${i + 1}` : ""}`;
+      const sized = listingRoomSize(listing, type, i, total);
+      const feet = `${Math.round(sized.width / M_PER_FT)}×${Math.round(sized.depth / M_PER_FT)} ft`;
+      const source = sized.sizeSource === "listed-sqft"
+        ? `about ${feet} from the listed ${Number(listing.sqft).toLocaleString("en-US")} sqft`
+        : "estimated shell";
+      result.push(planningRoom(`plan-${type}-${i + 1}`, type, `${name} · ${source}`, sized));
     }
   }
   return result;
