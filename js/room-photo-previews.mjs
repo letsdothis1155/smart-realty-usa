@@ -74,5 +74,31 @@ export const PROPERTY_PHOTO_ROOMS = {
       "model": "/models/hud-413-772606/photo-hall-bathroom.json",
       "engineVersion": 2
     }
+  ],
+  "hud-201-719673": [
+    {
+      "id": "kitchen",
+      "label": "Kitchen",
+      "href": "/room-builder/studio/?listing=hud-201-719673&room=kitchen",
+      "photoFiles": [
+        "kit_596461_937204415.jpg",
+        "kit_2_596461_274913513.jpg"
+      ],
+      "reviewed": false,
+      "model": "/models/hud-201-719673/photo-kitchen.json",
+      "engineVersion": 2
+    },
+    {
+      "id": "living",
+      "label": "Living room",
+      "href": "/room-builder/studio/?listing=hud-201-719673&room=living",
+      "photoFiles": [
+        "lr_596461_186529200.jpg",
+        "lr_2_596461_785267928.jpg"
+      ],
+      "reviewed": false,
+      "model": "/models/hud-201-719673/photo-living.json",
+      "engineVersion": 2
+    }
   ]
 };
