@@ -6,12 +6,16 @@
   <meta name="copyright" content="Copyright 2026 Andrew Iredale Jr. All rights reserved. See /terms.html.">
   <title>3D Room · Shop This Room — SMART REALTY.US LLC</title>
   <meta name="description" content="Walk a property-inspired room, place planning models from Best Buy, IKEA, Wayfair, and Home Depot, and estimate the staged space before buying a home." />
-  <link rel="stylesheet" href="/room-builder/room-sim.css?v=20261106photo" />
+  <link rel="stylesheet" href="/room-builder/room-sim.css?v=20261106walk" />
   <script src="/domain-config.js"></script>
   <script src="/js/analytics.js"></script>
   <script src="/js/listings.js"></script>
 </head>
 <body class="room-sim">
+  <div id="srWalk" hidden>
+    <a class="sr-walk-back" id="srWalkBack" href="/new-listings/">← Back to the listing</a>
+    <div id="sr-3d-viewer" class="sr3d-fill"></div>
+  </div>
   <div class="sim-root">
     <canvas id="simCanvas" class="sim-canvas" aria-label="3D room canvas"></canvas>
     <div class="sim-fallback" id="simFallback" hidden>
@@ -175,8 +179,27 @@
     </div>
   </div>
   <noscript><p class="sim-loading">JavaScript is required for the interactive 3D room.</p></noscript>
+  <script type="module" src="/js/sr-3d-viewer.js?v=20261106walk"></script>
   <script type="module">
     async function startRoomBuilder() {
+      const params = new URLSearchParams(location.search);
+      const listingId = params.get("listing") || "";
+      if (listingId) {
+        const probe = await fetch(`/models/${encodeURIComponent(listingId)}/rooms.json`);
+        if (probe.ok) {
+          const walk = document.getElementById("srWalk");
+          const view = document.getElementById("sr-3d-viewer");
+          const back = document.getElementById("srWalkBack");
+          back.href = params.get("from") || `/new-listings/?id=${encodeURIComponent(listingId)}`;
+          view.dataset.listingId = listingId;
+          walk.hidden = false;
+          const root = document.querySelector(".sim-root");
+          if (root) root.hidden = true;
+          const go = () => window.SRU_3D && window.SRU_3D.mount(view);
+          if (!go()) window.addEventListener("sr-3d-ready", go, { once: true });
+          return;
+        }
+      }
       const { bootRoomSim } = await import("/js/room-sim.js?v=20261106photo");
       await bootRoomSim();
     }

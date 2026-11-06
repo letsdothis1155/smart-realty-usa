@@ -151,6 +151,7 @@
   </main>
   <div id="gFoot"></div>
   <script src="/js/growth-ui.js"></script>
+  <script type="module" src="/js/sr-3d-viewer.js?v=20261106walk"></script>
   <script>
     (function () {
       const grid = document.getElementById("nlGrid");
@@ -253,6 +254,7 @@
           <p class="nl-price">${money(listing.listPrice)}</p>
           <p class="nl-meta">${listing.beds ?? "—"} bd · ${listing.baths ?? "—"} ba · ${listing.sqft ? Number(listing.sqft).toLocaleString() + " sqft" : "—"} · ${esc(listing.propertyType || "")}${listing.yearBuilt ? " · built " + listing.yearBuilt : ""}${listing.daysOnMarket != null ? " · " + listing.daysOnMarket + " days on market" : ""}</p>
           ${listing.desc ? `<p class="nl-meta">${esc(listing.desc)}</p>` : ""}
+          ${listing.id && listing.source !== "court" && (!listing.entityKind || listing.entityKind === "home") ? `<div id="sr-3d-viewer" data-listing-id="${esc(listing.id)}"></div><p class="nl-meta">When a walk-through is available, a room is true to size only when the listing states that room's dimensions. Anything else is marked Dimensions estimated. This is not a measured scan.</p>` : ""}
           <div class="nl-gallery">${photos.map((u) => `<img src="${esc(absUrl(u))}" alt="" />`).join("") || `<img src="/images/photo-unavailable.svg" alt="Photo unavailable" />`}</div>
           ${street ? `<p class="nl-meta">Street View is a fallback image, not an official listing photo.</p>` : ""}
           <div class="nl-actions">
@@ -260,10 +262,12 @@
             <a class="btn btn-outline" href="mailto:andrewiredale@smartrealty.us?subject=${encodeURIComponent("Question about " + (listing.address || listing.title || "a home"))}">Email Andrew about this home</a>
             ${listing.sourceUrl ? `<a class="btn btn-ghost" href="${esc(listing.sourceUrl)}" target="_blank" rel="noopener">Source listing</a>` : ""}
           </div>
-          ${can3d
-            ? `<p class="nl-meta">3D is an estimated visualization from listing photos, not a scan of this home.</p>`
-            : `<p class="nl-meta">The 3D demo opens a generic sample room; it does not model this property.</p>`}
         `;
+        const view = document.getElementById("sr-3d-viewer");
+        if (view) {
+          const go = () => window.SRU_3D && window.SRU_3D.mount(view);
+          if (!go()) window.addEventListener("sr-3d-ready", go, { once: true });
+        }
       }
 
       function renderChips() {

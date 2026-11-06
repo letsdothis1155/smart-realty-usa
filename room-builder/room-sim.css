@@ -1,4 +1,6 @@
 /* Full-screen 3D room HUD — canvas is the page. */
+#srWalk { position: fixed; inset: 0; z-index: 40; background: #121418; }
+#srWalk .sr-walk-back { position: absolute; top: 10px; left: 10px; z-index: 6; color: #f4f1ea; background: rgba(10,12,16,0.72); border-radius: 999px; padding: 0.55rem 0.8rem; min-height: 44px; text-decoration: none; font: 600 0.85rem/1.2 Inter, system-ui, sans-serif; }
 html,
 body.room-sim {
   margin: 0;
