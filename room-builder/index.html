@@ -6,7 +6,7 @@
   <meta name="copyright" content="Copyright 2026 Andrew Iredale Jr. See /room-builder/RIGHTS.md.">
   <title>3D Room · Shop This Room — SMART REALTY.US LLC</title>
   <meta name="description" content="Walk a property-inspired room, place planning models from Best Buy, IKEA, Wayfair, and Home Depot, and estimate the staged space before buying a home." />
-  <link rel="stylesheet" href="/room-builder/room-sim.css?v=20261105a" />
+  <link rel="stylesheet" href="/room-builder/room-sim.css?v=20261106fix1" />
   <script src="/domain-config.js"></script>
   <script src="/js/analytics.js"></script>
   <script src="/js/listings.js"></script>
@@ -139,7 +139,7 @@
         <button type="button" class="sim-mode-btn is-active" id="simOnboardGo">Start staging</button>
       </div>
     </div>
-    <div class="sim-loading" id="simLoading" hidden>LOADING 3D</div>
+    <div class="sim-loading" id="simLoading" role="status">Loading your room…</div>
     <dialog id="simPhotoDialog" aria-label="Original listing photo" style="width:min(1000px,90vw);background:#17251f;color:white;border:0;border-radius:16px;padding:16px">
       <form method="dialog"><button class="sim-chip">Back to builder</button></form>
       <p>Original listing photo · the 3D room is a separate planning approximation.</p>
@@ -171,16 +171,29 @@
   </div>
   <noscript><p class="sim-loading">JavaScript is required for the interactive 3D room.</p></noscript>
   <script type="module">
-    import("/js/room-sim.js?v=20261106b")
-      .then(({ bootRoomSim }) => bootRoomSim())
-      .catch((error) => {
+    async function startRoomBuilder() {
+      const { photoRoomTarget } = await import("/js/room-entry.mjs?v=20261106fix1");
+      const target = photoRoomTarget(location.search);
+      if (target) {
+        location.replace(target);
+        return;
+      }
+      const { bootRoomSim } = await import("/js/room-sim.js?v=20261106fix1");
+      await bootRoomSim();
+    }
+    startRoomBuilder().catch((error) => {
         console.error("Room simulator failed to start", error);
         const loading = document.getElementById("simLoading");
         const fallback = document.getElementById("simFallback");
         if (fallback) fallback.hidden = false;
+        const message = document.getElementById("simFallbackMsg");
+        if (message) message.textContent = "The 3D engine could not load. Refresh to try again, or return to the listing.";
+        const back = document.getElementById("simFallbackBack");
+        if (back && new URLSearchParams(location.search).get("listing")) {
+          back.href = "/new-listings/?id=" + encodeURIComponent(new URLSearchParams(location.search).get("listing"));
+        }
         if (loading) {
-          loading.hidden = false;
-          loading.textContent = "3D COULD NOT LOAD · SHOWING STILL FALLBACK";
+          loading.hidden = true;
         }
       });
   </script>

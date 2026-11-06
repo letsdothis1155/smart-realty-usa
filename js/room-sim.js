@@ -1,7 +1,7 @@
 import { PROPERTY_PHOTO_ROOMS } from "/js/room-photo-previews.mjs?v=20261106b";
 import { initRoomBuilder } from "/js/room-builder.js?v=20261105a";
 import { feetAndInches } from "/js/room-distance.mjs?v=20260911b";
-import { DEFAULT_LIVING_ROOM, missingPlanningRooms, planningRoom, reconstructHouse, reconstructRoom } from "/js/room-pipeline.js?v=20261105a";
+import { DEFAULT_LIVING_ROOM, missingPlanningRooms, planningRoom, reconstructHouse, reconstructRoom } from "/js/room-pipeline.js?v=20261106fix1";
 import { readRoomPlanFile } from "/js/roomplan-import.mjs?v=20260915a";
 import { CATALOG_TREE, SAMPLE_PRODUCTS, VENDOR_OPTIONS, productsInGroup, money } from "/js/room-catalog.js?v=20261105a";
 
@@ -186,7 +186,10 @@ export async function bootRoomSim() {
   }
 
   builder.onBusyChange = (busy) => {
-    if (hud.loading) hud.loading.hidden = !busy;
+    if (hud.loading) {
+      hud.loading.hidden = !busy;
+      if (busy) hud.loading.textContent = "Preparing furniture…";
+    }
   };
   builder.onRoomChange = () => {
     refreshTotal();
@@ -479,13 +482,6 @@ export async function bootRoomSim() {
     });
   });
   const onboard = document.getElementById("simOnboard");
-  try {
-    if (onboard && !localStorage.getItem("sru.room.onboarded")) {
-      onboard.hidden = false;
-    }
-  } catch {
-    if (onboard) onboard.hidden = false;
-  }
   document.getElementById("simOnboardGo")?.addEventListener("click", () => {
     if (onboard) onboard.hidden = true;
     try {
@@ -547,12 +543,13 @@ export async function bootRoomSim() {
   if (back) back.href = returnHref;
   if (fallbackBack) fallbackBack.href = returnHref;
 
+  if (hud.loading) { hud.loading.hidden = false; hud.loading.textContent = "Loading property photos…"; }
   let photos = photoUrl ? [photoUrl] : [];
   let listing = bundledListing;
   if (listingId) {
     track("listing_view", { listingId });
     try {
-      const res = await fetch(`${apiOrigin()}/api/listings/${encodeURIComponent(listingId)}`);
+      const res = await fetch(`${apiOrigin()}/api/listings/${encodeURIComponent(listingId)}`, { signal: AbortSignal.timeout(10000) });
       if (res.ok) {
         const data = await res.json();
         if (data.listing) listing = data.listing;
@@ -613,6 +610,7 @@ export async function bootRoomSim() {
   }
 
   const resolved = [...new Set(photos.map(absPhoto).filter(Boolean))];
+  if (hud.loading) hud.loading.textContent = "Preparing rooms from listing photos…";
   const house = await reconstructHouse({ photoUrls: resolved, listingId });
   const rooms = [...house.rooms.filter((room) => room.mode === "vision" || room.id.startsWith("reference-")),
     ...missingPlanningRooms(listing, house.rooms),
@@ -786,6 +784,10 @@ export async function bootRoomSim() {
   }
 
   renderCatalog();
+  if (hud.loading) hud.loading.hidden = true;
+  try {
+    if (onboard && !localStorage.getItem("sru.room.onboarded")) onboard.hidden = false;
+  } catch { if (onboard) onboard.hidden = false; }
   track("3d_preview_open", { listingId });
   if (hud.hint) hud.hint.textContent = restored
     ? "Restored your saved layout for this room · switch rooms anytime"

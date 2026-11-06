@@ -108,7 +108,7 @@ test("mobile listing and simulator controls stay touch-sized without crowding th
   const listings = fs.readFileSync(path.join(ROOT, "new-listings", "index.html"), "utf8");
   const simulator = fs.readFileSync(path.join(ROOT, "room-builder", "room-sim.css"), "utf8");
   assert.match(listings, /@media \(max-width: 640px\)[\s\S]*\.nl-actions \.btn \{[^}]*min-height: 44px/);
-  assert.match(simulator, /@media \(max-width: 720px\)[\s\S]*grid-template-columns: repeat\(5, minmax\(0, 1fr\)\)/);
+  assert.match(simulator, /@media \(max-width: 720px\)[\s\S]*grid-template-columns: repeat\(6, minmax\(0, 1fr\)\)/);
   assert.match(simulator, /\.sim-back,[\s\S]*\.sim-chip \{\s*min-height: 44px/);
   assert.match(simulator, /\.sim-side \{[\s\S]*flex-direction: row;[\s\S]*overflow-x: auto/);
 });
