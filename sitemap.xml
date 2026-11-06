@@ -61,6 +61,11 @@
     <priority>0.3</priority>
   </url>
   <url>
+    <loc>https://smartrealty.us/apps-privacy.html</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
     <loc>https://smartrealty.us/terms.html</loc>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
