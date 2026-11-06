@@ -1921,14 +1921,13 @@ function openProperty(id) {
       </div>
       <div class="signin-gate modal-contact-gate" data-requires-auth data-gate-title="Unlock listing contact tools" data-gate-copy="Sign in free to contact Smart Realty about this home and watch its price.">
         <div class="signin-gate-content modal-actions">
-          <a class="btn btn-primary" href="showing/?property=${encodeURIComponent(p.title + " · " + p.location)}&amp;city=${encodeURIComponent((p.location || "").split(",")[0] || "")}">Request a showing</a>
+          <a class="btn btn-primary" href="mailto:andrewiredale@smartrealty.us?subject=${encodeURIComponent("Question about " + (p.title || "a home"))}">Email Andrew about this home</a>
           <a class="btn btn-outline" href="buy/?property=${encodeURIComponent(p.title)}&amp;city=${encodeURIComponent((p.location || "").split(",")[0] || "")}">Buy inquiry</a>
           <button class="btn btn-outline" type="button" id="watchPriceBtn">Watch price</button>
           <button class="btn btn-ghost" type="button" id="askAboutProperty">Ask about this home</button>
         </div>
       </div>
       <div class="modal-actions">
-        <a class="btn btn-ghost" href="invest/?property=${encodeURIComponent(p.title)}">Analyze</a>
         <button class="btn btn-btc" type="button" data-btc="${p.id}">₿ Purchase with Bitcoin</button>
         ${
           p.rentable
@@ -2625,7 +2624,7 @@ const AGENT_REPLIES = [
   "House Blue Book on this demo is a transparent offer next to a fair-value estimate. No hidden fees in the UI.",
   "Bitcoin quotes use live Coinbase/CoinGecko prices. The pay button does not move real funds.",
   "Try-Before-Buy is a product idea on this demo: stay first, then apply eligible nights toward a purchase.",
-  "SMART REALTY.US LLC is owner-operated in Louisville. Phone 1-800-762-7879 · andrewiredale@smartrealty.us.",
+  "SMART REALTY.US LLC is owner-operated in Louisville. Phone 502-539-1090 · andrewiredale@smartrealty.us.",
   "This site runs on GitHub Pages, built solo by Andrew in Louisville. Free member access uses passwordless email magic links — we're in public demo now, ahead of full brokerage licensing.",
   "Want a Blue Book, a BTC quote, or a waitlist invite? I can point you to those sections — or email Andrew.",
 ];
@@ -2711,7 +2710,7 @@ function initChat() {
         reply =
           "Our free House Blue Book is like a Kelley Blue Book for homes — fair market value, comps, and our lowest transparent offer with no surprise fees.";
       } else if (lower.includes("phone") || lower.includes("call")) {
-        reply = "Call 1-800-762-7879 or email andrewiredale@smartrealty.us. This is an owner-operated Louisville LLC — not a 24/7 call center.";
+        reply = "Call 502-539-1090 or email andrewiredale@smartrealty.us. This is an owner-operated Louisville LLC — not a 24/7 call center.";
       } else if (lower.includes("security") || lower.includes("safe") || lower.includes("hack")) {
         reply =
           "The public site is static HTTPS on GitHub Pages + Cloudflare. The Bitcoin explorer is a read-only node. We do not run a 24/7 SOC or a live title vault.";
@@ -3114,12 +3113,12 @@ Suggested walkthrough (5–7 minutes):
   5. Open any home — see Blue Book stack + live ₿ price
   6. Try Free Blue Book on the form
   7. Optional: Simulate Bitcoin checkout or book a Try-Before-Buy stay
-  8. Email andrewiredale@smartrealty.us or call 1-800-762-7879
+  8. Email andrewiredale@smartrealty.us or call 502-539-1090
 
 Official contact: ${cfg.contactEmail || "andrewiredale@smartrealty.us"}
 
 —
-Demo Version · All Rights Reserved © 2026 Smart Realty USA
+© 2026 Andrew Iredale Jr / SMART REALTY.US LLC. All rights reserved.
 Not a live brokerage transaction platform. For demonstration only.
 `;
 }

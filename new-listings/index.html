@@ -257,7 +257,7 @@
           ${street ? `<p class="nl-meta">Street View is a fallback image, not an official listing photo.</p>` : ""}
           <div class="nl-actions">
             ${simHref ? `<a class="btn btn-primary" href="${simHref}">Open in 3D Room Simulator</a>` : ""}
-            <a class="btn btn-outline" href="/showing/?property=${encodeURIComponent(listing.address || listing.title || "")}&amp;city=${encodeURIComponent(listing.city || "")}">Request a showing</a>
+            <a class="btn btn-outline" href="mailto:andrewiredale@smartrealty.us?subject=${encodeURIComponent("Question about " + (listing.address || listing.title || "a home"))}">Email Andrew about this home</a>
             ${listing.sourceUrl ? `<a class="btn btn-ghost" href="${esc(listing.sourceUrl)}" target="_blank" rel="noopener">Source listing</a>` : ""}
           </div>
           ${can3d
