@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { normalizeListingPhotoUrl, reconstructHouse, reconstructRoom } from "./room-pipeline.js";
+import { missingPlanningRooms, normalizeListingPhotoUrl, reconstructHouse, reconstructRoom } from "./room-pipeline.js";
 
 function browserConfig() {
   globalThis.window = {
@@ -143,4 +143,25 @@ test("creates a separate editable fallback room for every photo", async () => {
   assert.equal(house.rooms.length, 2);
   assert.deepEqual(house.rooms.map((room) => room.photoIndices), [[0], [1]]);
   assert.equal(house.rooms[1].sourcePhotoUrl, "https://smartrealty.us/images/gallery/g-02.jpg");
+});
+
+test("sizes every listed room from the home's square footage", () => {
+  const small = missingPlanningRooms({ beds: 3, baths: 2, sqft: 1650 }, []);
+  const large = missingPlanningRooms({ beds: 3, baths: 2, sqft: 4200 }, []);
+  const bedrooms = small.filter((room) => room.roomType === "bedroom");
+  assert.equal(bedrooms.length, 3);
+  assert.equal(bedrooms[0].sizeSource, "listed-sqft");
+  assert.equal(bedrooms[0].finish, "linen");
+  assert.ok(bedrooms[0].width > bedrooms[2].width);
+  assert.match(bedrooms[0].label, /1,650 sqft/);
+  assert.ok(large.find((room) => room.roomType === "living").width > small.find((room) => room.roomType === "living").width);
+  assert.equal(small.filter((room) => room.roomType === "bathroom").length, 2);
+});
+
+test("keeps a photo-analyzed room instead of adding a second template", () => {
+  const rooms = missingPlanningRooms({ beds: 1, baths: 1, sqft: 1650 }, [
+    { mode: "vision", roomType: "bedroom", label: "Primary bedroom" },
+  ]);
+  assert.equal(rooms.filter((room) => room.roomType === "bedroom").length, 0);
+  assert.equal(rooms.find((room) => room.roomType === "living").sizeSource, "listed-sqft");
 });

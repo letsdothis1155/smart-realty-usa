@@ -1,9 +1,9 @@
 import { PROPERTY_PHOTO_ROOMS } from "/js/room-photo-previews.mjs?v=20261106b";
 import { initRoomBuilder } from "/js/room-builder.js?v=20261105a";
 import { feetAndInches } from "/js/room-distance.mjs?v=20260911b";
-import { DEFAULT_LIVING_ROOM, missingPlanningRooms, planningRoom, reconstructHouse, reconstructRoom } from "/js/room-pipeline.js?v=20261106fix1";
+import { applyListedSize, DEFAULT_LIVING_ROOM, missingPlanningRooms, planningRoom, reconstructHouse, reconstructRoom } from "/js/room-pipeline.js?v=20261106rooms";
 import { readRoomPlanFile } from "/js/roomplan-import.mjs?v=20260915a";
-import { CATALOG_TREE, SAMPLE_PRODUCTS, VENDOR_OPTIONS, productsInGroup, money } from "/js/room-catalog.js?v=20261105a";
+import { CATALOG_TREE, SAMPLE_PRODUCTS, VENDOR_OPTIONS, productsInGroup, money } from "/js/room-catalog.js?v=20261106rooms";
 
 function track(event, props) {
   window.SRU_ANALYTICS?.track(event, props);
@@ -232,7 +232,8 @@ export async function bootRoomSim() {
     hud.float.querySelector(".meta").textContent = [
       product.store,
       [product.widthIn, product.heightIn, product.depthIn].filter(Boolean).join(" × ") + " in",
-      "confirm price and availability at retailer",
+      "try it in this room, then open the retailer",
+      "the store pays a commission only if its program attributes the purchase",
     ]
       .filter(Boolean)
       .join(" · ");
@@ -351,8 +352,8 @@ export async function bootRoomSim() {
     hud.catalog.classList.remove("is-open");
     if (hud.hint) hud.hint.textContent = product.meshStyle === "tv"
       ? "Click a clear wall to mount the TV · Esc cancels"
-      : "Move the preview · green is clear · click to place · Esc cancels";
-    track("product_added_to_room", { sku: product.sku, preview: true });
+      : "Move the preview until it fits · click to see it in this room · Esc cancels";
+    track("product_added_to_room", { sku: product.sku, store: product.store, vendor: product.vendor, preview: true });
   });
 
   document.getElementById("simCatToggle")?.addEventListener("click", () => {
@@ -513,7 +514,17 @@ export async function bootRoomSim() {
       if (hud.hint) hud.hint.textContent = "Pick a catalog item to swap in";
     }
     if (act === "buy") {
-      track(selected.monetized ? "affiliate_click" : "product_click", { sku: selected.sku });
+      track("vendor_referral", {
+        sku: selected.sku,
+        store: selected.store || "",
+        vendor: selected.vendor || "",
+        listingId,
+        roomId: activeRoomId,
+        monetized: Boolean(selected.monetized),
+      });
+      if (hud.hint) {
+        hud.hint.textContent = "Opening the retailer. This introduction is recorded for SMART REALTY.US LLC. The store pays a commission only if its program attributes the purchase. Nothing is charged here.";
+      }
     }
   });
 
@@ -574,7 +585,7 @@ export async function bootRoomSim() {
       const metaEl = document.getElementById("simListingMeta");
       if (bar && addrEl && metaEl) {
         addrEl.textContent = [listingTitle, loc].filter(Boolean).join(" · ");
-        metaEl.textContent = `${facts.join(" · ")} · Property-inspired visualization, not a measured scan`;
+        metaEl.textContent = `${facts.join(" · ")} · Room sizes follow the listed square footage unless a photo estimate replaces them. Not a measured scan`;
         bar.hidden = false;
       }
       document.title = `3D Room · ${listingTitle} — Smart Realty USA`;
@@ -601,6 +612,8 @@ export async function bootRoomSim() {
       ? "Measured LiDAR / RoomPlan geometry · imported locally"
       : room.mode === "vision"
       ? `AI estimate from ${room.sourcePhotoUrls?.length || 1} photo${room.sourcePhotoUrls?.length === 1 ? "" : "s"} · ${room.analysis?.confidence || "low"} confidence`
+      : room.sizeSource === "listed-sqft"
+        ? `About ${Math.round(room.width / 0.3048)}×${Math.round(room.depth / 0.3048)} ft from the listed ${Number(room.listedSqft).toLocaleString("en-US")} sqft · not a measured scan`
       : room.mode === "planning"
         ? "Editable planning template · room dimensions unverified"
       : room.analysis?.errorCode === "openai_credits_exhausted"
@@ -616,6 +629,14 @@ export async function bootRoomSim() {
     ...missingPlanningRooms(listing, house.rooms),
     ...house.rooms.filter((room) => room.mode !== "vision" && !room.id.startsWith("reference-"))];
   if (!rooms.length) rooms.push({ ...DEFAULT_LIVING_ROOM, id: "sample-room" });
+  const seenByType = {};
+  for (let i = 0; i < rooms.length; i += 1) {
+    const type = rooms[i].roomType || "other";
+    const total = rooms.filter((room) => (room.roomType || "other") === type).length;
+    const index = seenByType[type] || 0;
+    seenByType[type] = index + 1;
+    rooms[i] = applyListedSize(rooms[i], listing, index, total);
+  }
   const customKey = `sru.room.list.${listingId || "sample"}`;
   let customRooms = [];
   try {
@@ -705,6 +726,13 @@ export async function bootRoomSim() {
     }
     renderPhotoStrip(urls, urls[0], room);
     showPhotoMatch(room);
+    const deptFor = { bedroom: "bedroom", bathroom: "bath", living: "living", dining: "living", kitchen: "living" };
+    const nextDept = CATALOG_TREE.find((dept) => dept.id === deptFor[room.roomType]);
+    if (nextDept) {
+      department = nextDept.id;
+      group = nextDept.groups[0].id;
+      renderCatalog();
+    }
     document.querySelectorAll("[data-house-room]").forEach((button) => {
       const selected = button.dataset.houseRoom === activeRoomId;
       button.classList.toggle("is-on", selected);

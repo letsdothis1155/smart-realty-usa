@@ -428,6 +428,17 @@ function monitor(w, h, d, product) {
   return footprint(g, w, d, h);
 }
 
+function bed(w, h, d, product) {
+  const g = new THREE.Group();
+  const p = palette(product);
+  const frame = mat(product.swatch || p.cream, { roughness: 0.62 });
+  const mattress = mat("#f7f4ee", { roughness: 0.92 });
+  add(g, geo.box, frame, 0, 0.16, 0, w, 0.28, d);
+  add(g, geo.box, mattress, 0, 0.36, d * 0.04, w * 0.9, 0.2, d * 0.84);
+  add(g, geo.box, frame, 0, h * 0.42, -d / 2 + 0.04, w, Math.max(h * 0.72, 0.5), 0.08);
+  return footprint(g, w, d, h);
+}
+
 function boxFallback(w, h, d, product) {
   const g = new THREE.Group();
   add(g, geo.box, mat(product.swatch || "#9a9284"), 0, h / 2, 0, w, h, d);
@@ -437,6 +448,7 @@ function boxFallback(w, h, d, product) {
 const BUILDERS = {
   sofa,
   sectional,
+  bed,
   chair,
   lounge,
   "coffee-table": coffeeTable,
