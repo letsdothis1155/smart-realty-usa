@@ -2,16 +2,12 @@ async function startPhotoRoom() {
  const params=new URLSearchParams(location.search);
  const embedded=document.getElementById('editor-data').textContent.trim();
  if(embedded){ bootPhotoRoom(JSON.parse(embedded)); return; }
- const {loadPropertyPhotoRooms}=await import('/js/room-photo-previews.mjs?v=3');
+ const [{loadPropertyPhotoRooms},{resolveStudioRoom}]=await Promise.all([
+  import('/js/room-photo-previews.mjs?v=4'),import('/js/room-models.mjs?v=1'),
+ ]);
  const listing=params.get('listing');
  const rooms=await loadPropertyPhotoRooms(listing);
- const entry=rooms.find(room=>room.id===params.get('room'));
- if(!entry)throw new Error('Room model is unavailable');
- const response=await fetch(entry.model,{signal:AbortSignal.timeout(8000)});
- if(!response.ok)throw new Error('Room model could not load');
- const data=await response.json();
- if(data.listingId!==listing||data.roomId!==entry.id||!data.views?.length||!data.shell?.surfaces?.length)throw new Error('Room model is incomplete');
- bootPhotoRoom({...data,roomLinks:rooms});
+ bootPhotoRoom(await resolveStudioRoom(listing,params.get('room'),params.get('photo'),rooms));
 }
 
 async function showPhotoFallback() {
@@ -697,7 +693,7 @@ function disableFinishes(){
 if(Object.keys(data.finishes||{}).length){
  try{drawFinishes=createPhotoRenderer(finishCanvas,data.finishes,schedule);}catch(error){console.warn('Photo finishes unavailable',error);}
  if(drawFinishes){
-  for(const option of photoOptions){option.hidden=false;option.disabled=false;}
+  for(const option of photoOptions){option.hidden=data.referenceOnly&&option.value==='match';option.disabled=option.hidden;}
   displayControl.value='photo';
   finishCanvas.addEventListener('webglcontextlost',()=>{disableFinishes();schedule();});
  }
@@ -907,8 +903,12 @@ function render(timestamp){
  sceneProjection=photoMode?sourceProjection:pixelProjection(false);
  const f=face();
  if(image&&referencePanel?.open){
-  pc.drawImage(image,0,0);
-  if(marking||geometryPanel?.open){
+  if(data.referenceOnly){
+   pc.clearRect(0,0,photo.width,photo.height);
+   const scale=Math.min(photo.width/image.width,photo.height/image.height);
+   pc.drawImage(image,(photo.width-image.width*scale)/2,(photo.height-image.height*scale)/2,image.width*scale,image.height*scale);
+  }else pc.drawImage(image,0,0);
+  if(!data.referenceOnly&&(marking||geometryPanel?.open)){
    outline(pc,f.polygon.map(p=>world(f,p)),'#ffe174');
    for(const o of f.openings){const [a,b,c,d]=o.bounds;outline(pc,[[a,b],[c,b],[c,d],[a,d]].map(p=>world(f,p)),o.enabled?'#8ce6f3':'#ff9c91',!o.enabled);}
    if(corner){const p=project(world(f,corner),true);if(p){pc.fillStyle='#ffe174';pc.fillRect(p[0]-4,p[1]-4,8,8);}}
@@ -922,7 +922,7 @@ function render(timestamp){
  el('surface-note').hidden=overPhoto;
  el('windows-control').style.display=overPhoto||!hasWindowPhotos?'none':'';
  el('orbit').hidden=!photoMode;
- el('mode').textContent=overPhoto?'Listing photo + 3D furniture':photoMode?'Room from the photo camera':completion?'Editable 3D room':'Editable 3D room preview';
+ el('mode').textContent=data.referenceOnly?'Editable room · estimated layout':overPhoto?'Listing photo + 3D furniture':photoMode?'Room from the photo camera':completion?'Editable 3D room':'Editable 3D room preview';
  const surfaces=previewSurfaces(),objects=placedFurnitureMeshes(surfaces);
  if(textured){
   if(overPhoto)gc.drawImage(image,0,0,cloud.width,cloud.height);
@@ -973,7 +973,7 @@ function loadPhoto(){
   if(generation!==imageGeneration)return;
   image=next;
   photo.hidden=false;
-  el('camera').disabled=false;
+  el('camera').disabled=Boolean(data.referenceOnly);
   if(referenceStatus)referenceStatus.hidden=true;
   schedule();
  };
@@ -1153,7 +1153,8 @@ el('html').onclick=async()=>{
 if(data.listingId){
  const back=el('property-back');
  back.hidden=false;
- back.querySelector('a').href='/room-builder/?listing='+encodeURIComponent(data.listingId)+'&engine=planning';
+ back.querySelector('a').href='/new-listings/?id='+encodeURIComponent(data.listingId);
+ back.querySelector('a').textContent='← Property listing';
 }
 const roomLinks=Array.isArray(data.roomLinks)?data.roomLinks:[];
 if(roomLinks.length){
@@ -1203,12 +1204,17 @@ if(original.planningScale?.source==='span entered by user'){
 }
 const requestedView=Number(new URLSearchParams(location.search).get('view'));
 if(Number.isInteger(requestedView)&&requestedView>=0&&requestedView<data.views.length)el('view').value=String(requestedView);
-const views=`${data.views.length} listing ${data.views.length===1?'photo':'photos'}`;
+const photoCount=data.referencePhotoCount??data.views.length;
+const views=`${photoCount} listing ${photoCount===1?'photo':'photos'}`;
 const evidence=el('room-evidence');
-if(evidence)evidence.textContent=completion
+if(evidence)evidence.textContent=data.referenceOnly
+ ? 'Editable estimate from listing dimensions and room counts. Photos are references; a photo reconstruction is not available yet.'
+ : completion
  ? `Built from ${views}. ${completion.inferredWallCount>0?'Unseen walls use estimated positions.':'Wall positions are estimated from the photos.'}`
  : `Photo-derived preview from ${views}. Parts of the room may be missing.`;
-el('surface-note').textContent=completion
+el('surface-note').textContent=data.referenceOnly
+ ? 'Room shape and finishes are planning estimates. Compare the original photos before making changes at the property.'
+ : completion
  ? 'Finishes blend visible details from the photos. Unseen areas use matching colors.'
  : 'The preview uses textured surfaces visible in the listing photos.';
 const geometryNote=el('geometry-note');
@@ -1217,6 +1223,11 @@ if(geometryNote)geometryNote.textContent=completion
  : 'The preview shows estimated surfaces visible in the listing photos.';
 restoreFurniture();
 populateSurfaces();setupFurniture();fitOrbit();loadPhoto();
+if(data.referenceOnly){
+ el('camera').hidden=true;
+ el('mark').disabled=true;
+ if(!photoCount&&referencePanel)referencePanel.hidden=true;
+}
 el('viewer-loading').hidden=true;
 
 }

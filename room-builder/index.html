@@ -202,10 +202,8 @@
         }
       }
       if (listingId && params.get('engine') !== 'planning' && params.get('mode') !== 'walk') {
-        const [{ loadPropertyPhotoRooms }, { photoRoomTarget }] = await Promise.all([
-          import('/js/room-photo-previews.mjs?v=4'), import('/js/room-entry.mjs?v=4'),
-        ]);
-        const target = photoRoomTarget(params, await loadPropertyPhotoRooms(listingId));
+        const { studioRoomTarget } = await import('/js/room-entry.mjs?v=5');
+        const target = studioRoomTarget(params);
         if (target) { location.replace(target); return; }
       }
       const { bootRoomSim } = await import("/js/room-sim.js?v=photo3");
