@@ -70,7 +70,7 @@ D&B sometimes creates numbers when others inquire about your company.
 - [x] Trade name / DBA — **Smart Realty USA**
 - [x] Physical street address — **2611 Harmony Rd, Louisville, KY 40299** (no P.O. box)
 - [x] Mailing address — same
-- [x] Phone + business email — **1-800-762-7879** / **502-539-1090** · **andrewiredale@smartrealty.us**
+- [x] Business phone + email — **1-800-762-7879** · **andrewiredale@smartrealty.us**
 - [x] Owner / officer — **Andrew Iredale Jr**, Owner / Managing Member
 - [x] Business structure — Kentucky member-managed LLC
 - [x] Year started — **2026** (filed 3 Aug 2026, SOS 1614978.06)

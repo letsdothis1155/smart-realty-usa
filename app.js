@@ -2624,7 +2624,7 @@ const AGENT_REPLIES = [
   "House Blue Book on this demo is a transparent offer next to a fair-value estimate. No hidden fees in the UI.",
   "Bitcoin quotes use live Coinbase/CoinGecko prices. The pay button does not move real funds.",
   "Try-Before-Buy is a product idea on this demo: stay first, then apply eligible nights toward a purchase.",
-  "SMART REALTY.US LLC is owner-operated in Louisville. Phone 502-539-1090 · andrewiredale@smartrealty.us.",
+  "SMART REALTY.US LLC is owner-operated in Louisville. Email andrewiredale@smartrealty.us.",
   "This site runs on GitHub Pages, built solo by Andrew in Louisville. Free member access uses passwordless email magic links — we're in public demo now, ahead of full brokerage licensing.",
   "Want a Blue Book, a BTC quote, or a waitlist invite? I can point you to those sections — or email Andrew.",
 ];
@@ -2710,7 +2710,7 @@ function initChat() {
         reply =
           "Our free House Blue Book is like a Kelley Blue Book for homes — fair market value, comps, and our lowest transparent offer with no surprise fees.";
       } else if (lower.includes("phone") || lower.includes("call")) {
-        reply = "Call 502-539-1090 or email andrewiredale@smartrealty.us. This is an owner-operated Louisville LLC — not a 24/7 call center.";
+        reply = "Email andrewiredale@smartrealty.us. This is an owner-operated Louisville LLC — not a 24/7 call center.";
       } else if (lower.includes("security") || lower.includes("safe") || lower.includes("hack")) {
         reply =
           "The public site is static HTTPS on GitHub Pages + Cloudflare. The Bitcoin explorer is a read-only node. We do not run a 24/7 SOC or a live title vault.";
@@ -2965,8 +2965,6 @@ function getConfig() {
       siteUrl: "https://smartrealty.us",
       canonicalHost: "smartrealty.us",
       contactEmail: "andrewiredale@smartrealty.us",
-      phoneDisplay: "502-539-1090",
-      phoneTel: "+15025391090",
       isPrivateDemo: false,
       presenterMode: false,
     }
@@ -2991,15 +2989,6 @@ function applyDomainConfig() {
   $$("[data-contact-email-text]").forEach((el) => {
     el.textContent = email;
   });
-  const phoneDisplay = cfg.phoneDisplay || "502-539-1090";
-  const phoneTel = cfg.phoneTel || "+15025391090";
-  $$("[data-phone]").forEach((el) => {
-    el.textContent = phoneDisplay;
-  });
-  $$('a[href^="tel:"]').forEach((a) => {
-    a.href = `tel:${phoneTel}`;
-  });
-
   // Live-on footer line when not file://
   const liveLine = $("#liveOnLine");
   const liveLink = $("#liveOnLink");
@@ -3045,7 +3034,6 @@ function applyDomainConfig() {
       alternateName: cfg.siteName || "Smart Realty USA",
       url: siteUrl || "https://smartrealty.us",
       email,
-      telephone: cfg.phoneTel || "+1-502-539-1090",
       description: "Kentucky LLC. Listing copy and software from Louisville. Not a licensed brokerage.",
       areaServed: "US",
       numberOfEmployees: 1,
@@ -3113,7 +3101,7 @@ Suggested walkthrough (5–7 minutes):
   5. Open any home — see Blue Book stack + live ₿ price
   6. Try Free Blue Book on the form
   7. Optional: Simulate Bitcoin checkout or book a Try-Before-Buy stay
-  8. Email andrewiredale@smartrealty.us or call 502-539-1090
+  8. Email andrewiredale@smartrealty.us
 
 Official contact: ${cfg.contactEmail || "andrewiredale@smartrealty.us"}
 
