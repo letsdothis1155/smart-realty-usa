@@ -22,8 +22,6 @@ window.SRU_CONFIG = {
   canonicalHost: "smartrealty.us",
 
   contactEmail: "andrewiredale@smartrealty.us",
-  phoneDisplay: "502-539-1090",
-  phoneTel: "+15025391090",
 
   /**
    * Company identity — match KY Articles exactly.
