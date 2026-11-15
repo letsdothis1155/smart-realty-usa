@@ -3,7 +3,7 @@ async function startPhotoRoom() {
  const embedded=document.getElementById('editor-data').textContent.trim();
  if(embedded){ bootPhotoRoom(JSON.parse(embedded)); return; }
  const [{loadPropertyPhotoRooms},{resolveStudioRoom}]=await Promise.all([
-  import('/js/room-photo-previews.mjs?v=4'),import('/js/room-models.mjs?v=1'),
+  import('/js/room-photo-previews.mjs?v=4'),import('/js/room-models.mjs?v=2'),
  ]);
  const listing=params.get('listing');
  const rooms=await loadPropertyPhotoRooms(listing);
@@ -18,15 +18,14 @@ async function showPhotoFallback() {
  if(!listing)return;
  document.getElementById('room-fallback-back').href='/room-builder/?listing='+encodeURIComponent(listing)+'&engine=planning';
  try {
-  const response=await fetch('/api/listings/'+encodeURIComponent(listing),{signal:AbortSignal.timeout(6000)});
-  if(!response.ok)return;
-  const {listing:record}=await response.json();
+  const {loadStudioProperty}=await import('/js/room-models.mjs?v=2');
+  const {listing:record}=await loadStudioProperty(listing);
   const gallery=document.getElementById('room-fallback-photos');
   for(const source of (record?.images||[]).slice(0,12)){
    const url=new URL(source,location.origin);
    if(!['https:','http:'].includes(url.protocol))continue;
    const photo=new Image();
-   photo.alt='Listing photo';
+   photo.alt='Property gallery photo';
    photo.onerror=()=>photo.remove();
    photo.src=url.href;
    gallery.append(photo);
@@ -1153,7 +1152,7 @@ el('html').onclick=async()=>{
 if(data.listingId){
  const back=el('property-back');
  back.hidden=false;
- back.querySelector('a').href='/new-listings/?id='+encodeURIComponent(data.listingId);
+  back.querySelector('a').href=data.propertyHref||'/new-listings/?id='+encodeURIComponent(data.listingId);
  back.querySelector('a').textContent='← Property listing';
 }
 const roomLinks=Array.isArray(data.roomLinks)?data.roomLinks:[];
@@ -1202,18 +1201,24 @@ if(scaleKey)try{
 if(original.planningScale?.source==='span entered by user'){
  updateScale(Number(original.planningScale.spanFeet),'span entered by user');
 }
-const requestedView=Number(new URLSearchParams(location.search).get('view'));
+ const selectionNote=el('room-selection-note');
+ if(selectionNote&&data.selectionNote){
+  selectionNote.textContent=data.selectionNote;
+  selectionNote.hidden=false;
+ }
+ const viewParam=new URLSearchParams(location.search).get('view');
+ const requestedView=data.referenceIndex>=0?data.referenceIndex:viewParam===null?-1:Number(viewParam);
 if(Number.isInteger(requestedView)&&requestedView>=0&&requestedView<data.views.length)el('view').value=String(requestedView);
 const photoCount=data.referencePhotoCount??data.views.length;
 const views=`${photoCount} listing ${photoCount===1?'photo':'photos'}`;
 const evidence=el('room-evidence');
 if(evidence)evidence.textContent=data.referenceOnly
- ? 'Editable estimate from listing dimensions and room counts. Photos are references; a photo reconstruction is not available yet.'
+  ? photoCount?'Editable estimate with reference photos for this room.':'Editable estimate. No matching photo is available for this room.'
  : completion
  ? `Built from ${views}. ${completion.inferredWallCount>0?'Unseen walls use estimated positions.':'Wall positions are estimated from the photos.'}`
  : `Photo-derived preview from ${views}. Parts of the room may be missing.`;
 el('surface-note').textContent=data.referenceOnly
- ? 'Room shape and finishes are planning estimates. Compare the original photos before making changes at the property.'
+  ? 'Room shape and finishes are planning estimates.'
  : completion
  ? 'Finishes blend visible details from the photos. Unseen areas use matching colors.'
  : 'The preview uses textured surfaces visible in the listing photos.';
@@ -1222,7 +1227,8 @@ if(geometryNote)geometryNote.textContent=completion
  ? 'The 3D view hides near walls and the ceiling so you can see inside. Geometry downloads include them.'
  : 'The preview shows estimated surfaces visible in the listing photos.';
 restoreFurniture();
-populateSurfaces();setupFurniture();fitOrbit();loadPhoto();
+ populateSurfaces();setupFurniture();fitOrbit();
+ if(photoCount)loadPhoto();
 if(data.referenceOnly){
  el('camera').hidden=true;
  el('mark').disabled=true;

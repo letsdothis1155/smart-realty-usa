@@ -1,18 +1,58 @@
-import { propertyRoomModel, roomChoiceLabel } from './room-pipeline.js';
+import { classifyRoomPhoto, propertyRoomModel, roomChoiceLabel } from './room-pipeline.js?v=room-match1';
 
 const validId = id => /^[a-zA-Z0-9_-]{1,100}$/.test(String(id || ''));
-const fileName = url => { try { return decodeURIComponent(new URL(url, 'https://smartrealty.us').pathname.split('/').at(-1)); } catch { return ''; } };
+const catalogId = /^sr-\d{3}(?:-[a-z0-9-]+)?$/;
 
-export function listingRooms(listing, models = []) {
-  const photos = [...new Set([...(Array.isArray(listing.images) ? listing.images : []),
-    ...(Array.isArray(listing.galleryImages) ? listing.galleryImages : [])])].filter(url => typeof url === 'string');
-  const rooms = propertyRoomModel(listing, photos).rooms.map(room => ({
+function photoUrl(value) {
+  if (typeof value !== 'string' || !value.trim()) return '';
+  try {
+    const url = new URL(value, 'https://smartrealty.us/');
+    if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password) return '';
+    url.hash = '';
+    return url.href;
+  } catch { return ''; }
+}
+
+function fileName(url) {
+  try { return decodeURIComponent(new URL(url).pathname.split('/').at(-1)); } catch { return ''; }
+}
+
+function listingPhotos(listing) {
+  return [...new Set([...(Array.isArray(listing.images) ? listing.images : []),
+    ...(Array.isArray(listing.galleryImages) ? listing.galleryImages : []), listing.image].map(photoUrl).filter(Boolean))];
+}
+
+function archivedRooms(pack) {
+  return [...pack.rooms, pack.hall].filter(room => validId(room?.id)).map(room => {
+    const photo = photoUrl(room.photo);
+    const named = photo && classifyRoomPhoto(photo);
+    const match = named?.id === room.id;
+    return {
+      id: room.id, label: room.label || 'Room',
+      roomType: match ? named.roomType : 'other',
+      width: room.widthM ?? room.w, depth: room.depthM ?? room.d, height: room.heightM,
+      sizeSource: room.estimated === false ? 'listed-room' : 'listed-sqft',
+      sourcePhotoUrls: match ? [photo] : [],
+    };
+  });
+}
+
+export function listingRooms(listing, models = [], archive = []) {
+  const photos = listing.provider === 'demo' ? [] : listingPhotos(listing);
+  const rooms = archive.length ? archive : propertyRoomModel(listing, photos).rooms.map(room => ({
     ...room, id: room.id.replace(/^reference-/, ''), label: roomChoiceLabel(room.label),
   }));
   for (const model of models) {
+    const photoFiles = Array.isArray(model.photoFiles) ? model.photoFiles : [];
+    // Explicitly named photos for a different room invalidate the model-room association.
+    if (photoFiles.some(name => {
+      const identified = classifyRoomPhoto(name);
+      return identified && identified.id !== model.id;
+    })) continue;
     const existing = rooms.find(room => room.id === model.id);
-    if (existing) existing.model = model.model;
-    else rooms.push({ id: model.id, label: model.label, roomType: 'other', model: model.model });
+    const published = { model: model.model, modelPhotoFiles: photoFiles };
+    if (existing) Object.assign(existing, published);
+    else rooms.push({ id: model.id, label: model.label, roomType: 'other', ...published });
   }
   return rooms.map(room => ({ ...room,
     href: '/room-builder/studio/?' + new URLSearchParams({ listing: listing.id, room: room.id }),
@@ -51,11 +91,7 @@ export function planningRoomModel(listing, room) {
     bounds: [face.polygon[0][0],face.polygon[0][1],face.polygon[2][0],face.polygon[2][1]],
     image: finish(colors[face.kind], face.kind==='floor'), coverage:0,
   }]));
-  const references = room.sourcePhotoUrls?.length ? room.sourcePhotoUrls :
-    [...(Array.isArray(listing.images) ? listing.images : []), ...(Array.isArray(listing.galleryImages) ? listing.galleryImages : [])];
-  const sourcePhotos = [...new Set(references)].filter(url => {
-    try { return ['https:','http:'].includes(new URL(url, 'https://smartrealty.us').protocol); } catch { return false; }
-  }).slice(0,12);
+  const sourcePhotos = [...new Set((room.sourcePhotoUrls || []).map(photoUrl).filter(Boolean))].slice(0,12);
   const placeholder = finish('#aeb9b3', false);
   return {
     engineVersion:4, referenceOnly:true, referencePhotoCount:sourcePhotos.length,
@@ -71,30 +107,78 @@ export function planningRoomModel(listing, room) {
   };
 }
 
-export async function resolveStudioRoom(listingId, requestedRoom, photoUrl, models = [], request = globalThis.fetch) {
-  if (!validId(listingId)) throw new Error('Invalid listing ID');
-  let listing;
+async function readJson(path, request) {
   try {
-    const response = await request('/api/listings/' + encodeURIComponent(listingId), { signal:AbortSignal.timeout(8000) });
-    if (response.ok) {
-      const record = await response.json();
-      if (record.listing?.id === listingId) listing = record.listing;
+    const response = await request(path, { signal: AbortSignal.timeout(6000) });
+    if (response.ok) return await response.json();
+  } catch { /* The next applicable listing source can still open the studio. */ }
+  return null;
+}
+
+export async function loadStudioProperty(listingId, request = globalThis.fetch) {
+  if (!validId(listingId)) return {};
+  if (catalogId.test(listingId)) {
+    const catalog = await readJson('/data/listings.json', request);
+    const listing = Array.isArray(catalog?.listings) && catalog.listings.find(row =>
+      row?.provider === 'demo' && (row.id === listingId || `${row.id}-${row.slug}` === listingId));
+    if (listing) return { listing };
+    return {};
+  }
+  const record = await readJson('/api/listings/' + encodeURIComponent(listingId), request);
+  if (record?.listing?.id === listingId) return { listing: record.listing };
+  const pack = await readJson(`/models/${listingId}/rooms.json`, request);
+  if (pack?.listingId === listingId && Array.isArray(pack.rooms)) {
+    const rooms = archivedRooms(pack);
+    if (rooms.length) {
+      return { listing: { id: listingId, title: pack.propertyLabel, images: rooms.flatMap(room => room.sourcePhotoUrls) },
+        archive: rooms };
     }
-  } catch { /* Published models can still open when listing data is temporarily unavailable. */ }
-  const rooms = listing ? listingRooms(listing, models) : models;
-  let room = requestedRoom && rooms.find(room => room.id === requestedRoom || room.id === 'reference-'+requestedRoom || room.roomType === requestedRoom);
-  if (!room && !requestedRoom && photoUrl) room = rooms.find(room => room.photoFiles?.includes(fileName(photoUrl)));
-  if (!room) room = rooms.find(room => room.id === 'living' || room.roomType === 'living') || rooms[0];
+  }
+  return {};
+}
+
+function matchesPhoto(room, photo, archive) {
+  if (!photo || !room.sourcePhotoUrls?.length) return false;
+  if (room.sourcePhotoUrls.includes(photo)) return true;
+  // An archived plan stores one primary URL per room. A second published angle
+  // must use a name from that room's manifest and the same provider directory.
+  return Boolean(archive && room.modelPhotoFiles?.includes(fileName(photo)) &&
+    room.sourcePhotoUrls.some(source => new URL('.', source).href === new URL('.', photo).href));
+}
+
+export async function resolveStudioRoom(listingId, requestedRoom, requestedPhoto, models = [], request = globalThis.fetch) {
+  if (!validId(listingId)) throw new Error('Invalid listing ID');
+  const { listing, archive } = await loadStudioProperty(listingId, request);
+  const rooms = listing ? listingRooms(listing, models, archive) : models;
+  const id = (requestedRoom || '').replace(/^reference-/, '');
+  const requested = id && (rooms.find(room => room.id === id) || rooms.find(room => room.roomType === id));
+  const photo = photoUrl(requestedPhoto);
+  const matchingRooms = rooms.filter(room => matchesPhoto(room, photo, archive));
+  const photoRoom = matchingRooms.length === 1 ? matchingRooms[0] : null;
+  const room = requested || (!id && photoRoom) || rooms.find(room => room.id === 'living' || room.roomType === 'living') || rooms[0];
   if (!room) throw new Error('Listing room data is unavailable');
+
+  const matchedPhoto = photoRoom === room ? photo : '';
+  const selectionNote = id && !requested ? 'The linked room is unavailable. Choose from the rooms listed here.' :
+    requestedPhoto && !matchedPhoto ? 'The linked photo could not be matched to this room.' : '';
+  const context = {
+    roomLinks: rooms, selectionNote,
+    propertyHref: listing?.provider === 'demo' ? '/#listings' : '/new-listings/?id=' + encodeURIComponent(listingId),
+  };
   if (room.model) {
     try {
       const response = await request(room.model, { signal:AbortSignal.timeout(8000) });
       if (!response.ok) throw new Error('Model unavailable');
       const data = await response.json();
       if (data.listingId !== listingId || data.roomId !== room.id || !data.views?.length || !data.shell?.surfaces?.length) throw new Error('Incomplete room model');
-      return {...data,roomLinks:rooms};
+      const modelFiles = room.modelPhotoFiles || room.photoFiles;
+      const referenceIndex = matchedPhoto && modelFiles?.length === data.views.length
+        ? modelFiles.indexOf(fileName(matchedPhoto)) : -1;
+      return { ...data, ...context, referenceIndex };
     } catch { /* Fall back in the same studio; keep every other room available. */ }
   }
   if (!listing) throw new Error('Listing data is unavailable');
-  return {...planningRoomModel(listing,room),roomLinks:rooms};
+  const data = planningRoomModel(listing, room);
+  const referenceIndex = matchedPhoto ? data.views.findIndex(view => view.image === matchedPhoto) : -1;
+  return { ...data, ...context, referenceIndex };
 }

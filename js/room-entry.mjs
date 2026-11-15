@@ -24,6 +24,6 @@ export function studioRoomTarget(query) {
   const listing = params.get('listing');
   if (!/^[a-zA-Z0-9_-]{1,100}$/.test(listing || '') || params.get('engine') === 'planning' || params.get('mode') === 'walk') return '';
   const target = new URLSearchParams({ listing });
-  for (const key of ['room','photo']) if (params.get(key)) target.set(key,params.get(key));
+  for (const key of ['room','photo','view']) if (params.get(key)) target.set(key,params.get(key));
   return '/room-builder/studio/?' + target;
 }
