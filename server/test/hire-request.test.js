@@ -10,6 +10,7 @@ function harness(reply, search = "") {
   const events = {};
   const values = { hireName: "Example Customer", hireEmail: "customer@example.com", hireCity: "Louisville", hireBrief: "Three bedrooms and an updated kitchen.", hireWebsite: "" };
   const elements = Object.fromEntries(Object.entries(values).map(([id, value]) => [id, { value }]));
+  elements.hireService = { value: "listing-copy", disabled: false };
   elements.hireForm = { reportValidity: () => true, addEventListener: (event, handler) => { events[event] = handler; } };
   elements.hireConsent = { checked: true };
   elements.hireSubmit = { disabled: false, textContent: "Request a quote — no charge" };
@@ -108,4 +109,35 @@ test("malformed and overlong source tags are omitted from the quote", async () =
     await h.submit();
     assert.doesNotMatch(JSON.parse(h.calls[0].options.body).note, /Source:/);
   }
+});
+
+test("a room-studio referral preselects the combined quote and keeps the 400-character brief", async () => {
+  const h = harness(response({ ok: true, id: "room-quote", emailed: true }),
+    "?offer=room-and-copy&utm_source=room-studio");
+  assert.equal(h.elements.hireService.value, "room-and-copy");
+  assert.match(h.elements.hireBrief.placeholder, /room name/);
+  assert.match(decodeURIComponent(h.elements.hireEmailFallback.href), /subject=Listing copy \+ one-room visualization quote/);
+  h.elements.hireBrief.value = "a".repeat(396) + "tail";
+  await h.submit();
+  const body = JSON.parse(h.calls[0].options.body);
+  assert.equal(body.intent, "other");
+  assert.match(body.note, /^Quote: copy \+ one-room layout.*Source: room-studio/);
+  assert.ok(body.note.endsWith(h.elements.hireBrief.value));
+  assert.ok(body.note.length <= 500);
+  assert.match(h.elements.hireStatus.textContent, /scope, price, and a delivery date/);
+  assert.doesNotMatch(h.elements.hireStatus.textContent, /Stripe|\$150/);
+});
+
+test("switching quote services keeps the typed brief and updates the email fallback", async () => {
+  const h = harness(response({ ok: true, id: "copy-quote", emailed: false }), "?offer=room-and-copy");
+  const brief = h.elements.hireBrief.value;
+  h.elements.hireService.value = "listing-copy";
+  h.events.input();
+  assert.equal(h.elements.hireBrief.value, brief);
+  assert.match(h.elements.hireBrief.placeholder, /confirmed features/);
+  await h.submit();
+  assert.equal(JSON.parse(h.calls[0].options.body).intent, "services");
+  const email = decodeURIComponent(h.elements.hireEmailFallback.href);
+  assert.match(email, /subject=Listing copy pack quote/);
+  assert.match(email, /Saved request reference: copy-quote/);
 });
