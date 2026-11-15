@@ -2,10 +2,29 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { listingRooms, planningRoomModel, resolveStudioRoom } from './room-models.mjs';
+import { roomCopySample } from './room-copy-sample.mjs';
 import { studioRoomTarget } from './room-entry.mjs';
 
 const jsonFile = path => JSON.parse(readFileSync(new URL(path, import.meta.url), 'utf8'));
 const response = value => ({ ok: value !== undefined, json: async () => value });
+
+test('the listing marketing sample opens as a fresh furnished room at the advertised dimensions', () => {
+ const sample = roomCopySample();
+ assert.equal(sample.sampleRoom, true);
+ assert.equal(sample.listingId, 'demo-room-copy');
+ assert.equal(sample.referencePhotoCount, 0);
+ const { widthM, depthM, heightM, source } = sample.shell.completion;
+ assert.deepEqual([widthM, depthM, heightM].map(value => Math.round(value / 0.3048)), [12, 14, 8]);
+ assert.equal(source, 'sample-dimensions');
+ const items = sample.shell.furniture;
+ assert.ok(items.some(item => item.kind === 'kivik'));
+ assert.ok(items.some(item => item.kind === 'poang'));
+ assert.ok(items.some(item => item.kind === 'lackTable'));
+ assert.ok(items.every(item => Math.abs(item.u) < widthM / 2 && Math.abs(item.v) < depthM / 2));
+ assert.equal(sample.shell.surfaces.find(surface => surface.id === 'plan-south').openings[0].kind, 'doorway');
+ items.pop();
+ assert.equal(roomCopySample().shell.furniture.length, 6);
+});
 
 const samples = [
   {id:'sized',sqft:1800,beds:3,baths:2,roomSizes:[{id:'living',widthFt:20,lengthFt:12,heightFt:10}],images:['https://example.com/lr_123456.jpg']},
