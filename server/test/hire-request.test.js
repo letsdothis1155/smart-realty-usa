@@ -6,7 +6,7 @@ const vm = require("node:vm");
 
 const source = fs.readFileSync(path.join(__dirname, "../../js/hire-request.js"), "utf8");
 
-function harness(reply) {
+function harness(reply, search = "") {
   const events = {};
   const values = { hireName: "Example Customer", hireEmail: "customer@example.com", hireCity: "Louisville", hireBrief: "Three bedrooms and an updated kitchen.", hireWebsite: "" };
   const elements = Object.fromEntries(Object.entries(values).map(([id, value]) => [id, { value }]));
@@ -17,7 +17,8 @@ function harness(reply) {
   elements.hireEmailFallback = { href: "" };
   const calls = [];
   vm.runInNewContext(source, {
-    document: { getElementById: (id) => elements[id] }, AbortController, setTimeout, clearTimeout,
+    document: { getElementById: (id) => elements[id] },
+    window: { location: { search } }, URLSearchParams, AbortController, setTimeout, clearTimeout,
     fetch: async (url, options) => { calls.push({ url, options }); return typeof reply === "function" ? reply() : reply; },
   });
   return { elements, events, calls, submit: () => events.submit({ preventDefault() {} }) };
@@ -36,6 +37,7 @@ test("service inquiry uses the live signup contract and does not treat a request
   assert.equal(body.intent, "services");
   assert.match(body.note, /USD 150/);
   assert.match(body.note, /Three bedrooms/);
+  assert.doesNotMatch(body.note, /Source:/);
   assert.ok(body.note.length <= 500);
   assert.match(h.elements.hireStatus.textContent, /request-123/);
   assert.match(h.elements.hireStatus.textContent, /No payment has been taken/);
@@ -87,9 +89,23 @@ test("contact consent is required before transmitting the brief", async () => {
   assert.equal(h.calls.length, 0);
 });
 
-test("maximum brief fits the existing backend without silent truncation", async () => {
-  const h = harness(response({ ok: true, id: "test", emailed: true }));
-  h.elements.hireBrief.value = "x".repeat(400);
+test("a tagged quote preserves a maximum-length brief and attributes the email fallback", async () => {
+  const h = harness(response({ ok: true, id: "test", emailed: false }), "?utm_source=ABCDEFGHIJKLMNOPQRSTUVWX");
+  const brief = "x".repeat(396) + "tail";
+  h.elements.hireBrief.value = brief;
+  assert.match(decodeURIComponent(h.elements.hireEmailFallback.href), /Source: abcdefghijklmnopqrstuvwx/);
   await h.submit();
-  assert.ok(JSON.parse(h.calls[0].options.body).note.length <= 500);
+  const { note } = JSON.parse(h.calls[0].options.body);
+  assert.match(note, /Source: abcdefghijklmnopqrstuvwx/);
+  assert.ok(note.endsWith(brief));
+  assert.ok(note.length <= 500);
+  assert.match(decodeURIComponent(h.elements.hireEmailFallback.href), /Source: abcdefghijklmnopqrstuvwx.*Saved request reference: test/s);
+});
+
+test("malformed and overlong source tags are omitted from the quote", async () => {
+  for (const tag of ["person%40example.com", "a".repeat(25), "5020000000"]) {
+    const h = harness(response({ ok: true, id: "test", emailed: true }), "?utm_source=" + tag);
+    await h.submit();
+    assert.doesNotMatch(JSON.parse(h.calls[0].options.body).note, /Source:/);
+  }
 });
