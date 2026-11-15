@@ -123,6 +123,7 @@ async function writeModel(listing, plan, output, work) {
   };
   const pack = {
     listingId: id,
+    propertyLabel: listing.address || listing.title || "Property",
     smartRealtyId: id,
     sqft: plan.sqft,
     engineVersion: ENGINE_VERSION,

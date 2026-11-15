@@ -294,14 +294,15 @@ export function classifyRoomPhoto(photoUrl) {
   if ((exterior.test(stem) && !/(?:bed|bath|kit|living|dining)/.test(stem)) || /front_and_side|back_patio|outbuilding/.test(stem)) {
     return null;
   }
-  const numbered = stem.match(/^(?:bdr|br|bed|bedroom)_(\d{1,2})$/);
+  const numbered = stem.match(/^(?:bdr|br|bed|bedroom)_(\d{1,2})(?:_\d{1,2})?$/);
   if (numbered) return { id: `bedroom-${Number(numbered[1])}`, label: `Bedroom ${Number(numbered[1])}`, roomType: "bedroom" };
-  const numberedBath = stem.match(/^(?:ba|bath|bathroom)_(\d{1,2})$/);
+  const numberedBath = stem.match(/^(?:ba|bath|bathroom)_(\d{1,2})(?:_\d{1,2})?$/);
   if (numberedBath) return { id: `bathroom-${Number(numberedBath[1])}`, label: `Bathroom ${Number(numberedBath[1])}`, roomType: "bathroom" };
   const named = [
-    [/^(?:master|primary|mbr)_(?:bath|bathroom)$/, "primary-bathroom", "Primary bathroom", "bathroom"],
+    [/^(?:master|primary|mbr)_(?:bath|bathroom)(?:_\d+)?$/, "primary-bathroom", "Primary bathroom", "bathroom"],
     [/^(?:master|primary|mbr)(?:_bed(?:room)?)?(?:_\d+)?$/, "primary-bedroom", "Primary bedroom", "bedroom"],
-    [/^(?:hall|full|half)_(?:bath|bathroom)$/, "hall-bathroom", "Hall bathroom", "bathroom"],
+    [/^(?:hall|full)_(?:bath|bathroom)(?:_\d+)?$/, "hall-bathroom", "Hall bathroom", "bathroom"],
+    [/^half_(?:bath|bathroom)(?:_\d+)?$/, "half-bathroom", "Half bathroom", "bathroom"],
     [/^(?:bath|bathroom)$/, "bathroom-1", "Bathroom", "bathroom"],
     [/^(?:living_room|living|lr)(?:_\d+)?$/, "living", "Living room", "living"],
     [/^(?:kitchen|kit)(?:_\d+)?$/, "kitchen", "Kitchen", "kitchen"],
@@ -389,9 +390,18 @@ export function missingPlanningRooms(listing, rooms) {
     ["bedroom", "Bedroom", count(listing.beds)],
     ["bathroom", "Bathroom", count(listing.baths)],
   ]) {
-    const analyzed = rooms.filter((room) => (room.mode === "vision" || room.id.startsWith("reference-")) &&
-      (room.roomType === type || room.label?.toLowerCase().includes(type))).length;
-    for (let i = analyzed; i < total; i += 1) {
+    const matched = rooms.filter((room) => (room.mode === "vision" || room.id.startsWith("reference-")) &&
+      (room.roomType === type || room.label?.toLowerCase().includes(type)));
+    const numberedRoom = new RegExp(`(?:^|-)${type}-(\\d+)$`);
+    const namedNumbers = new Set(matched.map(room => Number(numberedRoom.exec(room.id)?.[1]))
+      .filter(number => number >= 1 && number <= total));
+    let unnumbered = matched.length - namedNumbers.size;
+    for (let i = 0; i < total; i += 1) {
+      if (namedNumbers.has(i + 1)) continue;
+      if (unnumbered > 0) {
+        unnumbered -= 1;
+        continue;
+      }
       const name = `${label}${total > 1 ? ` ${i + 1}` : ""}`;
       const sized = listingRoomSize(listing, type, i, total);
       const feet = `${Math.round(sized.width / M_PER_FT)}×${Math.round(sized.depth / M_PER_FT)} ft`;

@@ -214,6 +214,19 @@ test("lists every named room on a property and skips exterior photos", () => {
   assert.equal(rooms.filter((room) => room.roomType === "bathroom").length, 2);
 });
 
+test("keeps extra angles with their numbered bedroom and fills the missing room number", () => {
+  const rooms = listPropertyRooms({ beds: 3, baths: 2 }, [
+    "Bedroom_1_816648_863846879.jpg", "Bedroom_1_2_816648_665403596.jpg",
+    "Bedroom_3_816648_933622323.jpg", "Full_bathroom_816648_813882787.jpg",
+    "Half_bathroom_816648_577997996.jpg",
+  ]);
+  assert.equal(rooms.find(room => room.id === "reference-bedroom-1").sourcePhotoUrls.length, 2);
+  assert.ok(rooms.some(room => room.id === "plan-bedroom-2" && room.label.startsWith("Bedroom 2 ·")));
+  assert.ok(!rooms.some(room => room.id === "plan-bedroom-3"));
+  assert.equal(rooms.find(room => room.id === "reference-hall-bathroom").sourcePhotoUrls.length, 1);
+  assert.equal(rooms.find(room => room.id === "reference-half-bathroom").sourcePhotoUrls.length, 1);
+});
+
 test("reads abbreviated HUD photo names and fills rooms the photos do not name", () => {
   const listing = { beds: 3, baths: 2, sqft: 1495 };
   const photos = [
