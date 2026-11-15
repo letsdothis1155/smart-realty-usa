@@ -40,7 +40,7 @@
     <p class="eyebrow">Listing copy · after Stripe</p>
     <h1>Send the property facts</h1>
     <p>Stripe collects the $150. This page does not charge you and does not see your card. Andrew writes three headlines and one description from what you type here, then replies to the email you enter. You still edit every fact before you publish.</p>
-    <p>Use this after Stripe shows the payment as paid. If you have not paid, <a href="https://buy.stripe.com/7sY9AVdfx0edbKqfhTebu00">pay $150 with Stripe</a> first. A note here is not a payment and not a booked job until it matches a Stripe receipt.</p>
+    <p>After Stripe confirms payment, send the facts below using the email address you entered at checkout. Andrew will match your brief to your Stripe payment before starting. Need to pay? <a href="https://buy.stripe.com/7sY9AVdfx0edbKqfhTebu00">Pay $150 with Stripe</a>.</p>
     <form id="factsForm">
       <label>Your name
         <input id="factsName" name="name" required minlength="2" maxlength="80" autocomplete="name" />
@@ -59,6 +59,8 @@
       </div>
       <button type="submit" class="btn btn-primary" id="factsBtn">Send the facts</button>
       <p class="status" id="factsStatus" role="status"></p>
+      <p>Need help submitting? <a id="factsEmailFallback" href="mailto:andrewiredale@smartrealty.us?subject=Paid%20listing%20copy%20brief">Email Andrew your paid order brief</a>.</p>
+      <noscript><p>Include the email address you used at checkout, the property city, and your confirmed facts in your email.</p></noscript>
     </form>
     <p class="muted">Copywriting only. Not a listing, appraisal, or sale. No password, card, or bank number on this form.</p>
   </main>
@@ -70,42 +72,94 @@
   </footer>
   <script>
     (function () {
-      var form = document.getElementById("factsForm");
-      var btn = document.getElementById("factsBtn");
-      var status = document.getElementById("factsStatus");
-      form.addEventListener("submit", async function (event) {
+      "use strict";
+
+      const form = document.getElementById("factsForm");
+      const button = document.getElementById("factsBtn");
+      const status = document.getElementById("factsStatus");
+      const emailLink = document.getElementById("factsEmailFallback");
+      const baseEmailLink = emailLink.getAttribute("href");
+      const value = (id) => document.getElementById(id).value.trim();
+      let submitting = false;
+      let submitted = false;
+      let reference = "";
+
+      function brief() {
+        return {
+          name: value("factsName"),
+          email: value("factsEmail"),
+          city: value("factsCity"),
+          facts: value("factsBody"),
+        };
+      }
+
+      function updateEmailFallback() {
+        const details = brief();
+        const lines = [
+          "Please match this brief to my Stripe payment for the $150 Listing Copy Pack.",
+          "Name: " + details.name,
+          "Email used at Stripe checkout: " + details.email,
+          "Property city: " + details.city,
+          "Confirmed facts: " + details.facts,
+        ];
+        if (reference) lines.push("Request reference: " + reference);
+        emailLink.href = baseEmailLink + "&body=" + encodeURIComponent(lines.join("\n"));
+      }
+
+      emailLink.addEventListener("click", updateEmailFallback);
+      form.addEventListener("submit", async (event) => {
         event.preventDefault();
-        if (!form.reportValidity()) return;
-        var name = document.getElementById("factsName").value.trim();
-        var email = document.getElementById("factsEmail").value.trim();
-        var city = document.getElementById("factsCity").value.trim();
-        var facts = document.getElementById("factsBody").value.trim();
-        var website = document.getElementById("factsSite").value;
+        if (submitting || submitted || !form.reportValidity()) return;
+        const details = brief();
+        if (details.name.length < 2 || !details.city || !details.facts) {
+          status.textContent = "Enter your name, the property city, and the confirmed facts.";
+          return;
+        }
+
+        submitting = true;
+        button.disabled = true;
         status.textContent = "Sending…";
-        btn.disabled = true;
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 15000);
         try {
-          var res = await fetch("/api/signup", {
+          const response = await fetch("/api/signup", {
             method: "POST",
             headers: { "Content-Type": "application/json", Accept: "application/json" },
             body: JSON.stringify({
-              name: name,
-              email: email,
-              city: city,
+              name: details.name,
+              email: details.email,
+              city: details.city,
               intent: "services",
-              website: website,
-              note: ("Facts after Stripe. Match the receipt before writing. City: " + city + ". " + facts).slice(0, 500)
-            })
+              website: value("factsSite"),
+              note: "Paid listing copy brief. Match to Stripe before delivery. Facts: " + details.facts,
+            }),
+            signal: controller.signal,
           });
-          var data = await res.json().catch(function () { return {}; });
-          if (!res.ok || !data.ok || data.emailed !== true) {
-            throw new Error(data.error || "Could not deliver. Try again in a minute.");
+          const data = await response.json().catch(() => null);
+          if (response.status === 429) {
+            status.textContent = "The form is temporarily rate limited. Email Andrew your brief.";
+            return;
           }
-          status.textContent = "Sent. Andrew matches this to the Stripe receipt, then replies to " + email + ". No payment was taken on this page.";
-          form.reset();
-        } catch (error) {
-          status.textContent = error.message || "Could not deliver. Try again in a minute.";
+          if (!response.ok || data?.ok !== true || typeof data.id !== "string" || !data.id.trim()) {
+            status.textContent = "Receipt is unconfirmed. Your brief is still here. Use the email link below or try again.";
+            return;
+          }
+
+          reference = data.id.trim().slice(0, 80);
+          submitted = true;
+          if (data.emailed === true) {
+            status.textContent = "Brief received. Reference: " + reference + ". Andrew will match it to your Stripe payment before starting.";
+            button.textContent = "Brief received";
+          } else {
+            status.textContent = "Request reference: " + reference + ". The website could not confirm Andrew’s notification. Email him the brief with this reference.";
+            button.textContent = "Request received";
+          }
+        } catch {
+          status.textContent = "Receipt is unconfirmed. Your brief is still here. Use the email link below before retrying.";
         } finally {
-          btn.disabled = false;
+          clearTimeout(timer);
+          submitting = false;
+          button.disabled = submitted;
         }
       });
     })();
