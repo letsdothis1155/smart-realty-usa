@@ -9,6 +9,10 @@
   let submitting = false;
   let completed = false;
   const value = (id) => document.getElementById(id).value.trim();
+  const source = new URLSearchParams(window.location.search).get("utm_source")?.toLowerCase() ?? "";
+  const sourceNote = /^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$/.test(source) && source.length <= 24
+    ? "Source: " + source + " | "
+    : "";
 
   function requestBody() {
     return {
@@ -16,7 +20,7 @@
       email: value("hireEmail"),
       city: value("hireCity"),
       intent: "services",
-      note: "Listing copy pack | starting quote USD 150 | /hire/ | Brief: " + value("hireBrief"),
+      note: "Listing copy pack | starting quote USD 150 | /hire/ | " + sourceNote + "Brief: " + value("hireBrief"),
       website: value("hireWebsite"),
     };
   }
@@ -27,6 +31,8 @@
       "Please confirm scope, final price and delivery date before payment."].join("\n");
     fallback.href = "mailto:andrewiredale@smartrealty.us?subject=Listing%20copy%20pack%20request&body=" + encodeURIComponent(message);
   }
+
+  if (sourceNote) updateEmail(requestBody());
 
   form.addEventListener("input", () => {
     updateEmail(requestBody());
