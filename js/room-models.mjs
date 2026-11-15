@@ -163,8 +163,15 @@ export async function resolveStudioRoom(listingId, requestedRoom, requestedPhoto
     requestedPhoto && !matchedPhoto ? 'The linked photo could not be matched to this room.' : '';
   const context = {
     roomLinks: rooms, selectionNote,
-    propertyHref: listing?.provider === 'demo' ? '/#listings' : '/new-listings/?id=' + encodeURIComponent(listingId),
+    propertyHref: '/new-listings/', propertyLinkText: '← Browse current listings',
   };
+  if (listing?.provider === 'demo') {
+    context.propertyHref = '/#listings';
+    context.propertyLinkText = '← Demo listings';
+  } else if (listing && !archive) {
+    context.propertyHref += '?id=' + encodeURIComponent(listingId);
+    context.propertyLinkText = '← Property listing';
+  }
   if (room.model) {
     try {
       const response = await request(room.model, { signal:AbortSignal.timeout(8000) });

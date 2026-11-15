@@ -3,7 +3,7 @@ async function startPhotoRoom() {
  const embedded=document.getElementById('editor-data').textContent.trim();
  if(embedded){ bootPhotoRoom(JSON.parse(embedded)); return; }
  const [{loadPropertyPhotoRooms},{resolveStudioRoom}]=await Promise.all([
-  import('/js/room-photo-previews.mjs?v=4'),import('/js/room-models.mjs?v=2'),
+  import('/js/room-photo-previews.mjs?v=4'),import('/js/room-models.mjs?v=3'),
  ]);
  const listing=params.get('listing');
  const rooms=await loadPropertyPhotoRooms(listing);
@@ -18,7 +18,7 @@ async function showPhotoFallback() {
  if(!listing)return;
  document.getElementById('room-fallback-back').href='/room-builder/?listing='+encodeURIComponent(listing)+'&engine=planning';
  try {
-  const {loadStudioProperty}=await import('/js/room-models.mjs?v=2');
+  const {loadStudioProperty}=await import('/js/room-models.mjs?v=3');
   const {listing:record}=await loadStudioProperty(listing);
   const gallery=document.getElementById('room-fallback-photos');
   for(const source of (record?.images||[]).slice(0,12)){
@@ -1153,7 +1153,7 @@ if(data.listingId){
  const back=el('property-back');
  back.hidden=false;
   back.querySelector('a').href=data.propertyHref||'/new-listings/?id='+encodeURIComponent(data.listingId);
- back.querySelector('a').textContent='← Property listing';
+ back.querySelector('a').textContent=data.propertyLinkText||'← Property listing';
 }
 const roomLinks=Array.isArray(data.roomLinks)?data.roomLinks:[];
 if(roomLinks.length){

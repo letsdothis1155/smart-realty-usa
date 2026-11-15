@@ -114,6 +114,8 @@ test('the published Blain plan restores all ten rooms when the listing API canno
  assert.equal(result.roomLinks.filter(room => room.model).length, 6);
  const dining = await resolveStudioRoom(id, 'dining', null, manifest.rooms, request);
  assert.equal(dining.propertyLabel, '15561 Blain Rd');
+ assert.equal(dining.propertyHref, '/new-listings/');
+ assert.equal(dining.propertyLinkText, '← Browse current listings');
  assert.equal(dining.referencePhotoCount, 1);
  assert.match(dining.views[0].image, /Eating_space/);
  assert.equal(dining.shell.surfaces.length, 6);
