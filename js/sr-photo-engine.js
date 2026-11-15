@@ -2,10 +2,15 @@ async function startPhotoRoom() {
  const params=new URLSearchParams(location.search);
  const embedded=document.getElementById('editor-data').textContent.trim();
  if(embedded){ bootPhotoRoom(JSON.parse(embedded)); return; }
+ const listing=params.get('listing');
+ if(!listing&&params.get('sample')==='room-copy'){
+  const {roomCopySample}=await import('/js/room-copy-sample.mjs?v=1');
+  bootPhotoRoom(roomCopySample());
+  return;
+ }
  const [{loadPropertyPhotoRooms},{resolveStudioRoom}]=await Promise.all([
   import('/js/room-photo-previews.mjs?v=4'),import('/js/room-models.mjs?v=3'),
  ]);
- const listing=params.get('listing');
  const rooms=await loadPropertyPhotoRooms(listing);
  bootPhotoRoom(await resolveStudioRoom(listing,params.get('room'),params.get('photo'),rooms));
 }
@@ -15,6 +20,10 @@ async function showPhotoFallback() {
  const listing=params.get('listing');
  document.getElementById('studio').hidden=true;
  document.getElementById('room-unavailable').hidden=false;
+ if(!listing&&params.get('sample')==='room-copy'){
+  document.getElementById('room-fallback-back').href='/services/room-copy-sample/';
+  document.getElementById('room-fallback-back').textContent='Back to the listing marketing sample';
+ }
  if(!listing)return;
  document.getElementById('room-fallback-back').href='/room-builder/?listing='+encodeURIComponent(listing)+'&engine=planning';
  try {
@@ -452,6 +461,7 @@ function productLink(id, catalog) {
 }
 
 function furnitureStorageKey() {
+ if(data.sampleRoom)return '';
  const version = original.layoutVersion ? '.layout-' + original.layoutVersion : '';
  return data.listingId && 'sru.photo-room.' + data.listingId + '.' + (data.roomId || 'living') + version;
 }
@@ -722,7 +732,7 @@ function pixelProjection(usePhoto){
  };
 }
 const automaticSpan = Number(completion?.spanMeters ?? data.scale?.spanMeters);
-const scaleKey = data.listingId && 'sru.photo-scale.' + data.listingId + '.' + data.roomId +
+const scaleKey = !data.sampleRoom && data.listingId && 'sru.photo-scale.' + data.listingId + '.' + data.roomId +
  (original.layoutVersion ? '.layout-' + original.layoutVersion : '');
 let roomScale = null;
 let orbitCenter = data.center;
@@ -761,6 +771,7 @@ function autoScale() {
   const source=completion?.source||data.scale?.source;
   const labels={
    'listed-room':'listed width and depth',
+   'sample-dimensions':'fictional sample dimensions',
    'preset':'typical room estimate',
    'photo-floor-and-typical-area':'photo proportions with typical room area',
    'photo-floor-and-listing-area':'photo proportions with estimated listing area',
@@ -1155,6 +1166,11 @@ if(data.listingId){
   back.querySelector('a').href=data.propertyHref||'/new-listings/?id='+encodeURIComponent(data.listingId);
  back.querySelector('a').textContent=data.propertyLinkText||'← Property listing';
 }
+if(data.sampleRoom){
+ const quote=el('room-quote-link');
+ if(quote)quote.href='https://smartrealty.us/hire/?offer=room-and-copy&utm_source=bundle-sample#request-title';
+ el('furniture-save-state').textContent='Save a picture or download the layout to keep your changes.';
+}
 const roomLinks=Array.isArray(data.roomLinks)?data.roomLinks:[];
 if(roomLinks.length){
  const selector=el('property-room');
@@ -1212,7 +1228,9 @@ if(Number.isInteger(requestedView)&&requestedView>=0&&requestedView<data.views.l
 const photoCount=data.referencePhotoCount??data.views.length;
 const views=`${photoCount} listing ${photoCount===1?'photo':'photos'}`;
 const evidence=el('room-evidence');
-if(evidence)evidence.textContent=data.referenceOnly
+if(evidence)evidence.textContent=data.sampleRoom
+ ? 'Fictional room with sample furniture placement.'
+ : data.referenceOnly
   ? photoCount?'Editable estimate with reference photos for this room.':'Editable estimate. No matching photo is available for this room.'
  : completion
  ? `Built from ${views}. ${completion.inferredWallCount>0?'Unseen walls use estimated positions.':'Wall positions are estimated from the photos.'}`
