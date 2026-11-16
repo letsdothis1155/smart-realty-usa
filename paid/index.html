@@ -6,7 +6,8 @@
   <title>Send property facts — SMART REALTY.US LLC</title>
   <meta name="description" content="After you pay $150 on Stripe, send the property facts here. This page does not charge you. Not a brokerage." />
   <link rel="canonical" href="https://smartrealty.us/paid/" />
-  <meta name="robots" content="index, follow" />
+  <meta name="robots" content="noindex, follow" />
+  <meta name="referrer" content="no-referrer" />
   <link rel="stylesheet" href="/styles.css" />
   <style>
     .facts { max-width: 640px; }
@@ -39,13 +40,13 @@
   <main class="container legal-main facts">
     <p class="eyebrow">Listing copy · after Stripe</p>
     <h1>Send the property facts</h1>
-    <p>Stripe collects the $150. This page does not charge you and does not see your card. Andrew writes three headlines and one description from what you type here, then replies to the email you enter. You still edit every fact before you publish.</p>
-    <p>After Stripe confirms payment, send the facts below using the email address you entered at checkout. Andrew will match your brief to your Stripe payment before starting. Need to pay? <a href="https://buy.stripe.com/7sY9AVdfx0edbKqfhTebu00">Pay $150 with Stripe</a>.</p>
+    <p>Send the confirmed facts for one property. Andrew will match your brief to your Stripe payment, then email three headline options and one edited description for you to review.</p>
+    <p id="factsPay">Still need to order? <a href="https://buy.stripe.com/7sY9AVdfx0edbKqfhTebu00">Buy the $150 Listing Copy Pack on Stripe</a>.</p>
     <form id="factsForm">
       <label>Your name
         <input id="factsName" name="name" required minlength="2" maxlength="80" autocomplete="name" />
       </label>
-      <label>Email on the Stripe receipt
+      <label>Email you used at Stripe checkout
         <input id="factsEmail" name="email" type="email" required maxlength="120" autocomplete="email" />
       </label>
       <label>Property city
@@ -79,7 +80,24 @@
       const status = document.getElementById("factsStatus");
       const emailLink = document.getElementById("factsEmailFallback");
       const baseEmailLink = emailLink.getAttribute("href");
+      const factsField = document.getElementById("factsBody");
       const value = (id) => document.getElementById(id).value.trim();
+      const returnUrl = new URL(window.location.href);
+      const sessionId = returnUrl.searchParams.get("session_id") ?? window.history.state?.stripeCheckoutSession ?? "";
+      const checkoutSession = /^cs_live_[A-Za-z0-9]{20,110}$/.test(sessionId) ? sessionId : "";
+
+      // Keep the checkout reference in the brief and out of links copied from this page.
+      if (returnUrl.searchParams.has("session_id")) {
+        returnUrl.searchParams.delete("session_id");
+        window.history.replaceState({ stripeCheckoutSession: checkoutSession }, "", returnUrl);
+      }
+      if (checkoutSession) document.getElementById("factsPay").hidden = true;
+
+      const notePrefix = checkoutSession
+        ? "Paid listing copy brief. " + checkoutSession + " | Facts: "
+        : "Paid listing copy brief. Match to Stripe before delivery. Facts: ";
+      // The intake service stores up to 500 characters for the complete note.
+      factsField.maxLength = Math.min(factsField.maxLength, 500 - notePrefix.length);
       let submitting = false;
       let submitted = false;
       let reference = "";
@@ -102,6 +120,7 @@
           "Property city: " + details.city,
           "Confirmed facts: " + details.facts,
         ];
+        if (checkoutSession) lines.push("Stripe Checkout Session: " + checkoutSession);
         if (reference) lines.push("Request reference: " + reference);
         emailLink.href = baseEmailLink + "&body=" + encodeURIComponent(lines.join("\n"));
       }
@@ -131,7 +150,7 @@
               city: details.city,
               intent: "services",
               website: value("factsSite"),
-              note: "Paid listing copy brief. Match to Stripe before delivery. Facts: " + details.facts,
+              note: notePrefix + details.facts,
             }),
             signal: controller.signal,
           });
