@@ -88,8 +88,90 @@
     }
   }
   </script>
+  <style>
+    @property --sr-neon-angle {
+      syntax: "<angle>";
+      inherits: false;
+      initial-value: 35deg;
+    }
+
+    .site-neon-edge {
+      position: fixed;
+      inset: 4px;
+      z-index: 30;
+      border: 1px solid rgba(61, 214, 198, 0.42);
+      border-radius: 18px;
+      box-shadow: inset 0 0 12px rgba(61, 214, 198, 0.16);
+      pointer-events: none;
+    }
+
+    @supports (mask-composite: exclude) {
+      .site-neon-edge::after {
+        content: "";
+        position: absolute;
+        inset: -1px;
+        padding: 2px;
+        border-radius: inherit;
+        background: conic-gradient(
+          from var(--sr-neon-angle, 35deg),
+          transparent 0%,
+          #3dd6c6 15%,
+          #b6fff7 19%,
+          #5b8cff 31%,
+          transparent 47%,
+          transparent 64%,
+          #668dff 75%,
+          #3dd6c6 83%,
+          transparent 100%
+        );
+        mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+        mask-composite: exclude;
+        animation: sr-neon-travel 14s linear infinite;
+      }
+    }
+
+    @keyframes sr-neon-travel {
+      to { --sr-neon-angle: 395deg; }
+    }
+
+    #heroPanel .hero-panel-media--copy {
+      isolation: isolate;
+      aspect-ratio: 16 / 9;
+      min-height: 0;
+      padding: 0.8rem;
+      background: #151d29;
+    }
+
+    #heroPanel .hero-panel-photo {
+      position: absolute;
+      inset: 0;
+      z-index: -2;
+      object-position: center 45%;
+    }
+
+    #heroPanel .hero-panel-media--copy::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      background: linear-gradient(180deg, transparent 40%, rgba(11, 17, 28, 0.88));
+    }
+
+    @media (max-width: 640px) {
+      .site-neon-edge { inset: 2px; border-radius: 12px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .site-neon-edge::after { animation: none; }
+    }
+
+    @media (forced-colors: active), print {
+      .site-neon-edge { display: none; }
+    }
+  </style>
 </head>
 <body>
+  <div class="site-neon-edge" aria-hidden="true"></div>
   <a class="skip-link" href="#home">Skip to content</a>
   <!-- Access gate — redirects to auth.html for full sign-in / create account -->
   <div class="gate" id="demoGate" hidden aria-hidden="true">
@@ -297,6 +379,7 @@
 
         <aside class="hero-panel fade-up delay-3" id="heroPanel" data-locked="copy" aria-label="Listing copy pack">
           <div class="hero-panel-media hero-panel-media--copy">
+            <img src="images/listing-19.jpg" alt="" class="hero-panel-photo" decoding="async" />
             <span class="hero-panel-badge">You still edit every fact</span>
           </div>
           <h3>Listing copy pack — $150</h3>
