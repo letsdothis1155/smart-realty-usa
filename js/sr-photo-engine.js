@@ -160,6 +160,16 @@ function createPhotoRenderer(canvas, finishes, redraw) {
 
 /* Procedural room-planning models. The reconstructed floor provides a relative scale. */
 const furnitureCatalog = {
+ queenBed: {label:'Stock queen bed', inches:[64,40,84], color:'#819197', model:'bed'},
+ twinBed: {label:'Stock twin bed', inches:[41,36,79], color:'#819197', model:'bed'},
+ nightstand: {label:'Stock nightstand', inches:[17,24,16], color:'#9f795e', model:'console'},
+ kitchenSink: {label:'Stock sink cabinet', inches:[30,36,25], color:'#657d74', model:'sink cabinet'},
+ kitchenRange: {label:'Stock range', inches:[30,36,26], color:'#848d96', model:'range'},
+ narrowRange: {label:'Compact stock range', inches:[24,36,26], color:'#848d96', model:'range'},
+ kitchenFridge: {label:'Stock refrigerator', inches:[28,66,29], color:'#848d96', model:'fridge'},
+ bathroomVanity: {label:'Stock bathroom vanity', inches:[24,34,19], color:'#9f795e', model:'sink cabinet'},
+ shower: {label:'Stock shower', inches:[32,75,32], color:'#a9bec1', model:'shower'},
+ toilet: {label:'Stock toilet', inches:[18,30,27], color:'#e6e8e2', model:'toilet'},
  kivik: {
   label: 'IKEA KIVIK sofa', inches: [89.75, 32.625, 37.375], color: '#a49a8d', model: 'sofa',
   url: 'https://www.ikea.com/us/en/p/kivik-sofa-tibbleby-beige-gray-s39440593/',
@@ -352,6 +362,40 @@ function furnitureMesh(item, surface, span, selected = false) {
    for(const x of [-.40,.40]) for(const z of [-.36,.36]) box(x,0,z,.105,.84,.12,legs);
    break;
   }
+  case 'bed':
+   box(0,.10,0,1,.19,1,wood);
+   box(0,.27,.04,.94,.20,.89,fabric);
+   box(0,0,-.47,1,1,.06,wood);
+   for(const x of [-.22,.22]) box(x,.46,-.28,.38,.10,.22,'#fcf7e8',.2);
+   box(0,.43,.15,.94,.075,.62,'#b2c4c4');
+   break;
+  case 'sink cabinet':
+   box(0,0,0,.98,.91,.98,fabric);
+   box(0,.91,0,1,.09,1,'#e5e0d6');
+   box(0,.982,.03,.62,.022,.57,'#889798');
+   box(0,.98,-.32,.07,.13,.07,'#727e80');
+   break;
+  case 'range':
+   box(0,0,0,1,.97,1,fabric);
+   box(0,.22,.498,.81,.44,.004,dark);
+   for(const x of [-.23,.23]) for(const z of [-.23,.23]) round(x,.968,z,.29,.032,.29,dark);
+   break;
+  case 'fridge':
+   box(0,0,0,1,1,1,fabric);
+   box(0,.68,.498,.95,.008,.004,dark);
+   box(-.34,.36,.48,.06,.24,.04,wood);
+   break;
+  case 'shower':
+   box(0,0,0,1,.05,1,'#d7d9d3');
+   box(-.48,.04,0,.04,.96,1,fabric);
+   box(0,.04,-.48,1,.96,.04,fabric);
+   break;
+  case 'toilet':
+   box(0,.05,-.24,.72,.95,.45,fabric);
+   round(0,0,.10,.59,.52,.57,fabric,.85);
+   round(0,.48,.13,.98,.12,.66,fabric);
+   round(0,.593,.13,.62,.013,.42,'#a8b7b7');
+   break;
   case 'lackUnit':
    box(0,.81,0,1,.19,1,fabric);
    box(0,.19,0,.89,.13,.98,fabric);
@@ -460,6 +504,78 @@ function productLink(id, catalog) {
  } else link.removeAttribute('href');
 }
 
+function stockRoomFurniture() {
+ const parts = String(data.roomId || '').toLowerCase().split(/[-_]/);
+ const type = ['kitchen','bedroom','bathroom'].find(name => parts.includes(name));
+ const groups = {
+  kitchen: [['kitchenSink'], ['kitchenRange','narrowRange'], ['kitchenFridge']],
+  bedroom: [['queenBed','twinBed'], ['nightstand']],
+  bathroom: parts.includes('half') ? [['toilet'], ['bathroomVanity']] : [['toilet'], ['bathroomVanity'], ['shower']],
+ };
+ const floor = furnishingFloor();
+ if (!type || !floor || !roomScale) return [];
+ const [left, top, right, bottom] = bounds(floor);
+ const unit = 1 / roomScale.metersPerUnit;
+ const margin = .05 * unit;
+ const step = Math.max(.12 * unit, Math.max(right-left,bottom-top)/42);
+ const floorCenter = [(left+right)/2, (top+bottom)/2];
+ const project = point => {
+  const relative = sub(point,world(floor,[0,0]));
+  return [dot(relative,floor.u),dot(relative,floor.v)];
+ };
+ const blocked = [];
+ for (const wall of furnishingWalls()) {
+  for (const opening of wall.openings || []) {
+   if (!opening.enabled || !['door','doorway','opening'].includes(opening.kind)) continue;
+   const [x0,y0,x1,y1] = opening.bounds;
+   const edge = [world(wall,[x0,(y0+y1)/2]),world(wall,[x1,(y0+y1)/2])].map(project);
+   let normal = [dot(wall.normal,floor.u),dot(wall.normal,floor.v)];
+   const midpoint = edge[0].map((n,i)=>(n+edge[1][i])/2);
+   if (dot(sub(floorCenter,midpoint),normal)<0) normal=mul(normal,-1);
+   const entry = [...edge,...edge.map(point=>add(point,mul(normal,.76*unit)))];
+   blocked.push([Math.min(...entry.map(p=>p[0]))-margin,Math.min(...entry.map(p=>p[1]))-margin,
+    Math.max(...entry.map(p=>p[0]))+margin,Math.max(...entry.map(p=>p[1]))+margin]);
+  }
+ }
+ const overlap = (a,b) => a[0]<b[2] && a[2]>b[0] && a[1]<b[3] && a[3]>b[1];
+ const placed = [];
+ for (const variants of groups[type]) {
+  let best = null;
+  for (const kind of variants) {
+   const item = {id:placed.length+1,kind,scale:1,color:furnitureCatalog[kind].color};
+   const [width,height,depth] = furnitureDimensions(item,floorSpan());
+   const roomHeight = Number(completion?.heightM);
+   if (roomHeight>0 && height>roomHeight*unit) continue;
+   for (const angle of [0,Math.PI/2,Math.PI,-Math.PI/2]) {
+    const turns = Math.abs(Math.sin(angle))>.5;
+    const hU = (turns?depth:width)/2, hV = (turns?width:depth)/2;
+    const minU=left+hU+margin, maxU=right-hU-margin;
+    const minV=top+hV+margin, maxV=bottom-hV-margin;
+    if (minU>maxU || minV>maxV) continue;
+    const cols = Math.max(1,Math.ceil((maxU-minU)/step));
+    const rows = Math.max(1,Math.ceil((maxV-minV)/step));
+    for (let row=0;row<=rows;row++) for (let col=0;col<=cols;col++) {
+     const u=minU+(maxU-minU)*col/cols, v=minV+(maxV-minV)*row/rows;
+     const rect=[u-hU,v-hV,u+hU,v+hV];
+     const back=[v-hV-top,right-u-hU,bottom-v-hV,u-hU-left];
+     const side=angle===0?0:angle===Math.PI/2?1:angle===Math.PI?2:3;
+     const score=back[side]+Math.min(...back)*.2;
+     const candidate={...item,u,v,angle};
+     if ((!best || score<best.score) && !blocked.some(area=>overlap(rect,area)) &&
+       furnitureFits(floor,candidate,floorSpan())) best={candidate,rect,score};
+    }
+   }
+   if (best) break;
+  }
+  if (!best && variants[0] === 'queenBed') break;
+  if (best) {
+   placed.push(best.candidate);
+   blocked.push(best.rect.map((value,i)=>value+(i<2?-margin:margin)));
+  }
+ }
+ return placed;
+}
+
 function furnitureStorageKey() {
  if(data.sampleRoom)return '';
  const version = original.layoutVersion ? '.layout-' + original.layoutVersion : '';
@@ -483,8 +599,10 @@ function restoreFurniture() {
  const key=furnitureStorageKey();
  if (!key || furnitureItems().length) return;
  try {
-  const stored=JSON.parse(localStorage.getItem(key) || '[]');
-  if (!Array.isArray(stored)) return;
+  const raw=localStorage.getItem(key);
+  if (raw===null) return false;
+  const stored=JSON.parse(raw);
+  if (!Array.isArray(stored)) return false;
   const ids=new Set();
   shell.furniture=stored.filter(item=>{
    if (!item || !furnitureCatalog[item.kind] || ids.has(item.id) ||
@@ -495,7 +613,8 @@ function restoreFurniture() {
    ids.add(item.id);
    return true;
   });
- } catch { /* Saved layouts can be absent or from an older version. */ }
+  return stored.length === 0 || shell.furniture.length > 0;
+ } catch { return false; }
 }
 
 function syncFurniture() {
@@ -1017,7 +1136,7 @@ function hit(x,y){const f=face(),r=view().pose,k=view().intrinsics,cy=(y-k[1][2]
 function mark(x,y){if(!marking)return;const p=hit(x,y);if(!p){say('This ray does not meet the selected surface in front of the camera.');return;}if(!corner){corner=p;say('First corner set. Mark the opposite corner.');schedule();return;}const b=[Math.min(corner[0],p[0]),Math.min(corner[1],p[1]),Math.max(corner[0],p[0]),Math.max(corner[1],p[1])],f=face(),limits=bounds(f);b[0]=Math.max(limits[0],b[0]);b[1]=Math.max(limits[1],b[1]);b[2]=Math.min(limits[2],b[2]);b[3]=Math.min(limits[3],b[3]);if(b[2]-b[0]<=.005||b[3]-b[1]<=.005||clip([[b[0],b[1]],[b[2],b[1]],[b[2],b[3]],[b[0],b[3]]],f.polygon).length<3){corner=null;say('Opening is outside this patch or too small. Choose the wall covering those photo corners.');schedule();return;}f.openings.push({id:`${f.id}-photo-${Date.now()}`,kind:'opening',bounds:b,enabled:true,status:'user_placed_estimate',sourceView:Number(el('view').value),evidence:'Two photo corners projected onto the selected inferred plane; not measured.'});marking=false;corner=null;populateOpenings(f.openings.length-1);say('Estimated opening added. Select Window or Doorway, inspect the cutout, then download to save.');}
 el('mark').onclick=()=>{el('photo').closest('details').open=true;marking=!marking;corner=null;say(marking?'On the photo, mark two opposite corners of an opening on the gold outlined surface.':'Opening placement cancelled.');photo.focus();schedule();};photo.onclick=e=>{const b=photo.getBoundingClientRect();mark((e.clientX-b.left)*photo.width/b.width,(e.clientY-b.top)*photo.height/b.height);};photo.onkeydown=e=>{if(!marking)return;const d={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]}[e.key];if(e.key==='Enter'){e.preventDefault();mark(...cursor);}else if(d){e.preventDefault();cursor=cursor.map((v,i)=>Math.max(0,Math.min(i?data.height-1:data.width-1,v+d[i]*(e.shiftKey?10:1))));say(`Photo cursor ${cursor.map(Math.round).join(', ')}. Enter places a corner.`);}};
 el('remove').onclick=()=>{face().openings.splice(Number(el('opening').value),1);populateOpenings();say('Opening removed from these local edits.');};
-el('reset').onclick=()=>{shell=structuredClone(original);shell.planningScale=roomScale;selectedFurniture=null;placingFurniture=false;populateSurfaces();syncFurniture();say('Original room and furniture restored.');};
+el('reset').onclick=()=>{shell=structuredClone(original);shell.planningScale=roomScale;if(stockDefaults) shell.furniture=stockRoomFurniture();selectedFurniture=null;placingFurniture=false;populateSurfaces();syncFurniture();say('Original room and furniture restored.');};
 el('camera').onclick=()=>{
  if(!image)return;
  photoMode=true;
@@ -1244,7 +1363,18 @@ const geometryNote=el('geometry-note');
 if(geometryNote)geometryNote.textContent=completion
  ? 'The 3D view hides near walls and the ceiling so you can see inside. Geometry downloads include them.'
  : 'The preview shows estimated surfaces visible in the listing photos.';
-restoreFurniture();
+const restoredFurniture = restoreFurniture();
+let stockDefaults = false;
+if (!original.furniture?.length) {
+ const stock = stockRoomFurniture();
+ if (stock.length) {
+  original.furniture = stock;
+  if (!restoredFurniture) {
+   shell.furniture = structuredClone(stock);
+   savedFurnitureState = JSON.stringify(stock);
+  }
+ }
+}
  populateSurfaces();setupFurniture();fitOrbit();
  if(photoCount)loadPhoto();
 if(data.referenceOnly){
