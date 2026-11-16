@@ -213,6 +213,7 @@ async function deliverEmail(
     name: string;
     email: string;
     subject: string;
+    attachmentPrefix: "account-request" | "quote-request";
     text: string;
     html: string;
   },
@@ -243,7 +244,7 @@ async function deliverEmail(
           html: opts.html,
           attachments: [
             {
-              filename: `account-request-${opts.id}.txt`,
+              filename: `${opts.attachmentPrefix}-${opts.id}.txt`,
               content: bytesToBase64(opts.text),
             },
           ],
@@ -872,43 +873,66 @@ export default {
         }),
       );
 
+      // The hire form sends these prefixes before the visitor's brief.
+      let quoteService = "";
+      if (intent === "services" && note.startsWith("Listing copy pack | starting quote USD 150 | /hire/ | ")) {
+        quoteService = "Listing copy";
+      }
+      if (intent === "other" && note.startsWith("Quote: copy + one-room layout | /hire/ | ")) {
+        quoteService = "Listing copy + one-room visualization";
+      }
+
       const intentLabel = intent ? INTENTS[intent] : "(none)";
-      const subject = `Account request: ${name}${intent ? ` (${intentLabel})` : ""}`;
+      const subject = quoteService
+        ? `${quoteService} quote: ${name}`
+        : `Account request: ${name}${intent ? ` (${intentLabel})` : ""}`;
+      const heading = quoteService ? "New quote request" : "New account request";
+      const typeLabel = quoteService ? "Service" : "Intent";
+      const typeValue = quoteService || intentLabel;
+      const replyLine = quoteService
+        ? "Reply to this email to reach the person requesting the quote."
+        : "Reply to this email to reach the applicant.";
+      const statusLine = quoteService
+        ? "No payment was taken. Confirm the scope, price, and delivery date before booking."
+        : "No password was collected. This is a request, not a live member login.";
       const text = [
-        "New account request from smartrealty.us",
+        `${heading} from smartrealty.us`,
         "",
         `Name: ${name}`,
         `Email: ${email}`,
         `Phone: ${phone || "(none)"}`,
         `City: ${city || "(none)"}`,
         `State: ${state || "(none)"}`,
-        `Intent: ${intentLabel}`,
+        `${typeLabel}: ${typeValue}`,
         note ? `Note: ${note}` : "Note: (none)",
         `When: ${receivedAt}`,
         `Request ID: ${id}`,
         "",
-        "Reply to this email to reach the applicant.",
-        "No password was collected. This is a request, not a live member login.",
+        replyLine,
+        statusLine,
         "The same details are attached as a text file.",
       ].join("\n");
       const html = `
-        <p>New account request from <a href="https://smartrealty.us">smartrealty.us</a></p>
+        <p>${heading} from <a href="https://smartrealty.us">smartrealty.us</a></p>
         <ul>
           <li><strong>Name:</strong> ${escapeHtml(name)}</li>
           <li><strong>Email:</strong> ${escapeHtml(email)}</li>
           <li><strong>Phone:</strong> ${phone ? escapeHtml(phone) : "(none)"}</li>
           <li><strong>City:</strong> ${city ? escapeHtml(city) : "(none)"}</li>
           <li><strong>State:</strong> ${state ? escapeHtml(state) : "(none)"}</li>
-          <li><strong>Intent:</strong> ${escapeHtml(intentLabel)}</li>
+          <li><strong>${typeLabel}:</strong> ${escapeHtml(typeValue)}</li>
           <li><strong>Note:</strong> ${note ? escapeHtml(note) : "(none)"}</li>
           <li><strong>When:</strong> ${escapeHtml(receivedAt)}</li>
           <li><strong>Request ID:</strong> ${escapeHtml(id)}</li>
         </ul>
-        <p>Reply to this email to reach the applicant.</p>
-        <p>No password was collected. This is a request, not a live member login.</p>
+        <p>${replyLine}</p>
+        <p>${statusLine}</p>
       `.trim();
 
-      const delivered = await deliverEmail(env, { id, name, email, subject, text, html });
+      const delivered = await deliverEmail(env, {
+        id, name, email, subject, text, html,
+        attachmentPrefix: quoteService ? "quote-request" : "account-request",
+      });
       console.log(
         JSON.stringify({
           message: "signup request",
@@ -924,7 +948,9 @@ export default {
           emailed: delivered.emailed,
           id,
           message: delivered.emailed
-            ? "Request sent. We will email you when your account is ready."
+            ? (quoteService
+              ? "Quote request sent. We will follow up about your quote."
+              : "Request sent. We will email you when your account is ready.")
             : "Request saved. We will follow up at this email.",
         },
         200,
