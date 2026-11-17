@@ -49,6 +49,10 @@ canvas{display:block;width:100%;height:auto;touch-action:none;outline-offset:3px
 .furnish-panel select{width:100%}
 .furnish-panel .controls>button{flex:1}
 .furniture-controls{gap:8px}
+.fit-dimensions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:10px 0}
+.fit-dimensions input,#fit-link{width:100%;background:#172b25;color:#edf2ef}
+#fit-result,#fit-action{font-size:13px}
+#fit-result.fit-warning{color:#ffb5a9;font-weight:650}
 .furniture-controls button[aria-pressed=true]{background:#f1d477}
 .product-details{font-size:12px;margin:8px 0 14px;line-height:1.5;overflow-wrap:anywhere}
 .product-details span{display:block;color:#a7bcb4;margin-top:4px}
@@ -124,6 +128,23 @@ details[open]>summary{margin-bottom:12px}
   <p id="furniture-status" role="status" aria-live="polite">Choose an item above to start furnishing.</p>
   <p id="furniture-save-state" role="status"></p>
  </div>
+ <section id="furniture-fit" hidden>
+ <h2>Will my stuff fit?</h2>
+ <p>Try your own bed and dresser. Adding your bed replaces the stock bed. Clearances use the room model and do not account for door swings or the move-in route.</p>
+ <form id="fit-form">
+  <label>Piece<select id="fit-kind"><option value="customBed">My bed</option><option value="customDresser">My dresser</option></select></label>
+  <div class="fit-dimensions">
+   <label>Width (in)<input id="fit-width" type="number" min="0.1" max="180" step="any" required></label>
+   <label>Height (in)<input id="fit-height" type="number" min="0.1" max="120" step="any" required></label>
+   <label>Depth (in)<input id="fit-depth" type="number" min="0.1" max="180" step="any" required></label>
+  </div>
+  <button id="fit-apply" type="submit">Add piece</button>
+ </form>
+ <p id="fit-result" role="status"></p>
+ <button id="fit-share" class="secondary" type="button" hidden>Copy layout link</button>
+ <label hidden>Layout link<input id="fit-link" type="url" readonly></label>
+ <p id="fit-action" role="status"></p>
+ </section>
 </aside>
 </div>
 <details class="advanced" id="geometry-controls"><summary>Room geometry and downloads</summary>
@@ -142,5 +163,5 @@ details[open]>summary{margin-bottom:12px}
 </main>
 <section id="room-unavailable" hidden><h1>3D unavailable</h1><p id="room-error">This room preview could not load.</p><div id="room-fallback-photos"></div><p><a id="room-fallback-back" href="/room-builder/">Back to property builder</a></p></section>
 <script id="editor-data" type="application/json"></script>
-<script id="room-engine" type="module" src="/js/sr-photo-engine.js?v=9"></script>
+<script id="room-engine" type="module" src="/js/sr-photo-engine.js?v=10"></script>
 </html>

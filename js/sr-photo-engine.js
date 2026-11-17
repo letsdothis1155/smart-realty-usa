@@ -160,6 +160,8 @@ function createPhotoRenderer(canvas, finishes, redraw) {
 
 /* Procedural room-planning models. The reconstructed floor provides a relative scale. */
 const furnitureCatalog = {
+ customBed: {label:'My bed', inches:[64,40,84], color:'#8aa4b0', model:'bed', custom:true},
+ customDresser: {label:'My dresser', inches:[48,34,19], color:'#c59770', model:'console', custom:true},
  queenBed: {label:'Stock queen bed', inches:[64,40,84], color:'#819197', model:'bed'},
  twinBed: {label:'Stock twin bed', inches:[41,36,79], color:'#819197', model:'bed'},
  nightstand: {label:'Stock nightstand', inches:[17,24,16], color:'#9f795e', model:'console'},
@@ -204,7 +206,8 @@ const furnitureCatalog = {
 };
 
 function furnitureDimensions(item, span) {
- const {size, inches} = furnitureCatalog[item.kind];
+ const {size, inches: standard} = furnitureCatalog[item.kind];
+ const inches = item.dimensions || standard;
  if(inches && roomScale) return inches.map(value=>value*.0254/roomScale.metersPerUnit*item.scale);
  return (size || inches.map(value => value/280)).map(value => value * span * item.scale);
 }
@@ -244,9 +247,38 @@ function furnitureFits(surface, item, span) {
    !surface.openings.some(({enabled,bounds:[x0,y0,x1,y1]}) =>
     enabled && left<x1 && right>x0 && top<y1 && bottom>y0);
  }
- const cosine = Math.cos(item.angle), sine = Math.sin(item.angle);
- return [-width/2,width/2].every(x => [-depth/2,depth/2].every(z =>
-  surfaceContains(surface,[u+x*cosine-z*sine,v+x*sine+z*cosine])));
+ return furnitureFootprint(item,width,depth).every(point=>surfaceContains(surface,point));
+}
+
+function furnitureFootprint({u,v,angle},width,depth) {
+ const cosine=Math.cos(angle), sine=Math.sin(angle);
+ return [[-1,-1],[1,-1],[1,1],[-1,1]].map(([x,y])=>{
+  const du=x*width/2, dv=y*depth/2;
+  return [u+du*cosine-dv*sine,v+du*sine+dv*cosine];
+ });
+}
+
+function polygonsOverlap(a,b) {
+ return [a,b].every(polygon=>polygon.every((point,index)=>{
+  const [x,y]=sub(polygon[(index+1)%polygon.length],point);
+  const first=a.map(vertex=>dot(vertex,[-y,x]));
+  const second=b.map(vertex=>dot(vertex,[-y,x]));
+  return Math.max(...first)>Math.min(...second)+1e-9 &&
+   Math.max(...second)>Math.min(...first)+1e-9;
+ }));
+}
+
+function boundaryDistance(a,b) {
+ let distance=Infinity;
+ for (const [points,edges] of [[a,b],[b,a]]) {
+  for (const point of points) edges.forEach((start,index)=>{
+   const delta=sub(edges[(index+1)%edges.length],start);
+   const offset=sub(point,start);
+   const t=Math.min(1,Math.max(0,dot(offset,delta)/(dot(delta,delta)||1)));
+   distance=Math.min(distance,Math.hypot(...sub(offset,mul(delta,t))));
+  });
+ }
+ return distance;
 }
 
 function furnitureHit(ray, item, surface, span) {
@@ -504,6 +536,29 @@ function productLink(id, catalog) {
  } else link.removeAttribute('href');
 }
 
+function doorwayAreas(floor,unit) {
+ const [left,top,right,bottom]=bounds(floor);
+ const floorCenter = [(left+right)/2, (top+bottom)/2];
+ const project = point => {
+  const relative = sub(point,world(floor,[0,0]));
+  return [dot(relative,floor.u),dot(relative,floor.v)];
+ };
+ const areas = [];
+ for (const wall of furnishingWalls()) {
+  for (const opening of wall.openings || []) {
+   if (!opening.enabled || !['door','doorway','opening'].includes(opening.kind)) continue;
+   const [x0,y0,x1,y1] = opening.bounds;
+   const edge = [world(wall,[x0,(y0+y1)/2]),world(wall,[x1,(y0+y1)/2])].map(project);
+   let normal = [dot(wall.normal,floor.u),dot(wall.normal,floor.v)];
+   const midpoint = edge[0].map((n,i)=>(n+edge[1][i])/2);
+   if (dot(sub(floorCenter,midpoint),normal)<0) normal=mul(normal,-1);
+   const inward=mul(normal,.76*unit);
+   areas.push([...edge,add(edge[1],inward),add(edge[0],inward)]);
+  }
+ }
+ return areas;
+}
+
 function stockRoomFurniture() {
  const parts = String(data.roomId || '').toLowerCase().split(/[-_]/);
  const type = ['kitchen','bedroom','bathroom'].find(name => parts.includes(name));
@@ -518,25 +573,10 @@ function stockRoomFurniture() {
  const unit = 1 / roomScale.metersPerUnit;
  const margin = .05 * unit;
  const step = Math.max(.12 * unit, Math.max(right-left,bottom-top)/42);
- const floorCenter = [(left+right)/2, (top+bottom)/2];
- const project = point => {
-  const relative = sub(point,world(floor,[0,0]));
-  return [dot(relative,floor.u),dot(relative,floor.v)];
- };
- const blocked = [];
- for (const wall of furnishingWalls()) {
-  for (const opening of wall.openings || []) {
-   if (!opening.enabled || !['door','doorway','opening'].includes(opening.kind)) continue;
-   const [x0,y0,x1,y1] = opening.bounds;
-   const edge = [world(wall,[x0,(y0+y1)/2]),world(wall,[x1,(y0+y1)/2])].map(project);
-   let normal = [dot(wall.normal,floor.u),dot(wall.normal,floor.v)];
-   const midpoint = edge[0].map((n,i)=>(n+edge[1][i])/2);
-   if (dot(sub(floorCenter,midpoint),normal)<0) normal=mul(normal,-1);
-   const entry = [...edge,...edge.map(point=>add(point,mul(normal,.76*unit)))];
-   blocked.push([Math.min(...entry.map(p=>p[0]))-margin,Math.min(...entry.map(p=>p[1]))-margin,
-    Math.max(...entry.map(p=>p[0]))+margin,Math.max(...entry.map(p=>p[1]))+margin]);
-  }
- }
+ const blocked = doorwayAreas(floor,unit).map(points=>{
+  const u=points.map(point=>point[0]), v=points.map(point=>point[1]);
+  return [Math.min(...u)-margin,Math.min(...v)-margin,Math.max(...u)+margin,Math.max(...v)+margin];
+ });
  const overlap = (a,b) => a[0]<b[2] && a[2]>b[0] && a[1]<b[3] && a[3]>b[1];
  const placed = [];
  for (const variants of groups[type]) {
@@ -576,8 +616,155 @@ function stockRoomFurniture() {
  return placed;
 }
 
+const bedroomFit = /(?:^|[-_])bedroom(?:$|[-_])/i.test(data.roomId || '');
+const shareableRoom = bedroomFit && !data.sampleRoom && data.listingId &&
+ !document.getElementById('editor-data').textContent.trim() && /^https?:$/.test(location.protocol);
+const fitHash = shareableRoom && location.hash.startsWith('#fit=');
+const sharedFit = fitHash ? decodeFitLink(location.hash.slice(5)) : null;
+if (shareableRoom) window.addEventListener('hashchange',event=>{
+ if ([event.oldURL,event.newURL].some(url=>new URL(url).hash.startsWith('#fit='))) location.reload();
+});
+
+function validDimensions(values) {
+ return Array.isArray(values) && values.length===3 && values.every((value,index)=>
+  Number.isFinite(value) && value>=.1 && value<=(index===1?120:180));
+}
+
+function validFurniture(item,ids) {
+ if (!item || !Object.hasOwn(furnitureCatalog,item.kind) || ids.has(item.id) ||
+  !Number.isSafeInteger(item.id) || item.id<=0 || item.id>1e9 ||
+  typeof item.color!=='string' || !/^#[0-9a-f]{6}$/i.test(item.color) ||
+  ![item.u,item.v,item.angle,item.scale].every(Number.isFinite) || item.scale<.45 || item.scale>1.6) return false;
+ return furnitureCatalog[item.kind].custom
+  ? item.scale===1 && validDimensions(item.dimensions)
+  : item.dimensions===undefined;
+}
+
+function decodeFitLink(value) {
+ if (!/^[A-Za-z0-9_-]{1,16000}$/.test(value)) return null;
+ try {
+  const payload=JSON.parse(atob(value.replace(/-/g,'+').replace(/_/g,'/')));
+  if (payload.version!==1 || !Array.isArray(payload.items) || payload.items.length>60 ||
+   (payload.feet!==null && (!Number.isFinite(payload.feet) || payload.feet<2 || payload.feet>100))) return null;
+  const ids=new Set(), kinds=new Set();
+  for (const item of payload.items) {
+   if (!validFurniture(item,ids) || (furnitureCatalog[item.kind].custom && kinds.has(item.kind))) return null;
+   ids.add(item.id);
+   kinds.add(item.kind);
+  }
+  return payload;
+ } catch { return null; }
+}
+
+function updateFitFeedback() {
+ const panel=el('furniture-fit');
+ if (!panel || panel.hidden) return;
+ const floor=furnishingFloor(), item=currentFurniture();
+ el('fit-apply').disabled=!floor || !roomScale;
+ const status=el('fit-result');
+ let message='Pick a piece and enter its outside dimensions.';
+ let blocked=false;
+ if (!floor || !roomScale) message='A visible floor and room scale are needed. Set the longest floor span in Room scale.';
+ else if (furnitureCatalog[item?.kind]?.custom) {
+  const span=floorSpan();
+  const footprint=entry=>{
+   const [width,,depth]=furnitureDimensions(entry,span);
+   return furnitureFootprint(entry,width,depth);
+  };
+  const points=footprint(item);
+  const obstacles=furnitureItems().filter(other=>other!==item && !isWallItem(other) && other.kind!=='rug').map(footprint);
+  const doors=doorwayAreas(floor,1/roomScale.metersPerUnit);
+  const doorway=doors.some(area=>polygonsOverlap(points,area));
+  const intersects=obstacles.some(area=>polygonsOverlap(points,area));
+  const fits=furnitureFits(floor,item,span);
+  blocked=doorway || intersects || !fits;
+  const gap=Math.min(boundaryDistance(points,floor.polygon),...obstacles.map(area=>boundaryDistance(points,area)));
+  const inches=gap*roomScale.metersPerUnit/.0254;
+  const dimensionText=item.dimensions.join(' × ')+' in (W × H × D). ';
+  const clearance=inches<1?'under 1 in':Math.round(inches)+' in';
+  message=dimensionText+(!fits?'Extends outside the modeled floor. ':
+   intersects?'Overlaps another furniture piece. ':'Estimated clearance to nearest wall or furniture: '+clearance+'. ')+
+   (doorway?'Overlaps modeled doorway clearance.':doors.length?'Clear of modeled doorway clearance.':'No doorways are modeled.');
+ }
+ if (status.textContent!==message) status.textContent=message;
+ status.classList.toggle('fit-warning',blocked);
+}
+
+function setupFurnitureFit() {
+ const panel=el('furniture-fit');
+ if (!panel || !bedroomFit) return;
+ panel.hidden=false;
+ const fields=['fit-width','fit-height','fit-depth'].map(el);
+ const kindField=el('fit-kind');
+ const selectPiece=()=>{
+  const kind=kindField.value;
+  const existing=furnitureItems().find(item=>item.kind===kind);
+  (existing?.dimensions || furnitureCatalog[kind].inches).forEach((value,index)=>fields[index].value=value);
+  el('fit-apply').textContent=existing?'Update piece':'Add piece';
+ };
+ kindField.onchange=selectPiece;
+ selectPiece();
+ el('fit-form').onsubmit=event=>{
+  event.preventDefault();
+  const kind=kindField.value, catalog=furnitureCatalog[kind], floor=furnishingFloor();
+  const dimensions=fields.map(field=>field.valueAsNumber);
+  if (!roomScale || !floor || !validDimensions(dimensions)) return;
+  const existing=furnitureItems().find(item=>item.kind===kind);
+  const stock=kind==='customBed' && furnitureItems().find(item=>['queenBed','twinBed'].includes(item.kind));
+  const item=existing ? {...existing,dimensions} : {
+   id:1+Math.max(0,...furnitureItems().map(other=>other.id)),kind,scale:1,color:catalog.color,dimensions,
+  };
+  const next=existing && furnitureFits(floor,item,floorSpan()) ? item : findFurniturePosition(item,[floor],stock?.id);
+  const action=el('fit-action');
+  if (!next) {
+   action.textContent='This footprint did not fit on the modeled floor. Check the dimensions and room scale.';
+   return;
+  }
+  if (existing) Object.assign(existing,next);
+  else {
+   const items=furnitureItems();
+   if (stock) items.splice(items.indexOf(stock),1,next);
+   else items.push(next);
+  }
+  selectedFurniture=next.id;
+  placingFurniture=false;
+  action.textContent=catalog.label+(existing?' updated.':' added. Drag or rotate it to try another placement.');
+  selectPiece();
+  syncFurniture();
+ };
+ const share=el('fit-share');
+ share.hidden=!shareableRoom;
+ if (fitHash) el('fit-action').textContent=sharedFit
+  ? 'Shared furniture layout. Edits in this view are temporary.' : 'This furniture link could not be opened.';
+ share.onclick=async()=>{
+  const items=furnitureItems().map(({id,kind,u,v,angle,scale,color,wallId,dimensions})=>
+   ({id,kind,u,v,angle,scale,color,wallId,dimensions}));
+  // Escape non-ASCII wall IDs before using the browser's binary base64 encoder.
+  const json=JSON.stringify({version:1,feet:roomScale?.source==='span entered by user'?roomScale.spanFeet:null,items})
+   .replace(/[^\x20-\x7e]/g,char=>'\\u'+char.charCodeAt(0).toString(16).padStart(4,'0'));
+  const payload=btoa(json).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+  if (!decodeFitLink(payload)) {
+   el('fit-action').textContent='This layout is too large to share as a link. Download the layout instead.';
+   return;
+  }
+  const url=new URL(location.href);
+  url.hash='fit='+payload;
+  const field=el('fit-link');
+  field.parentElement.hidden=false;
+  field.value=url.href;
+  try {
+   await navigator.clipboard.writeText(url.href);
+   el('fit-action').textContent='Layout link copied.';
+  } catch {
+   field.focus();
+   field.select();
+   el('fit-action').textContent='Copy the selected layout link.';
+  }
+ };
+}
+
 function furnitureStorageKey() {
- if(data.sampleRoom)return '';
+ if(data.sampleRoom || sharedFit)return '';
  const version = original.layoutVersion ? '.layout-' + original.layoutVersion : '';
  return data.listingId && 'sru.photo-room.' + data.listingId + '.' + (data.roomId || 'living') + version;
 }
@@ -605,9 +792,7 @@ function restoreFurniture() {
   if (!Array.isArray(stored)) return false;
   const ids=new Set();
   shell.furniture=stored.filter(item=>{
-   if (!item || !furnitureCatalog[item.kind] || ids.has(item.id) ||
-    !Number.isInteger(item.id) || item.id<=0 || !/^#[0-9a-f]{6}$/i.test(item.color) ||
-    ![item.u,item.v,item.angle,item.scale].every(Number.isFinite) || item.scale<.45 || item.scale>1.6) return false;
+   if (!validFurniture(item,ids)) return false;
    const surface=furnitureSurface(item);
    if (!surface) return false;
    ids.add(item.id);
@@ -637,11 +822,15 @@ function syncFurniture() {
  el('furniture-move').disabled = !item || (!wallItem && !surface) || (wallItem && !furnishingWalls().length);
  for (const id of ['furniture-left','furniture-right']) el(id).disabled = !surface || wallItem;
  for (const id of ['furniture-size','furniture-color']) el(id).disabled = !surface;
+ el('furniture-size').disabled = !surface || Boolean(furnitureCatalog[item?.kind]?.custom);
  el('furniture-remove').disabled = !item;
+ const fitKind=el('fit-kind');
+ if (fitKind) el('fit-apply').textContent=furnitureItems().some(entry=>entry.kind===fitKind.value)?'Update piece':'Add piece';
  el('furniture-size').value = item ? Math.round(item.scale*100) : 100;
  el('furniture-color').value = item?.color || '#7e9886';
  el('furniture-move').setAttribute('aria-pressed', String(placingFurniture));
  cloud.classList.toggle('place-furniture', placingFurniture);
+ updateFitFeedback();
  schedule();
 }
 
@@ -663,11 +852,14 @@ function changeFurniture(changes, announce = true) {
  if (announce) {
   el('furniture-status').textContent = furnitureCatalog[item.kind].label + ' updated.';
   syncFurniture();
- } else schedule();
+ } else {
+  if (furnitureCatalog[item.kind].custom) updateFitFeedback();
+  schedule();
+ }
  return true;
 }
 
-function findFurniturePosition(item, surfaces) {
+function findFurniturePosition(item, surfaces, replacedId) {
  const span = floorSpan(), camera = photoRay(data.width/2,data.height/2).origin;
  const mounted = isWallItem(item), projection = pixelProjection(true);
  let best = null, bestScore = -Infinity;
@@ -676,14 +868,27 @@ function findFurniturePosition(item, surfaces) {
   const midU = (left+right)/2, midV = top+(bottom-top)*(mounted ? .54 : .5);
   const towardsPhoto = sub(camera,world(surface,[midU,midV]));
   const angle = mounted ? 0 : Math.atan2(-dot(towardsPhoto,surface.u),dot(towardsPhoto,surface.v));
-  const neighbors = furnitureItems().filter(entry => furnitureSurface(entry) === surface && entry.kind !== 'rug');
-  for (let i=1;i<16;i++) for (let j=1;j<16;j++) {
+  const neighbors = furnitureItems().filter(entry => entry.id!==item.id && entry.id!==replacedId && furnitureSurface(entry) === surface && entry.kind !== 'rug');
+  const custom=furnitureCatalog[item.kind].custom;
+  const angles=custom?[0,Math.PI/2,Math.PI,-Math.PI/2]:[angle];
+  const footprint=entry=>{
+   const [width,,depth]=furnitureDimensions(entry,span);
+   return furnitureFootprint(entry,width,depth);
+  };
+  const obstacles=custom?neighbors.filter(entry=>!isWallItem(entry)).map(footprint):[];
+  const doors=custom?doorwayAreas(surface,1/roomScale.metersPerUnit):[];
+  for (const rotation of angles) for (let i=1;i<16;i++) for (let j=1;j<16;j++) {
    const u = left+(right-left)*i/16, v = top+(bottom-top)*j/16;
-   const candidate = {...item,u,v,angle};
+   const candidate = {...item,u,v,angle:rotation};
    if (!furnitureFits(surface,candidate,span) ||
     (mounted && overlapsWallItem(surface,candidate,span,neighbors))) continue;
    const nearest = Math.min(.22*span,...neighbors.map(entry => Math.hypot(u-entry.u,v-entry.v)));
    let score = nearest - .35*Math.hypot(u-midU,v-midV);
+   if (custom) {
+    const points=footprint(candidate);
+    if (doors.some(area=>polygonsOverlap(points,area))) score-=4*span;
+    if (obstacles.some(area=>polygonsOverlap(points,area))) score-=2*span;
+   }
    if (mounted) {
     const point = world(surface,[u,v]);
     const [x,y,z] = projection(point);
@@ -738,7 +943,7 @@ function setupFurniture() {
   const group = document.createElement('optgroup');
   group.label = label;
   for (const [key,entry] of Object.entries(furnitureCatalog)) {
-   if (match(entry)) group.append(new Option(entry.label,key));
+   if (!entry.custom && match(entry)) group.append(new Option(entry.label,key));
   }
   el('furniture-kind').append(group);
  }
@@ -851,7 +1056,7 @@ function pixelProjection(usePhoto){
  };
 }
 const automaticSpan = Number(completion?.spanMeters ?? data.scale?.spanMeters);
-const scaleKey = !data.sampleRoom && data.listingId && 'sru.photo-scale.' + data.listingId + '.' + data.roomId +
+const scaleKey = !data.sampleRoom && !sharedFit && data.listingId && 'sru.photo-scale.' + data.listingId + '.' + data.roomId +
  (original.layoutVersion ? '.layout-' + original.layoutVersion : '');
 let roomScale = null;
 let orbitCenter = data.center;
@@ -1323,10 +1528,12 @@ el('room-scale-form').onsubmit=event=>{
  const span=Number(el('room-span-ft').value);
  updateScale(span,'span entered by user');
  if(scaleKey && roomScale)try{localStorage.setItem(scaleKey,String(span));}catch{}
+ updateFitFeedback();
 };
 el('room-scale-reset').onclick=()=>{
  if(scaleKey)try{localStorage.removeItem(scaleKey);}catch{}
  autoScale();
+ updateFitFeedback();
 };
 autoScale();
 if(scaleKey)try{
@@ -1363,11 +1570,22 @@ const geometryNote=el('geometry-note');
 if(geometryNote)geometryNote.textContent=completion
  ? 'The 3D view hides near walls and the ceiling so you can see inside. Geometry downloads include them.'
  : 'The preview shows estimated surfaces visible in the listing photos.';
-const restoredFurniture = restoreFurniture();
+if (sharedFit?.feet!==null && sharedFit?.feet!==undefined) updateScale(sharedFit.feet,'span entered by user');
+if (sharedFit) {
+ shell.furniture=sharedFit.items.filter(item=>{
+  const surface=furnitureSurface(item);
+  if (!surface) return false;
+  const [left,top,right,bottom]=bounds(surface);
+  return item.u>=left && item.u<=right && item.v>=top && item.v<=bottom;
+ });
+ selectedFurniture=shell.furniture.find(item=>furnitureCatalog[item.kind].custom)?.id ?? null;
+}
+const restoredFurniture = Boolean(sharedFit) || restoreFurniture();
 let stockDefaults = false;
 if (!original.furniture?.length) {
  const stock = stockRoomFurniture();
  if (stock.length) {
+  stockDefaults = true;
   original.furniture = stock;
   if (!restoredFurniture) {
    shell.furniture = structuredClone(stock);
@@ -1375,7 +1593,7 @@ if (!original.furniture?.length) {
   }
  }
 }
- populateSurfaces();setupFurniture();fitOrbit();
+ populateSurfaces();setupFurnitureFit();setupFurniture();fitOrbit();
  if(photoCount)loadPhoto();
 if(data.referenceOnly){
  el('camera').hidden=true;
