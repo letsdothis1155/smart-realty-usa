@@ -686,8 +686,23 @@ function updateFitFeedback() {
    intersects?'Overlaps another furniture piece. ':'Estimated clearance to nearest wall or furniture: '+clearance+'. ')+
    (doorway?'Overlaps modeled doorway clearance.':doors.length?'Clear of modeled doorway clearance.':'No doorways are modeled.');
  }
+ el('fit-scale-note').textContent=roomScale?.source==='span entered by user'
+  ? 'Scale uses the floor span you entered.'
+  : 'Room scale is estimated. Enter a measured floor span to improve the fit check.';
  if (status.textContent!==message) status.textContent=message;
  status.classList.toggle('fit-warning',blocked);
+}
+
+let fitFormSelection = null;
+
+function syncFitForm() {
+ const item=currentFurniture();
+ if (!furnitureCatalog[item?.kind]?.custom || fitFormSelection===item.id) return;
+ fitFormSelection=item.id;
+ el('fit-kind').value=item.kind;
+ item.dimensions.forEach((value,index)=>{
+  el(['fit-width','fit-height','fit-depth'][index]).value=value;
+ });
 }
 
 function setupFurnitureFit() {
@@ -702,7 +717,20 @@ function setupFurnitureFit() {
   (existing?.dimensions || furnitureCatalog[kind].inches).forEach((value,index)=>fields[index].value=value);
   el('fit-apply').textContent=existing?'Update piece':'Add piece';
  };
- kindField.onchange=selectPiece;
+ kindField.onchange=()=>{
+  selectPiece();
+  const existing=furnitureItems().find(item=>item.kind===kindField.value);
+  selectedFurniture=existing?.id ?? null;
+  fitFormSelection=selectedFurniture;
+  placingFurniture=false;
+  el('fit-action').textContent='';
+  syncFurniture();
+ };
+ el('fit-scale').onclick=()=>{
+  el('geometry-controls').open=true;
+  el('room-span-ft').focus();
+  el('room-scale-form').scrollIntoView({behavior:'smooth',block:'center'});
+ };
  selectPiece();
  el('fit-form').onsubmit=event=>{
   event.preventDefault();
@@ -729,6 +757,7 @@ function setupFurnitureFit() {
   selectedFurniture=next.id;
   placingFurniture=false;
   action.textContent=catalog.label+(existing?' updated.':' added. Drag or rotate it to try another placement.');
+  fitFormSelection=null;
   selectPiece();
   syncFurniture();
  };
@@ -824,6 +853,7 @@ function syncFurniture() {
  for (const id of ['furniture-size','furniture-color']) el(id).disabled = !surface;
  el('furniture-size').disabled = !surface || Boolean(furnitureCatalog[item?.kind]?.custom);
  el('furniture-remove').disabled = !item;
+ syncFitForm();
  const fitKind=el('fit-kind');
  if (fitKind) el('fit-apply').textContent=furnitureItems().some(entry=>entry.kind===fitKind.value)?'Update piece':'Add piece';
  el('furniture-size').value = item ? Math.round(item.scale*100) : 100;

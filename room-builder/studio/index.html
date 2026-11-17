@@ -131,6 +131,8 @@ details[open]>summary{margin-bottom:12px}
  <section id="furniture-fit" hidden>
  <h2>Will my stuff fit?</h2>
  <p>Try your own bed and dresser. Adding your bed replaces the stock bed. Clearances use the room model and do not account for door swings or the move-in route.</p>
+ <p id="fit-scale-note"></p>
+ <button id="fit-scale" class="secondary" type="button">Set measured room span</button>
  <form id="fit-form">
   <label>Piece<select id="fit-kind"><option value="customBed">My bed</option><option value="customDresser">My dresser</option></select></label>
   <div class="fit-dimensions">
@@ -163,5 +165,5 @@ details[open]>summary{margin-bottom:12px}
 </main>
 <section id="room-unavailable" hidden><h1>3D unavailable</h1><p id="room-error">This room preview could not load.</p><div id="room-fallback-photos"></div><p><a id="room-fallback-back" href="/room-builder/">Back to property builder</a></p></section>
 <script id="editor-data" type="application/json"></script>
-<script id="room-engine" type="module" src="/js/sr-photo-engine.js?v=10"></script>
+<script id="room-engine" type="module" src="/js/sr-photo-engine.js?v=11"></script>
 </html>
