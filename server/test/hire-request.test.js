@@ -141,3 +141,21 @@ test("switching quote services keeps the typed brief and updates the email fallb
   assert.match(email, /subject=Listing copy pack quote/);
   assert.match(email, /Saved request reference: copy-quote/);
 });
+
+test("multi-property referrals keep the entire batch brief and use the copy quote notification", async () => {
+  const sourceTag = "a".repeat(24);
+  const h = harness(response({ ok: true, id: "batch-123", emailed: true }),
+    "?offer=multi-property&utm_source=" + sourceTag);
+  assert.equal(h.elements.hireService.value, "multi-property");
+  assert.match(h.elements.hireBrief.placeholder, /How many properties/);
+  assert.match(decodeURIComponent(h.elements.hireEmailFallback.href), /subject=Multi-property listing copy quote/);
+  h.elements.hireBrief.value = "x".repeat(396) + "tail";
+  await h.submit();
+  const body = JSON.parse(h.calls[0].options.body);
+  assert.equal(body.intent, "services");
+  assert.ok(body.note.startsWith("Listing copy pack | starting quote USD 150 | /hire/ | "));
+  assert.ok(body.note.endsWith("Source: " + sourceTag + " | Batch job: " + h.elements.hireBrief.value));
+  assert.ok(body.note.length <= 500);
+  assert.match(h.elements.hireStatus.textContent, /batch price and delivery schedule/);
+  assert.doesNotMatch(h.elements.hireStatus.textContent, /Stripe|\$150/);
+});

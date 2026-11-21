@@ -30,8 +30,20 @@
     placeholder: "Property features, the room name, its measurements if known, and the layout you want.",
     nextStep: "Andrew will follow up with scope, price, and a delivery date.",
   };
-  const selectedQuote = () => serviceField.value === "room-and-copy" ? roomQuote : copyQuote;
-  if (params.get("offer") === "room-and-copy") serviceField.value = "room-and-copy";
+  const batchQuote = {
+    ...copyQuote,
+    title: "Multi-property listing copy",
+    placeholder: "How many properties are you marketing, where are they, and when do you need the first description?",
+    nextStep: "Andrew will confirm the batch price and delivery schedule by email.",
+  };
+  const offers = new Map([
+    ["listing-copy", copyQuote],
+    ["room-and-copy", roomQuote],
+    ["multi-property", batchQuote],
+  ]);
+  const requestedOffer = params.get("offer");
+  if (offers.has(requestedOffer)) serviceField.value = requestedOffer;
+  const selectedQuote = () => offers.get(serviceField.value) || copyQuote;
 
   function requestBody(quote) {
     return {
@@ -39,7 +51,8 @@
       email: value("hireEmail"),
       city: value("hireCity"),
       intent: quote.intent,
-      note: quote.note + sourceNote + "Brief: " + value("hireBrief"),
+      // Keep the listing-copy prefix used by the notification worker to route quotes.
+      note: quote.note + sourceNote + (quote === batchQuote ? "Batch job: " : "Brief: ") + value("hireBrief"),
       website: value("hireWebsite"),
     };
   }
@@ -53,7 +66,7 @@
 
   const initial = selectedQuote();
   briefField.placeholder = initial.placeholder;
-  if (sourceNote || initial === roomQuote) updateEmail(requestBody(initial), initial);
+  if (sourceNote || initial !== copyQuote) updateEmail(requestBody(initial), initial);
 
   form.addEventListener("input", () => {
     const quote = selectedQuote();
