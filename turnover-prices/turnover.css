@@ -31,6 +31,18 @@
 }
 html.tp-is-live .tp-sample-only { display: none !important; }
 html:not(.tp-is-live) .tp-live-only { display: none !important; }
+.tp-honeypot {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+.tp-fallback {
+  margin: 0.6rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
 button.tp-out:disabled {
   opacity: 1;
   cursor: not-allowed;

@@ -147,12 +147,18 @@
         <form id="tpBundleForm" class="tp-form" novalidate>
           <h3>Email me this bundle</h3>
           <p>This joins the note Andrew uses for the Yield Map waitlist and landlord-software interest. It does not create an account.</p>
+          <input type="hidden" name="access_key" value="YOUR_WEB3FORMS_ACCESS_KEY" />
+          <input type="checkbox" name="botcheck" class="tp-honeypot" tabindex="-1" autocomplete="off" aria-hidden="true" />
+          <input type="hidden" name="subject" value="Turnover bundle sample estimate" />
+          <input type="hidden" name="from_name" value="Smart Realty" />
+          <input type="hidden" name="bundle_estimate" value="" />
           <label>Name <input name="name" type="text" autocomplete="name" maxlength="80" /></label>
           <label>Email <input name="email" type="email" autocomplete="email" required maxlength="120" /></label>
-          <label class="tp-consent"><input name="consent" type="checkbox" value="yes" required /> <span>Andrew may email me this bundle. I understand the prices are examples until the feeds are connected. <a href="https://smartrealty.us/privacy.html">Privacy</a>.</span></label>
+          <label class="tp-consent"><input name="consent" type="checkbox" value="yes" required /> <span>Andrew may email me this bundle. I understand the prices are a sample estimate until the feeds are connected. <a href="https://smartrealty.us/privacy.html">Privacy</a>.</span></label>
           <button class="btn btn-primary" type="submit">Email me this bundle</button>
-          <p id="tpBundleStatus" class="tp-status" role="status"></p>
+          <p id="tpBundleStatus" class="tp-status" role="status" aria-live="polite"></p>
         </form>
+        <p class="tp-fallback">mailto:andrewiredale@smartrealty.us</p>
       </div>
     </section>
 
@@ -161,37 +167,21 @@
         <h2 id="quoteTitle">Get 3 quotes</h2>
         <p class="tp-lead">Tell Andrew the trade, ZIP, how many units, and when you need the work. He can ask local painters, flooring installers, appliance installers, locksmiths, cleaners, or handymen. There is no contractor billing on this page and no paid ranking. If a contractor later provides a license or insurance status, that status can be shown next to their name. It is not a placement you can buy.</p>
         <form id="tpQuoteForm" class="tp-form" novalidate>
+          <input type="hidden" name="access_key" value="YOUR_WEB3FORMS_ACCESS_KEY" />
+          <input type="checkbox" name="botcheck" class="tp-honeypot" tabindex="-1" autocomplete="off" aria-hidden="true" />
+          <input type="hidden" name="subject" value="Get 3 quotes" />
+          <input type="hidden" name="from_name" value="Smart Realty" />
+          <input type="hidden" name="bundle_estimate" value="" />
           <label>Name <input name="name" type="text" autocomplete="name" required minlength="2" maxlength="80" /></label>
           <label>Email <input name="email" type="email" autocomplete="email" required maxlength="120" /></label>
-          <label>Trade
-            <select name="trade" required>
-              <option value="">Choose a trade</option>
-              <option>Painting</option>
-              <option>Flooring</option>
-              <option>Appliance install</option>
-              <option>Locksmith</option>
-              <option>Cleaning</option>
-              <option>Handyman</option>
-            </select>
-          </label>
-          <label>ZIP <input name="zip" inputmode="numeric" autocomplete="postal-code" required pattern="[0-9]{5}" maxlength="5" placeholder="40299" /></label>
-          <label>Unit count <input name="units" type="number" min="1" max="999" value="1" required /></label>
-          <label>Timeline
-            <select name="timeline" required>
-              <option value="">When do you need it?</option>
-              <option>This week</option>
-              <option>2–4 weeks</option>
-              <option>1–2 months</option>
-              <option>Flexible</option>
-            </select>
-          </label>
-          <label>Notes (optional) <textarea name="note" maxlength="2000" placeholder="City, access, and what finished looks like."></textarea></label>
-          <label>Photos (optional) <input name="photos" type="file" accept="image/*" multiple /></label>
-          <p class="tp-note">Until a form endpoint is set, photos are not uploaded. The email link asks you to attach them in your mail app.</p>
+          <label>Phone (optional) <input name="phone" type="tel" autocomplete="tel" maxlength="32" /></label>
+          <label>Location (city or ZIP) <input name="location" type="text" autocomplete="address-level2" required minlength="2" maxlength="80" placeholder="Jeffersonville or 47130" /></label>
+          <label>Scope <textarea name="scope" required minlength="2" maxlength="2000" placeholder="Trade, how many units, and when you need the work."></textarea></label>
           <label class="tp-consent"><input name="consent" type="checkbox" value="yes" required /> <span>Andrew may contact me about this request. This is not a contract and not a charge. <a href="https://smartrealty.us/privacy.html">Privacy</a>.</span></label>
           <button class="btn btn-primary" type="submit">Send quote request</button>
-          <p id="tpQuoteStatus" class="tp-status" role="status"></p>
+          <p id="tpQuoteStatus" class="tp-status" role="status" aria-live="polite"></p>
         </form>
+        <p class="tp-fallback">mailto:andrewiredale@smartrealty.us</p>
       </div>
     </section>
 

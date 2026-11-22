@@ -91,8 +91,9 @@ test("pages keep retailers apart and disclose every price link", () => {
   assert.match(read("turnover-prices/turnover.js"), /View on Walmart/);
   assert.match(read("turnover-prices/turnover.js"), /Price on Walmart.com at time of purchase governs/);
   assert.doesNotMatch(read("turnover-prices/turnover.js"), /#affiliate/);
-  assert.match(read("turnover-prices/config.js"), /formEndpoint:\s*""/);
   assert.match(read("turnover-prices/config.js"), /dataMode:\s*"sample"/);
+  assert.match(read("turnover-prices/config.js"), /YOUR_WEB3FORMS_ACCESS_KEY/);
+  assert.doesNotMatch(read("turnover-prices/config.js"), /web3formsAccessKey:\s*"[0-9a-f]{8}-/);
 });
 
 test("sitemap, privacy, and the refresh job match the terms", async () => {
@@ -141,4 +142,59 @@ test("Jeffersonville link resolves to a real page", () => {
   assert.match(read("homes/jeffersonville-in/index.html"), /Jeffersonville/);
   assert.match(read("new-listings/index.html"), /\/homes\/jeffersonville-in\//);
   assert.match(read("app.js"), /homes\/jeffersonville-in\//);
+});
+
+test("quote and bundle forms post to Web3Forms only after a real key is set", async () => {
+  const html = read("turnover-prices/index.html");
+  const src = read("turnover-prices/turnover.js");
+  assert.equal((html.match(/name="botcheck"/g) || []).length, 2);
+  assert.equal((html.match(/name="access_key" value="YOUR_WEB3FORMS_ACCESS_KEY"/g) || []).length, 2);
+  assert.ok((html.match(/mailto:andrewiredale@smartrealty\.us/g) || []).length >= 2);
+  assert.match(html, /id="tpQuoteStatus"[^>]*aria-live="polite"/);
+  assert.match(html, /id="tpBundleStatus"[^>]*aria-live="polite"/);
+  assert.match(html, /name="phone"/);
+  assert.match(html, /name="location"/);
+  assert.match(html, /name="scope"/);
+  assert.match(html, /name="bundle_estimate"/);
+  assert.doesNotMatch(src, /status\.innerHTML/);
+  assert.match(src, /el\.textContent = text/);
+  assert.match(src, /https:\/\/api\.web3forms\.com\/submit/);
+  assert.match(src, /Accept: "application\/json"/);
+  assert.match(read("privacy.html"), /Web3Forms/);
+  assert.match(read("apps-privacy.html"), /Web3Forms/);
+
+  const vm = require("node:vm");
+  const sandbox = { console, Intl, Date, URLSearchParams, module: { exports: {} }, fetch: () => { throw new Error("fetch should not run"); } };
+  sandbox.exports = sandbox.module.exports;
+  sandbox.globalThis = sandbox;
+  vm.runInNewContext(src, sandbox, { filename: "turnover.js" });
+  const api = sandbox.module.exports;
+  let calls = 0;
+  const fakeFetch = async (url, options) => {
+    calls += 1;
+    assert.equal(url, "https://api.web3forms.com/submit");
+    assert.equal(options.method, "POST");
+    assert.equal(options.headers.Accept, "application/json");
+    return { ok: true, json: async () => ({ success: true }) };
+  };
+  const placeholder = await api.submitWeb3Form({ access_key: "YOUR_WEB3FORMS_ACCESS_KEY", email: "a@b.co", botcheck: false }, { fetch: fakeFetch });
+  assert.equal(placeholder.mode, "placeholder");
+  assert.equal(calls, 0);
+  const bot = await api.submitWeb3Form({ access_key: "real-key-not-committed", email: "a@b.co", botcheck: true }, { fetch: fakeFetch });
+  assert.equal(bot.mode, "bot");
+  assert.equal(calls, 0);
+  const sent = await api.submitWeb3Form({
+    access_key: "real-key-not-committed",
+    email: "a@b.co",
+    subject: "Get 3 quotes",
+    from_name: "Pat",
+    bundle_estimate: "Sample estimate",
+    botcheck: false,
+  }, { fetch: fakeFetch });
+  assert.equal(sent.ok, true);
+  assert.equal(calls, 1);
+  const el = { textContent: "", className: "" };
+  api.setStatus(el, "Sent. <b>ok</b>", "ok");
+  assert.equal(el.textContent, "Sent. <b>ok</b>");
+  assert.match(api.bundleEstimateText("2", 100, 200, [{ qty: 1, name: "Primer" }]), /^Sample estimate/);
 });
