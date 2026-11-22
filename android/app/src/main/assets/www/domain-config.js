@@ -39,7 +39,7 @@ window.SRU_CONFIG = {
   management: "member-managed",
   sosNumber: "1614978.06",
   formedOn: "2026-08-03",
-  dunsNumber: "", // add when Dun & Bradstreet issues it
+  dunsNumber: "149896892", // issued around August 2026
   ein: "", // never publish
   businessAddress: "2611 Harmony Rd, Louisville, KY 40299",
 

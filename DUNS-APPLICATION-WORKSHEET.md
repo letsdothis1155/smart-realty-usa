@@ -1,6 +1,6 @@
 # D‑U‑N‑S® Application Worksheet — SMART REALTY.US LLC
 
-**Status:** Ready to copy into Dun & Bradstreet — LLC is already filed.  
+**Status:** Issued — D‑U‑N‑S **149896892** (around August 2026). Do not request a second number. LLC is already filed.  
 **Who must submit:** Andrew Iredale Jr (owner). An AI cannot complete D&B verification.  
 **Cost of D‑U‑N‑S Number:** FREE (skip paid expedite/packages unless you want them)  
 **Do not file a second Kentucky LLC.** Legal name is **SMART REALTY.US LLC**, not “Smart Realty USA LLC”.
@@ -65,19 +65,19 @@ If D&B shows a dropdown, try one of these in order:
 
 ---
 
-## Click path (do this now)
+## Click path (done — do not request again)
 
-1. Open **Lookup**: https://www.dnb.com/en-us/smb/duns/duns-lookup.html  
-2. Search **legal name** + city.  
+1. [x] Open **Lookup**: https://www.dnb.com/en-us/smb/duns/duns-lookup.html  
+2. [x] Search **legal name** + city.  
    - Found → claim it.  
    - Not found → continue.  
-3. Open **Get a D‑U‑N‑S**: https://www.dnb.com/en-us/smb/duns/get-a-duns.html  
-4. **Get Started** → **I have a U.S.-based business**  
-5. Paste values from the tables above  
-6. **Do not buy** credit packages unless you want them  
-7. **Skip expedite** unless you need the number in ~8 business days  
-8. Submit → watch email/spam for Dun & Bradstreet  
-9. When you get the **9-digit number**, reply here — I’ll put it on the website
+3. [x] Open **Get a D‑U‑N‑S**: https://www.dnb.com/en-us/smb/duns/get-a-duns.html  
+4. [x] **Get Started** → **I have a U.S.-based business**  
+5. [x] Paste values from the tables above  
+6. [x] **Do not buy** credit packages unless you want them  
+7. [x] **Skip expedite** unless you need the number in ~8 business days  
+8. [x] Submit → watch email/spam for Dun & Bradstreet  
+9. [x] Number received: **149896892** (around August 2026), stored in `domain-config.js`
 
 ---
 
@@ -86,7 +86,7 @@ If D&B shows a dropdown, try one of these in order:
 ```js
 // domain-config.js — EIN stays empty on the public file
 legalName: "SMART REALTY.US LLC",
-dunsNumber: "123456789", // 9 digits, no spaces
+dunsNumber: "149896892", // issued around August 2026
 businessAddress: "2611 Harmony Rd, Louisville, KY 40299",
 ```
 

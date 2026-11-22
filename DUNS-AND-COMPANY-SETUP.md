@@ -10,7 +10,12 @@ Official contact email (demo): **andrewiredale@smartrealty.us**
 Account requests: **andrewiredale@smartrealty.us**
 
 **Filed facts (do not invent a second LLC):**  
-SMART REALTY.US LLC · Kentucky member-managed LLC · filed 3 Aug 2026 · SOS **1614978.06** · owner **Andrew Iredale Jr** (100%) · registered agent on Articles **Andrew Iredale** · **2611 Harmony Rd, Louisville, KY 40299**. D‑U‑N‑S is **not issued yet**. Do not put the EIN on this site.
+SMART REALTY.US LLC · Kentucky member-managed LLC · filed 3 Aug 2026 · SOS **1614978.06** · owner **Andrew Iredale Jr** (100%) · registered agent on Articles **Andrew Iredale** · **2611 Harmony Rd, Louisville, KY 40299**. D‑U‑N‑S **149896892** was issued around August 2026. Do not put the EIN on this site.
+
+**Open items (follow-ups, not resolved):**
+
+1. Before contacting D&B, test **149896892** in Google Play Console’s organization account verification. Play couldn’t find it on Aug 11, 2026, but it has likely propagated since.
+2. Possible address mismatch. D&B correspondence listed **2905 Middle Rd, Jeffersonville, IN 47130**, while the KY Articles and `domain-config.js` use **2611 Harmony Rd, Louisville, KY 40299**. Play requires the legal name and address to match the D&B record exactly, so confirm or update the D&B record if they differ.
 
 ---
 
@@ -60,6 +65,8 @@ D&B sometimes creates numbers when others inquire about your company.
 
 ## Step 2 — Request a free D‑U‑N‑S Number
 
+**Done.** D&B issued **149896892** around August 2026. Do not request a second number. The steps below are the original free path.
+
 1. Go to: https://www.dnb.com/en-us/smb/duns/get-a-duns.html
 2. Choose **U.S.-based business** (if applicable)
 3. Fill the form carefully — match formation docs **exactly**
@@ -92,14 +99,14 @@ D&B sometimes creates numbers when others inquire about your company.
 
 1. Save the **9-digit D‑U‑N‑S** in your password manager  
 2. Add it to company records and contracts  
-3. Put it in project config when ready:
+3. It is already in project config:
 
 ```js
 // domain-config.js
 window.SRU_CONFIG = {
   // ...
   legalName: "SMART REALTY.US LLC",
-  dunsNumber: "XXXXXXXXX",           // 9 digits, no spaces
+  dunsNumber: "149896892",           // issued around August 2026
   // ein stays empty on the public site
 };
 ```
@@ -141,12 +148,12 @@ If Smart Realty USA will operate as a brokerage, consult a **real-estate attorne
 | Day | Action |
 |-----|--------|
 | 1 | Confirm legal name, address, EIN (or apply for EIN) |
-| 1 | D‑U‑N‑S lookup → request if missing |
+| 1 | D‑U‑N‑S lookup → request if missing — **done** (**149896892**, issued around August 2026) |
 | 2 | Business bank account application |
 | 2–3 | Domain email (ai@…) + website on hosting |
 | 3 | Draft privacy policy / terms for public site |
 | 4–7 | Track D&B email; complete any verification call |
-| When issued | Store DUNS; update `domain-config.js` + internal docs |
+| When issued | Store DUNS; update `domain-config.js` + internal docs — **done** |
 
 ---
 
@@ -176,10 +183,10 @@ Phone assistance is sometimes available through D&B (numbers change). Prefer sta
 | Legal name | _______________________________ |
 | State of formation | _____________ |
 | EIN | _____________ |
-| D‑U‑N‑S | _____________ |
+| D‑U‑N‑S | **149896892** (issued around August 2026) |
 | Physical address | _______________________________ |
 | Application date | _____________ |
-| Number received date | _____________ |
+| Number received date | around August 2026 |
 | D&B account email | _____________ |
 
 ---

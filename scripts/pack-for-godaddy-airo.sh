@@ -37,7 +37,7 @@ window.SRU_CONFIG = {
   legalName: "Smart Realty USA LLC",
   organizerName: "Andrew Iredale",
   formationState: "Kentucky",
-  dunsNumber: "",
+  dunsNumber: "149896892",
   ein: "",
   businessAddress: "",
   isPrivateDemo: true,

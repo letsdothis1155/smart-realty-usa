@@ -39,7 +39,7 @@ window.SRU_CONFIG = {
   formedOn: "2026-08-03",
   employees: 1,
   lineOfBusiness: "Software and digital technology; public real-estate product demo (not a licensed brokerage)",
-  dunsNumber: "", // add when Dun & Bradstreet issues it
+  dunsNumber: "149896892", // issued around August 2026
   ein: "", // never publish; retrieve from IRS if needed
   businessAddress: "2611 Harmony Rd, Louisville, KY 40299",
   billingEmail: "andrewiredale@smartrealty.us",
