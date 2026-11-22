@@ -15,7 +15,7 @@
 | Public phone | 1-800-762-7879 |
 | Public email | andrewiredale@smartrealty.us |
 | Account requests | andrewiredale@smartrealty.us |
-| D‑U‑N‑S | Not issued yet |
+| D‑U‑N‑S | **149896892** (issued around August 2026) |
 | EIN | Retrieve if already assigned — do not apply a second time; do not publish |
 
 This is a practical checklist, not legal advice. The steps below are the original how-to. Use the table above for accounting, invoices, D&B, and banks.
@@ -119,6 +119,8 @@ Bring:
 
 ### 6) Free D‑U‑N‑S Number
 
+**Done.** D&B issued **149896892** around August 2026. It is in `domain-config.js`. Do not request a second number.
+
 After LLC + address are set:
 
 1. Lookup: https://www.dnb.com/en-us/smb/duns/duns-lookup.html  
@@ -129,7 +131,7 @@ After LLC + address are set:
 
 ### 7) Put credentials on the site
 
-Legal name, SOS, address, and phones are already in `domain-config.js`. When D&B issues the 9-digit number, add `dunsNumber` there. **Do not** put the EIN in that public file.
+Legal name, SOS, address, and phones are already in `domain-config.js`. `dunsNumber` is **149896892** (issued around August 2026). **Do not** put the EIN in that public file.
 
 ---
 
@@ -166,7 +168,7 @@ An LLC + DUNS **does not** replace a **Kentucky real estate broker/agent license
 2. [ ] Decide registered agent (you vs service)  
 3. [ ] File LLC online ~$40 via One Stop  
 4. [ ] Apply EIN free (IRS)  
-5. [ ] Then DUNS free (D&B)  
+5. [x] Then DUNS free (D&B) — **149896892**, issued around August 2026  
 
 ---
 
