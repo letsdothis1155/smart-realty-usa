@@ -25,25 +25,19 @@ The prices in `data/prices.example.json` are sample layout data. `dataMode` in `
 | `sample` (default) | Gold banner, Sample price, disabled retailer buttons, Sample estimate |
 | `live` | Retailer links, Last checked in Eastern time, the behavior above |
 
-## Form endpoint (one value)
+## Forms
 
-Edit `turnover-prices/config.js`:
+Both the bundle email and Get 3 quotes post to `https://api.web3forms.com/submit`. The access key lives in one place, `turnover-prices/config.js`:
 
 ```js
-window.TURNOVER_CONFIG = {
-  formEndpoint: "",
-  contactEmail: "andrewiredale@smartrealty.us",
-};
+web3formsAccessKey: "75233f3d-6aa6-414f-9125-dceff14826da",
 ```
 
-Leave `formEndpoint` empty until you pick a receiver. Do not commit a third-party URL that contains a secret.
-
-Options:
-
-1. **Formspree** (or similar). Create a form that emails andrewiredale@smartrealty.us. Put only the form’s POST URL in `formEndpoint`. The quote form sends JSON (`kind`, name, email, trade, ZIP, units, timeline, note). The bundle form sends JSON with the two subtotals. Formspree’s free forms sometimes expect `application/x-www-form-urlencoded`; if JSON is rejected, point `formEndpoint` at a Worker instead.
-2. **Cloudflare Worker** that accepts the JSON and emails andrewiredale@smartrealty.us. The signup Worker already in `workers/signup/` is a pattern for email, not the endpoint this page calls. A new Worker should check the `kind` field, rate-limit, and refuse passwords and card numbers. Set `formEndpoint` to that Worker’s URL. Optional photos need a multipart handler; this preview does not upload files when the endpoint is empty, and the JSON payload only includes a photo count.
+A real Web3Forms access key is configured. It is public by design. To rotate it, create a new key at [web3forms.com](https://web3forms.com/) and replace this value in `config.js` and in both hidden `access_key` inputs. If the value is set back to `YOUR_WEB3FORMS_ACCESS_KEY`, the page does not send the request and tells the visitor to email andrewiredale@smartrealty.us. Each form also shows that mailto address as a plain-text fallback. A hidden `botcheck` checkbox is the honeypot. The quote request includes the calculator’s selected items and marks the total as a sample estimate.
 
 There is no contractor billing and no paid ranking.
+
+The turnover pages do not set a Content-Security-Policy. The only CSP on this site is the mempool page `blockchain-live.html`, which does not host these forms, so it was left unchanged.
 
 ## Secrets
 

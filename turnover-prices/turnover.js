@@ -14,6 +14,8 @@
   "use strict";
 
   var DISCLOSURE = "Affiliate link (#ad): Smart Realty may earn a commission. Rankings are never paid.";
+  var WEB3FORMS_URL = "https://api.web3forms.com/submit";
+  var WEB3FORMS_PLACEHOLDER = "YOUR_WEB3FORMS_ACCESS_KEY";
   var EBAY_MAX_AGE_MS = 6 * 60 * 60 * 1000;
   /* Disabled. Do not enable without written permission from the retailer. */
   var PAST_COPY_ENABLED = false;
@@ -278,37 +280,54 @@
   function readConfig() {
     var cfg = (typeof window !== "undefined" && window.TURNOVER_CONFIG) || {};
     return {
-      formEndpoint: String(cfg.formEndpoint || "").trim(),
+      web3formsAccessKey: String(cfg.web3formsAccessKey || WEB3FORMS_PLACEHOLDER).trim(),
       contactEmail: cfg.contactEmail || "andrewiredale@smartrealty.us",
     };
   }
 
-  function utmFields() {
-    var params = new URLSearchParams(typeof location !== "undefined" ? location.search : "");
-    var keys = ["utm_source", "utm_medium", "utm_campaign", "utm_content"];
-    var out = {};
-    keys.forEach(function (key) {
-      var value = params.get(key);
-      if (value) out[key] = value.slice(0, 80);
+  function isPlaceholderKey(key) {
+    var value = String(key || "").trim();
+    return !value || value === WEB3FORMS_PLACEHOLDER;
+  }
+
+  function setStatus(el, text, kind) {
+    if (!el) return;
+    el.textContent = text;
+    el.className = "tp-status" + (kind ? " is-" + kind : "");
+  }
+
+  function bundleEstimateText(size, ebayCents, walmartCents, items) {
+    var lines = (items || []).map(function (item) {
+      return "- " + item.qty + " x " + item.name;
     });
-    if (!out.utm_source) out.utm_source = "turnover-prices";
-    return out;
+    return [
+      "Sample estimate",
+      "Unit size: " + size + " bedroom",
+      "eBay subtotal: " + moneyFromCents(ebayCents || 0),
+      "Walmart subtotal: " + moneyFromCents(walmartCents || 0),
+      "Items:",
+      lines.join("\n") || "- none checked",
+    ].join("\n");
   }
 
-  function mailtoLink(email, subject, body) {
-    return "mailto:" + email + "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
-  }
-
-  async function postIntake(payload) {
-    var cfg = readConfig();
-    if (!cfg.formEndpoint) return { ok: false, mode: "unconfigured" };
-    var res = await fetch(cfg.formEndpoint, {
+  async function submitWeb3Form(fields, deps) {
+    var fetchImpl = (deps && deps.fetch) || fetch;
+    var key = String((fields && fields.access_key) || (deps && deps.accessKey) || "").trim();
+    if (isPlaceholderKey(key)) return { ok: false, mode: "placeholder" };
+    if (fields && (fields.botcheck === true || fields.botcheck === "on")) {
+      return { ok: false, mode: "bot" };
+    }
+    var res = await fetchImpl(WEB3FORMS_URL, {
       method: "POST",
       headers: { Accept: "application/json", "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
+      body: JSON.stringify(fields),
     });
-    if (!res.ok) throw new Error("The form endpoint returned " + res.status + ".");
-    return { ok: true, mode: "endpoint" };
+    var data = {};
+    try { data = await res.json(); } catch (e) { data = {}; }
+    if (!res.ok || data.success === false) {
+      throw new Error(data.message || "Web3Forms could not send this form.");
+    }
+    return { ok: true, mode: "sent" };
   }
 
   function mountMenu() {
@@ -396,54 +415,49 @@
         var email = form.querySelector('[name="email"]').value.trim();
         var name = form.querySelector('[name="name"]').value.trim();
         var consent = form.querySelector('[name="consent"]').checked;
+        var bot = form.querySelector('[name="botcheck"]');
+        var button = form.querySelector('[type="submit"]');
         if (!consent || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-          status.textContent = "Add a valid email and confirm Andrew may reply. Nothing was sent.";
-          status.className = "tp-status is-bad";
+          setStatus(status, "Add a valid email and confirm Andrew may reply. Nothing was sent.", "bad");
           return;
         }
-        var payload = {
-          kind: "turnover-bundle",
+        var cfg = readConfig();
+        var items = data.products.filter(function (p) { return selected[p.id]; }).map(function (p) {
+          return { id: p.id, name: p.name, qty: p.qty[size] };
+        });
+        var estimate = bundleEstimateText(size, Number(out.dataset.ebayCents || 0), Number(out.dataset.walmartCents || 0), items);
+        var hidden = form.querySelector('[name="bundle_estimate"]');
+        if (hidden) hidden.value = estimate;
+        if (isPlaceholderKey(cfg.web3formsAccessKey)) {
+          setStatus(status, "This form is not set up yet. Please email andrewiredale@smartrealty.us.", "bad");
+          return;
+        }
+        button.disabled = true;
+        setStatus(status, "Sending…", "");
+        submitWeb3Form({
+          access_key: cfg.web3formsAccessKey,
+          subject: "Turnover bundle sample estimate",
+          from_name: name || "Smart Realty",
           name: name,
           email: email,
-          size: size,
-          ebaySubtotalCents: Number(out.dataset.ebayCents || 0),
-          walmartSubtotalCents: Number(out.dataset.walmartCents || 0),
-          items: data.products.filter(function (p) { return selected[p.id]; }).map(function (p) {
-            return { id: p.id, name: p.name, qty: p.qty[size] };
-          }),
-          interest: "yield-map-waitlist,landlord-software",
-          exampleData: !!(data.meta && data.meta.exampleData),
-          utm: utmFields(),
-          page: location.pathname,
-        };
-        var body = [
-          "Email me this turnover bundle",
-          "Name: " + (name || "(not given)"),
-          "Email: " + email,
-          "Unit size: " + size + " bedroom",
-          "eBay subtotal (example if labeled): " + moneyFromCents(payload.ebaySubtotalCents),
-          "Walmart subtotal (example if labeled): " + moneyFromCents(payload.walmartSubtotalCents),
-          "Items:",
-          payload.items.map(function (item) { return "- " + item.qty + " × " + item.name; }).join("\n"),
-          "Interest: Yield Map waitlist and landlord software list.",
-          "Example data: " + (payload.exampleData ? "yes" : "no"),
-        ].join("\n");
-        var cfg = readConfig();
-        var mail = mailtoLink(cfg.contactEmail, "Turnover bundle — " + size + " BR", body);
-        status.textContent = "Sending…";
-        status.className = "tp-status";
-        postIntake(payload).then(function (result) {
-          if (result.ok) {
-            status.innerHTML = "Request sent to Andrew. It is also on the landlord-software interest note in that message.";
-            status.className = "tp-status is-ok";
-            form.reset();
+          message: estimate,
+          bundle_estimate: estimate,
+          botcheck: !!(bot && bot.checked),
+        }).then(function (result) {
+          if (result.mode === "placeholder") {
+            setStatus(status, "This form is not set up yet. Please email andrewiredale@smartrealty.us.", "bad");
             return;
           }
-          status.innerHTML = 'No form endpoint is configured yet. <a href="' + mail + '">Email this bundle to Andrew</a>.';
-          status.className = "tp-status is-ok";
+          if (result.mode === "bot") {
+            setStatus(status, "Thanks. If this was a real note, email andrewiredale@smartrealty.us.", "ok");
+            return;
+          }
+          setStatus(status, "Sent. Andrew will get this sample estimate by email.", "ok");
+          form.reset();
         }).catch(function (err) {
-          status.innerHTML = esc(err.message || "Could not send.") + ' <a href="' + mail + '">Email this bundle to Andrew</a>.';
-          status.className = "tp-status is-bad";
+          setStatus(status, err.message || "Could not send. Please email andrewiredale@smartrealty.us.", "bad");
+        }).then(function () {
+          button.disabled = false;
         });
       });
     }
@@ -459,68 +473,61 @@
       var data = new FormData(form);
       var name = String(data.get("name") || "").trim();
       var email = String(data.get("email") || "").trim();
-      var trade = String(data.get("trade") || "").trim();
-      var zip = String(data.get("zip") || "").trim();
-      var units = String(data.get("units") || "").trim();
-      var timeline = String(data.get("timeline") || "").trim();
-      var note = String(data.get("note") || "").trim();
+      var phone = String(data.get("phone") || "").trim();
+      var locationField = String(data.get("location") || "").trim();
+      var scope = String(data.get("scope") || "").trim();
       var consent = data.get("consent") === "yes";
-      var photos = form.querySelector('[name="photos"]');
-      var photoCount = photos && photos.files ? photos.files.length : 0;
-      if (!consent || name.length < 2 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !/^\d{5}$/.test(zip) || !trade || !timeline) {
-        status.textContent = "Check name, email, trade, a 5-digit ZIP, timeline, and the consent box. Nothing was sent.";
-        status.className = "tp-status is-bad";
+      var bot = form.querySelector('[name="botcheck"]');
+      var button = form.querySelector('[type="submit"]');
+      if (!consent || name.length < 2 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || locationField.length < 2 || scope.length < 2) {
+        setStatus(status, "Check name, email, location, scope, and the consent box. Nothing was sent.", "bad");
         return;
       }
-      var payload = {
-        kind: "contractor-quotes",
+      var cfg = readConfig();
+      var out = document.getElementById("tpBundleOut");
+      var bundleForm = document.getElementById("tpBundleForm");
+      var stored = bundleForm && bundleForm.querySelector('[name="bundle_estimate"]');
+      var estimate = (stored && stored.value) || bundleEstimateText(
+        (out && out.dataset.size) || "2",
+        Number((out && out.dataset.ebayCents) || 0),
+        Number((out && out.dataset.walmartCents) || 0),
+        []
+      );
+      var quoteEstimate = form.querySelector('[name="bundle_estimate"]');
+      if (quoteEstimate) quoteEstimate.value = estimate;
+      if (isPlaceholderKey(cfg.web3formsAccessKey)) {
+        setStatus(status, "This form is not set up yet. Please email andrewiredale@smartrealty.us.", "bad");
+        return;
+      }
+      button.disabled = true;
+      setStatus(status, "Sending…", "");
+      submitWeb3Form({
+        access_key: cfg.web3formsAccessKey,
+        subject: "Get 3 quotes",
+        from_name: name || "Smart Realty",
         name: name,
         email: email,
-        trade: trade,
-        zip: zip,
-        units: units,
-        timeline: timeline,
-        note: note,
-        photoCount: photoCount,
-        paidRanking: false,
-        billing: false,
-        utm: utmFields(),
-        page: location.pathname,
-      };
-      var body = [
-        "Get 3 quotes",
-        "Name: " + name,
-        "Email: " + email,
-        "Trade: " + trade,
-        "ZIP: " + zip,
-        "Unit count: " + units,
-        "Timeline: " + timeline,
-        "Note: " + (note || "(none)"),
-        "Photos selected on the form: " + photoCount + " (attach them in your email app; this preview does not upload files).",
-        "No contractor billing. No paid ranking.",
-      ].join("\n");
-      var cfg = readConfig();
-      var mail = mailtoLink(cfg.contactEmail, "Quote request — " + trade + " " + zip, body);
-      status.textContent = "Sending…";
-      status.className = "tp-status";
-      postIntake(payload).then(function (result) {
-        if (result.ok && photoCount === 0) {
-          status.textContent = "Request sent to Andrew. There is no charge and no paid ranking.";
-          status.className = "tp-status is-ok";
-          form.reset();
+        phone: phone,
+        location: locationField,
+        scope: scope,
+        message: ["Name: " + name, "Email: " + email, "Phone: " + (phone || "not given"), "Location: " + locationField, "Scope: " + scope, "", estimate].join("\n"),
+        bundle_estimate: estimate,
+        botcheck: !!(bot && bot.checked),
+      }).then(function (result) {
+        if (result.mode === "placeholder") {
+          setStatus(status, "This form is not set up yet. Please email andrewiredale@smartrealty.us.", "bad");
           return;
         }
-        if (result.ok && photoCount) {
-          status.innerHTML = 'Request sent without the photos. <a href="' + mail + '">Email Andrew and attach the photos</a>.';
-          status.className = "tp-status is-ok";
+        if (result.mode === "bot") {
+          setStatus(status, "Thanks. If this was a real request, email andrewiredale@smartrealty.us.", "ok");
           return;
         }
-        var extra = photoCount ? " Attach the photos in that email." : "";
-        status.innerHTML = 'No form endpoint is configured yet. <a href="' + mail + '">Email this quote request to Andrew</a>.' + extra;
-        status.className = "tp-status is-ok";
+        setStatus(status, "Sent. Andrew will reply about quotes. There is no charge and no paid ranking.", "ok");
+        form.reset();
       }).catch(function (err) {
-        status.innerHTML = esc(err.message || "Could not send.") + ' <a href="' + mail + '">Email this quote request to Andrew</a>.';
-        status.className = "tp-status is-bad";
+        setStatus(status, err.message || "Could not send. Please email andrewiredale@smartrealty.us.", "bad");
+      }).then(function () {
+        button.disabled = false;
       });
     });
   }
@@ -599,7 +606,12 @@
     totalCents: totalCents,
     moneyFromCents: moneyFromCents,
     sortOffers: sortOffers,
-    formatChecked: formatChecked,
+    setStatus: setStatus,
+    isPlaceholderKey: isPlaceholderKey,
+    submitWeb3Form: submitWeb3Form,
+    bundleEstimateText: bundleEstimateText,
+    WEB3FORMS_URL: WEB3FORMS_URL,
+    WEB3FORMS_PLACEHOLDER: WEB3FORMS_PLACEHOLDER,
     isStaleEbay: isStaleEbay,
     lowWindow: lowWindow,
     cheapest: cheapest,
