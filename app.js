@@ -1022,6 +1022,7 @@ function renderListings() {
           <button type="button" class="btn btn-primary" id="clearFiltersBtn">Clear filters</button>
           <button type="button" class="btn btn-ghost" data-search="Louisville">Try Louisville</button>
           <a class="btn btn-outline" href="new-listings/?q=${encodeURIComponent(searchState.query || "Louisville")}">Search live HUD listings</a>
+          ${/jeffersonville/i.test(searchedMarket) ? `<a class="btn btn-outline" href="homes/jeffersonville-in/">Jeffersonville page</a>` : ""}
         </div>
       </div>`;
     renderMap([]);
@@ -1132,12 +1133,21 @@ function updateSearchClearBtn() {
   btn.classList.toggle("hidden", !q.trim());
 }
 
+/** Demo catalog has no Jeffersonville listings; the old chip searched an empty set. */
+const CATALOG_CITY_LINKS = {
+  "Jeffersonville, IN": "homes/jeffersonville-in/",
+};
+
 function renderQuickCities() {
   const el = $("#quickCities");
   if (!el) return;
-  el.innerHTML = POPULAR_MARKETS.map(
-    (c) => `<button type="button" class="chip city-chip" data-search="${escapeAttr(c)}">${escapeHtml(c)}</button>`
-  ).join("");
+  el.innerHTML = POPULAR_MARKETS.map((c) => {
+    const href = CATALOG_CITY_LINKS[c];
+    if (href) {
+      return `<a class="chip city-chip" href="${escapeAttr(href)}">${escapeHtml(c)}</a>`;
+    }
+    return `<button type="button" class="chip city-chip" data-search="${escapeAttr(c)}">${escapeHtml(c)}</button>`;
+  }).join("");
 }
 
 function renderActiveFilters() {
@@ -2754,8 +2764,14 @@ function initUI() {
     { passive: true }
   );
 
-  $("#menuToggle")?.addEventListener("click", () => {
-    $("#nav")?.classList.toggle("open");
+  const menuBtn = $("#menuToggle");
+  menuBtn?.setAttribute("aria-controls", "nav");
+  if (menuBtn && !menuBtn.hasAttribute("aria-expanded")) menuBtn.setAttribute("aria-expanded", "false");
+  menuBtn?.addEventListener("click", () => {
+    const nav = $("#nav");
+    const open = !!nav?.classList.toggle("open");
+    menuBtn.setAttribute("aria-expanded", open ? "true" : "false");
+    menuBtn.setAttribute("aria-label", open ? "Close menu" : "Open menu");
   });
 
   $$("#nav a").forEach((link) => {

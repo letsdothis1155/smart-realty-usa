@@ -1,0 +1,147 @@
+/* Turnover Price Check — sits on styles.css + growth.css */
+.tp-banner {
+  background: var(--gold-soft);
+  color: var(--gold);
+  border-bottom: 1px solid rgba(232, 200, 122, 0.35);
+  padding: 0.75rem 0;
+  font-size: 0.92rem;
+  font-weight: 650;
+}
+.tp-banner p { margin: 0; }
+.tp-hero { padding-top: 2.2rem; }
+.tp-hero h1 { max-width: 18ch; }
+.tp-note, .tp-summary, .tp-lead, .tp-policy p, .tp-form p { color: var(--text-muted); }
+.tp-jump { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0; }
+.tp-jump a, .tp-check { min-height: 44px; }
+.tp-section { padding: 2.5rem 0; }
+.tp-section h2 { font-family: var(--serif); font-size: clamp(1.6rem, 3vw, 2.15rem); margin-bottom: 0.45rem; }
+.tp-cat-intro { max-width: 68ch; margin-bottom: 1rem; color: var(--text-muted); }
+.tp-product {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem;
+  margin: 1rem 0;
+  background: rgba(22, 26, 36, 0.55);
+}
+.tp-product h3 { font-size: 1.15rem; margin-bottom: 0.35rem; }
+.tp-blocks {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.8rem;
+  margin-top: 0.8rem;
+}
+.tp-retailer {
+  border-radius: 12px;
+  padding: 0.85rem;
+  background: var(--bg);
+}
+.tp-retailer h3, .tp-retailer h4 { font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.55rem; }
+.tp-retailer-ebay { border: 2px solid rgba(91, 140, 255, 0.85); }
+.tp-retailer-ebay h3, .tp-retailer-ebay h4 { color: #b9ceff; }
+.tp-retailer-walmart { border: 2px solid rgba(61, 214, 198, 0.85); }
+.tp-retailer-walmart h3, .tp-retailer-walmart h4 { color: #b8fff4; }
+.tp-offer + .tp-offer { margin-top: 0.85rem; padding-top: 0.85rem; border-top: 1px solid var(--border); }
+.tp-offer-title { font-weight: 650; }
+.tp-price { margin: 0.25rem 0; }
+.tp-price strong { font-size: 1.15rem; }
+.tp-split, .tp-checked, .tp-govern, .tp-stale, .tp-empty { color: var(--text-muted); font-size: 0.88rem; }
+.tp-stale { color: var(--gold); }
+.tp-tag {
+  display: inline-block;
+  margin-left: 0.35rem;
+  padding: 0.05rem 0.4rem;
+  border-radius: 999px;
+  border: 1px solid rgba(232, 200, 122, 0.6);
+  color: var(--gold);
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  font-weight: 750;
+  vertical-align: middle;
+}
+.tp-disclosure {
+  margin: 0.35rem 0 0;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  color: var(--text);
+}
+.tp-out {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0.35rem 0.8rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  font-weight: 700;
+}
+.tp-retailer-ebay .tp-out { color: #d5e2ff; }
+.tp-retailer-walmart .tp-out { color: #d7fff8; }
+.tp-sizes, .tp-form, .tp-policy, .tp-placeholder, .tp-amazon {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem;
+  background: rgba(22, 26, 36, 0.55);
+}
+.tp-amazon { margin: 1rem 0; }
+.tp-sizes { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.8rem 0; }
+.tp-sizes label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 44px;
+  padding: 0.3rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+}
+.tp-checks { border: 0; margin: 0.6rem 0 0; padding: 0; }
+.tp-checks legend { font-weight: 700; margin-bottom: 0.25rem; }
+.tp-check { display: flex; align-items: center; gap: 0.5rem; padding: 0.15rem 0; }
+.tp-table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+.tp-table th, .tp-table td { text-align: left; vertical-align: top; padding: 0.45rem 0.35rem; border-bottom: 1px solid var(--border); }
+.tp-form { display: grid; gap: 0.75rem; margin-top: 0.8rem; }
+.tp-form label { display: grid; gap: 0.25rem; font-size: 0.92rem; }
+.tp-form input, .tp-form select, .tp-form textarea {
+  width: 100%;
+  min-height: 44px;
+  padding: 0.55rem 0.7rem;
+  border-radius: 10px;
+  border: 1px solid var(--border-strong);
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+}
+.tp-form textarea { min-height: 6rem; }
+.tp-consent { grid-template-columns: auto 1fr; align-items: start; }
+.tp-consent input { width: auto; min-height: 1.25rem; margin-top: 0.2rem; }
+.tp-status { min-height: 1.3rem; }
+.tp-status.is-ok { color: var(--success); }
+.tp-status.is-bad { color: var(--danger); }
+.tp-placeholder { margin: 0.8rem 0; }
+.tp-placeholder strong { display: block; margin-bottom: 0.25rem; }
+.tp-policy { margin-top: 1rem; }
+.tp-policy h2 { font-size: 1.35rem; }
+#tpSort {
+  display: block;
+  margin-top: 0.35rem;
+  min-height: 44px;
+  width: min(100%, 24rem);
+  padding: 0.45rem 0.7rem;
+  border-radius: 10px;
+  border: 1px solid var(--border-strong);
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+}
+.tp-faq details { border-top: 1px solid var(--border); padding: 0.7rem 0; }
+.tp-faq summary { cursor: pointer; font-weight: 700; min-height: 44px; display: flex; align-items: center; }
+.g-header { overflow: visible; }
+.g-nav.open { z-index: 50; }
+.tp-menu:focus-visible, .tp-out:focus-visible, .tp-form input:focus-visible, .tp-form select:focus-visible, .tp-form textarea:focus-visible, a:focus-visible, button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+@media (min-width: 800px) {
+  .tp-blocks { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 720px) {
+  .tp-table { display: block; overflow-x: auto; }
+}

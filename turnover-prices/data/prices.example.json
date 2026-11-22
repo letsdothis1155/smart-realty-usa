@@ -1,0 +1,1407 @@
+{
+  "meta": {
+    "exampleData": true,
+    "label": "EXAMPLE DATA",
+    "generatedAt": "2026-11-22T01:00:00.000Z",
+    "currency": "USD",
+    "note": "Placeholder prices for the preview. Not live eBay or Walmart offers. No affiliate campaign IDs are included. Do not treat this file as a price archive.",
+    "priceHistory": {
+      "enabled": false,
+      "todo": "Keep disabled. eBay's API license allows only short-lived copies and needs written permission before any average or 30/90-day low. Walmart's operating agreement prohibits price tracking and price alerts."
+    },
+    "amazon": {
+      "enabled": false,
+      "note": "Amazon prices will be live-only once Associates terms are reviewed. This file stores no Amazon prices."
+    },
+    "retailers": {
+      "ebay": {
+        "label": "From eBay",
+        "maxAgeHours": 6,
+        "history": false
+      },
+      "walmart": {
+        "label": "From Walmart",
+        "history": false,
+        "priceNote": "Price on Walmart.com at time of purchase governs."
+      }
+    }
+  },
+  "categories": [
+    {
+      "id": "appliances",
+      "name": "Appliances",
+      "summary": "Replacement appliances for a rental make-ready. Sizes are the usual small-landlord specs in Kentuckiana: a 30-inch electric range, an 18–21 cu ft top-freezer fridge, and a 40–50 gallon electric water heater."
+    },
+    {
+      "id": "paint",
+      "name": "Paint and prep",
+      "summary": "Neutral white and greige for interior walls, plus ceiling paint, primer, and the rollers, caulk, and spackle a turnover usually burns through."
+    },
+    {
+      "id": "flooring",
+      "name": "Flooring",
+      "summary": "Rental-grade LVP and carpet with pad, priced per square foot, plus transition strips and underlayment. Square-foot quantities in the calculator are planning numbers, not a measure of a specific unit."
+    },
+    {
+      "id": "locks",
+      "name": "Locks and safety",
+      "summary": "Keypad deadbolts, a Wi-Fi or Z-Wave smart lock, rekey kits, a lockbox, and smoke/CO alarms. Smart Realty does not rank one brand above another for a fee."
+    },
+    {
+      "id": "basics",
+      "name": "Turnover basics",
+      "summary": "The smaller parts that show up on almost every make-ready: a faucet, a toilet with a fill valve, lights, outlets and GFCIs, blinds, HVAC filters, and a water-leak sensor."
+    }
+  ],
+  "products": [
+    {
+      "id": "range-30-electric",
+      "category": "appliances",
+      "name": "30-inch electric range",
+      "summary": "Freestanding 30-inch electric range. Coil or smooth-top both show up in rentals; confirm the opening and the cord before you order.",
+      "unit": "each",
+      "qty": {
+        "1": 1,
+        "2": 1,
+        "3": 1
+      },
+      "defaultOn": false,
+      "retailers": {
+        "ebay": {
+          "offers": [
+            {
+              "id": "ebay-range-a",
+              "title": "Example 30-inch electric range, freestanding",
+              "itemPrice": 449,
+              "shipping": 0,
+              "currency": "USD",
+              "condition": "New",
+              "url": "https://www.ebay.com/sch/i.html?_nkw=30-inch%20electric%20range%2C%20freestanding",
+              "checkedAt": "2026-11-22T01:00:00.000Z",
+              "example": true
+            },
+            {
+              "id": "ebay-range-b",
+              "title": "Example 30-inch coil electric range",
+              "itemPrice": 419,
+              "shipping": 39,
+              "currency": "USD",
+              "condition": "New",
+              "url": "https://www.ebay.com/sch/i.html?_nkw=30-inch%20coil%20electric%20range",
+              "checkedAt": "2026-11-22T01:00:00.000Z",
+              "example": true
+            }
+          ]
+        },
+        "walmart": {
+          "offers": [
+            {
+              "id": "wmt-range-a",
+              "title": "Example 30-inch electric range, freestanding",
+              "itemPrice": 478,
+              "shipping": 0,
+              "currency": "USD",
+              "condition": "New",
+              "url": "https://www.walmart.com/search?q=30-inch%20electric%20range%2C%20freestanding",
+              "checkedAt": "2026-11-22T01:00:00.000Z",
+              "example": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "fridge-top-freezer",
+      "category": "appliances",
+      "name": "Top-freezer refrigerator, 18–21 cu ft",
+      "summary": "Top-freezer fridge in the 18–21 cubic foot range. Measure the doorway and the hinge side.",
+      "unit": "each",
+      "qty": {
+        "1": 1,
+        "2": 1,
+        "3": 1
+      },
+      "defaultOn": false,
+      "retailers": {
+        "ebay": {
+          "offers": [
+            {
+              "id": "ebay-fridge-a",
+              "title": "Example 18 cu ft top freezer refrigerator",
+              "itemPrice": 548,
+              "shipping": 0,
+              "currency": "USD",
+              "condition": "New",
+              "url": "https://www.ebay.com/sch/i.html?_nkw=18%20cu%20ft%20top%20freezer%20refrigerator",
+              "checkedAt": "2026-11-22T01:00:00.000Z",
+              "example": true
+            }
+          ]
+        },
+        "walmart": {
+          "offers": [
+            {
+              "id": "wmt-fridge-a",
+              "title": "Example 18 cu ft top freezer refrigerator",
+              "itemPrice": 529,
+              "shipping": 0,
+              "currency": "USD",
+              "condition": "New",
+              "url": "https://www.walmart.com/search?q=18%20cu%20ft%20top%20freezer%20refrigerator",
+              "checkedAt": "2026-11-22T01:00:00.000Z",
+              "example": true
+            },
+            {
+              "id": "wmt-fridge-b",
+              "title": "Example 21 cu ft top freezer refrigerator",
+              "itemPrice": 498,
+              "shipping": 49,
+              "currency": "USD",
+              "condition": "New",
+              "url": "https://www.walmart.com/search?q=21%20cu%20ft%20top%20freezer%20refrigerator",
+              "checkedAt": "2026-11-22T01:00:00.000Z",
+              "example": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "microwave-otr",
+      "category": "appliances",
+      "name": "Over-the-range microwave",
+      "summary": "Over-the-range microwave to replace a vented hood. Check width (usually 30 inches) and whether the vent is recirculating or ducted.",
+      "unit": "each",
+      "qty": {
+        "1": 1,
+        "2": 1,
+        "3": 1
+      },
+      "defaultOn": false,
+      "retailers": {
+        "ebay": {
+          "offers": [
+            {
+              "id": "ebay-micro-a",
+              "title": "Example over the range microwave 30 inch",
+              "itemPrice": 189,
+              "shipping": 0,
+              "currency": "USD",
+              "condition": "New",
+              "url": "https://www.ebay.com/sch/i.html?_nkw=over%20the%20range%20microwave%2030%20inch",
+              "checkedAt": "2026-11-22T01:00:00.000Z",
+              "example": true
+            }
+          ]
+        },
+        "walmart": {
+          "offers": [
+            {
+              "id": "wmt-micro-a",
+              "title": "Example over the range microwave 30 inch",
+              "itemPrice": 168,
+              "shipping": 0,
+              "currency": "USD",
+              "condition": "New",
+              "url": "https://www.walmart.com/search?q=over%20the%20range%20microwave%2030%20inch",
+              "checkedAt": "2026-11-22T01:00:00.000Z",
+              "example": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "dishwasher-builtin",
+      "category": "appliances",
+      "name": "Built-in dishwasher",
+      "summary": "Standard built-in dishwasher. A turnover often needs a new install kit even when the tub is fine.",
+      "unit": "each",
+      "qty": {
+        "1": 1,
+        "2": 1,
+        "3": 1
+      },
+      "defaultOn": false,
+      "retailers": {
+        "ebay": {
+          "offers": [
+            {
+              "id": "ebay-dw-a",
+              "title": "Example built-in dishwasher",
+              "itemPrice": 378,
+              "shipping": 0,
+              "currency": "USD",
+              "condition": "New",
+              "url": "https://www.ebay.com/sch/i.html?_nkw=built-in%20dishwasher",
+              "checkedAt": "2026-11-22T01:00:00.000Z",
+              "example": true
+            }
+          ]
+        },
+        "walmart": {
+          "offers": [
+            {
+              "id": "wmt-dw-a",
+              "title": "Example built-in dishwasher",
+              "itemPrice": 398,
+              "shipping": 0,
+              "currency": "USD",
+              "condition": "New",
+              "url": "https://www.walmart.com/search?q=built-in%20dishwasher",
+              "checkedAt": "2026-11-22T01:00:00.000Z",
+              "example": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "water-heater-electric",
+      "category": "appliances",
+      "name": "Electric water heater, 40–50 gal",
+      "summary": "Tall or short electric tank, 40 or 50 gallons. Replacement is usually a licensed plumbing job in both Kentucky and Indiana.",
+      "unit": "each",
+      "qty": {
+        "1": 1,
+        "2": 1,
+        "3": 1
+      },
+      "defaultOn": false,
+      "retailers": {
+        "ebay": {
+          "offers": [
+            {
+              "id": "ebay-wh-a",
+              "title": "Example 40 gallon electric water heater",
+              "itemPrice": 429,
+              "shipping": 0,
+              "currency": "USD",
+              "condition": "New",
+              "url": "https://www.ebay.com/sch/i.html?_nkw=40%20gallon%20electric%20water%20heater",
+              "checkedAt": "2026-11-22T01:00:00.000Z",
+              "example": true
+            }
+          ]
+        },
+        "walmart": {
+          "offers": [
+            {
+              "id": "wmt-wh-a",
+              "title": "Example 50 gallon electric water heater",
+              "itemPrice": 459,
+              "shipping": 0,
+              "currency": "USD",
+              "condition": "New",
+              "url": "https://www.walmart.com/search?q=50%20gallon%20electric%20water%20heater",
+              "checkedAt": "2026-11-22T01:00:00.000Z",
+              "example": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "window-ac",
+      "category": "appliances",
+      "name": "Window air conditioner",
+      "summary": "A window unit for a unit that does not have central air, or for a room the central system does not cool.",
+      "unit": "each",
+      "qty": {
+        "1": 1,
+        "2": 1,
+        "3": 2
+      },
+      "defaultOn": false,
+      "retailers": {
+        "ebay": {
+          "offers": [
+            {
+              "id": "ebay-ac-a",
+              "title": "Example window air conditioner",
+              "itemPrice": 219,
+              "shipping": 0,
+              "currency": "USD",
+              "condition": "New",
+              "url": "https://www.ebay.com/sch/i.html?_nkw=window%20air%20conditioner",
+              "checkedAt": "2026-11-22T01:00:00.000Z",
+              "example": true
+            }
+          ]
+        },
+        "walmart": {
+          "offers": [
+            {
+              "id": "wmt-ac-a",
+              "title": "Example window air conditioner",
+              "itemPrice": 198,
+              "shipping": 0,
+              "currency": "USD",
+              "condition": "New",
+              "url": "https://www.walmart.com/search?q=window%20air%20conditioner",
+              "checkedAt": "2026-11-22T01:00:00.000Z",
+              "example": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "paint-gallon",
+      "category": "paint",
+      "name": "Interior eggshell paint, gallon",
+      "summary": "Neutral white or greige eggshell for walls. Eggshell cleans better than flat in rentals. One gallon covers roughly 350–400 square feet.",
+      "unit": "gallon",
+      "qty": {
+        "1": 2,
+        "2": 4,
+        "3": 6
+      },
+      "defaultOn": true,
+      "retailers": {
+        "ebay": {
+          "offers": [
+            {
+              "id": "ebay-gal-a",
+              "title": "Example interior eggshell paint gallon neutral",
+              "itemPrice": 32,
+              "shipping": 8.5,
+              "currency": "USD",
+              "condition": "New",
+              "url": "https://www.ebay.com/sch/i.html?_nkw=interior%20eggshell%20paint%20gallon%20neutral",
+              "checkedAt": "2026-11-22T01:00:00.000Z",
+              "example": true
+            }
+          ]
+        },
+        "walmart": {
+          "offers": [
+            {
+              "id": "wmt-gal-a",
+              "title": "Example interior eggshell paint gallon white",
+              "itemPrice": 28.96,
+              "shipping": 0,
+              "currency": "USD",
+              "condition": "New",
+              "url": "https://www.walmart.com/search?q=interior%20eggshell%20paint%20gallon%20white",
+              "checkedAt": "2026-11-22T01:00:00.000Z",
+              "example": true
+            },
+            {
+              "id": "wmt-gal-b",
+              "title": "Example interior eggshell paint gallon greige",
+              "itemPrice": 34.5,
+              "shipping": 5.99,
+              "currency": "USD",
+              "condition": "New",
+              "url": "https://www.walmart.com/search?q=interior%20eggshell%20paint%20gallon%20greige",
+              "checkedAt": "2026-11-22T01:00:00.000Z",
+              "example": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "paint-5gal",
+      "category": "paint",
+      "name": "Interior paint, 5-gallon neutral",
+      "summary": "Five-gallon bucket of the same neutral, for a full repaint. Cheaper per gallon when the whole unit is going white.",
+      "unit": "bucket",
+      "qty": {
+        "1": 1,
+        "2": 1,
+        "3": 2
+      },
+      "defaultOn": true,
+      "retailers": {
+        "ebay": {
+          "offers": [
+            {
+              "id": "ebay-5g-a",
+              "title": "Example interior paint 5 gallon white",
+              "itemPrice": 98,
+              "shipping": 0,
+              "currency": "USD",
+              "condition": "New",
+              "url": "https://www.ebay.com/sch/i.html?_nkw=interior%20paint%205%20gallon%20white",
+              "checkedAt": "2026-11-22T01:00:00.000Z",
+              "example": true
+            }
+          ]
+        },
+        "walmart": {
+          "offers": [
+            {
+              "id": "wmt-5g-a",
+              "title": "Example interior paint 5 gallon white",
+              "itemPrice": 89,
+              "shipping": 12,
+              "currency": "USD",
+              "condition": "New",
+              "url": "https://www.walmart.com/search?q=interior%20paint%205%20gallon%20white",
+              "checkedAt": "2026-11-22T01:00:00.000Z",
+              "example": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "ceiling-paint",
+      "category": "paint",
+      "name": "Ceiling paint, gallon",
+      "summary": "Flat white ceiling paint. Stays off the wall color so patches on the ceiling do not flash.",
+      "unit": "gallon",
+      "qty": {
+        "1": 1,
+        "2": 1,
+        "3": 2
+      },
+      "defaultOn": false,
+      "retailers": {
+        "ebay": {
+          "offers": [
+            {
+              "id": "ebay-ceil-a",
+              "title": "Example ceiling paint gallon flat white",
+              "itemPrice": 24,
+              "shipping": 7,
+              "currency": "USD",
+              "condition": "New",
+              "url": "https://www.ebay.com/sch/i.html?_nkw=ceiling%20paint%20gallon%20flat%20white",
+              "checkedAt": "2026-11-22T01:00:00.000Z",
+              "example": true
+            }
+          ]
+        },
+        "walmart": {
+          "offers": [
+            {
+              "id": "wmt-ceil-a",
+              "title": "Example ceiling paint gallon flat white",
+              "itemPrice": 22.44,
+              "shipping": 0,
+              "currency": "USD",
+              "condition": "New",
+              "url": "https://www.walmart.com/search?q=ceiling%20paint%20gallon%20flat%20white",
+              "checkedAt": "2026-11-22T01:00:00.000Z",
+              "example": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "primer",
+      "category": "paint",
+      "name": "Interior primer, gallon",
+      "summary": "Stain-blocking primer for patches, smoke, and marker. Prime the repair, then one finish coat.",
+      "unit": "gallon",
+      "qty": {
+        "1": 1,
+        "2": 2,
+        "3": 2
+      },
+      "defaultOn": true,
+      "retailers": {
+        "ebay": {
+          "offers": [
+            {
+              "id": "ebay-pr-a",
+              "title": "Example interior primer gallon",
+              "itemPrice": 21,
+              "shipping": 6.5,
+              "currency": "USD",
+              "condition": "New",
+              "url": "https://www.ebay.com/sch/i.html?_nkw=interior%20primer%20gallon",
+              "checkedAt": "2026-11-22T01:00:00.000Z",
+              "example": true
+            }
+          ]
+        },
+        "walmart": {
+          "offers": [
+            {
+              "id": "wmt-pr-a",
+              "title": "Example interior primer gallon",
+              "itemPrice": 19.97,
+              "shipping": 0,
+              "currency": "USD",
+              "condition": "New",
+              "url": "https://www.walmart.com/search?q=interior%20primer%20gallon",
+              "checkedAt": "2026-11-22T01:00:00.000Z",
+              "example": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "roller-kit",
+      "category": "paint",
+      "name": "Roller and tray kit",
+      "summary": "A 9-inch roller, cover, and tray. Plan on a new cover per unit so the last tenant’s color does not come back.",
+      "unit": "kit",
+      "qty": {
+        "1": 1,
+        "2": 1,
+        "3": 1
+      },
+      "defaultOn": true,
+      "retailers": {
+        "ebay": {
+          "offers": [
+            {
+              "id": "ebay-roll-a",
+              "title": "Example paint roller and tray kit",
+              "itemPrice": 12.99,
+              "shipping": 4.5,
+              "currency": "USD",
+              "condition": "New",
+              "url": "https://www.ebay.com/sch/i.html?_nkw=paint%20roller%20and%20tray%20kit",
+              "checkedAt": "2026-11-22T01:00:00.000Z",
+              "example": true
+            }
+          ]
+        },
+        "walmart": {
+          "offers": [
+            {
+              "id": "wmt-roll-a",
+              "title": "Example paint roller and tray kit",
+              "itemPrice": 9.88,
+              "shipping": 0,
+              "currency": "USD",
+              "condition": "New",
+              "url": "https://www.walmart.com/search?q=paint%20roller%20and%20tray%20kit",
+              "checkedAt": "2026-11-22T01:00:00.000Z",
+              "example": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "caulk",
+      "category": "paint",
+      "name": "Paintable caulk",
+      "summary": "Paintable acrylic latex caulk for trim, tubs that are not being recaulked with silicone, and base gaps.",
+      "unit": "tube",
+      "qty": {
+        "1": 2,
+        "2": 4,
+        "3": 6
+      },
+      "defaultOn": true,
+      "retailers": {
+        "ebay": {
+          "offers": [
+            {
+              "id": "ebay-caulk-a",
+              "title": "Example paintable caulk tube",
+              "itemPrice": 4.25,
+              "shipping": 3.99,
+              "currency": "USD",
+              "condition": "New",
+              "url": "https://www.ebay.com/sch/i.html?_nkw=paintable%20caulk%20tube",
+              "checkedAt": "2026-11-22T01:00:00.000Z",
+              "example": true
+            }
+          ]
+        },
+        "walmart": {
+          "offers": [
+            {
+              "id": "wmt-caulk-a",
+              "title": "Example paintable caulk tube",
+              "itemPrice": 3.48,
+              "shipping": 0,
+              "currency": "USD",
+              "condition": "New",
+              "url": "https://www.walmart.com/search?q=paintable%20caulk%20tube",
+              "checkedAt": "2026-11-22T01:00:00.000Z",
+              "example": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "spackle",
+      "category": "paint",
+      "name": "Spackle",
+      "summary": "Lightweight spackle for nail holes and small dings. Deep cracks need more than a skim.",
+      "unit": "tub",
+      "qty": {
+        "1": 1,
+        "2": 1,
+        "3": 2
+      },
+      "defaultOn": true,
+      "retailers": {
+        "ebay": {
+          "offers": [
+            {
+              "id": "ebay-spackle-a",
+              "title": "Example lightweight spackle",
+              "itemPrice": 7.5,
+              "shipping": 3.99,
+              "currency": "USD",
+              "condition": "New",
+              "url": "https://www.ebay.com/sch/i.html?_nkw=lightweight%20spackle",
+              "checkedAt": "2026-11-22T01:00:00.000Z",
+              "example": true
+            }
+          ]
+        },
+        "walmart": {
+          "offers": [
+            {
+              "id": "wmt-spackle-a",
+              "title": "Example lightweight spackle",
+              "itemPrice": 6.24,
+              "shipping": 0,
+              "currency": "USD",
+              "condition": "New",
+              "url": "https://www.walmart.com/search?q=lightweight%20spackle",
+              "checkedAt": "2026-11-22T01:00:00.000Z",
+              "example": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "lvp",
+      "category": "flooring",
+      "name": "Luxury vinyl plank, per sq ft",
+      "summary": "Waterproof LVP priced per square foot. The calculator multiplies by a planning quantity (about 500 / 800 / 1,100 sq ft), not a measured unit.",
+      "unit": "sq ft",
+      "qty": {
+        "1": 500,
+        "2": 800,
+        "3": 1100
+      },
+      "defaultOn": false,
+      "retailers": {
+        "ebay": {
+          "offers": [
+            {
+              "id": "ebay-lvp-a",
+              "title": "Example waterproof luxury vinyl plank",
+              "itemPrice": 1.89,
+              "shipping": 0,
+              "currency": "USD",
+              "condition": "New",
+              "url": "https://www.ebay.com/sch/i.html?_nkw=waterproof%20luxury%20vinyl%20plank",
+              "checkedAt": "2026-11-22T01:00:00.000Z",
+              "example": true
+            }
+          ]
+        },
+        "walmart": {
+          "offers": [
+            {
+              "id": "wmt-lvp-a",
+              "title": "Example waterproof luxury vinyl plank",
+              "itemPrice": 1.67,
+              "shipping": 0,
+              "currency": "USD",
+              "condition": "New",
+              "url": "https://www.walmart.com/search?q=waterproof%20luxury%20vinyl%20plank",
+              "checkedAt": "2026-11-22T01:00:00.000Z",
+              "example": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "carpet-pad",
+      "category": "flooring",
+      "name": "Carpet and pad, per sq ft",
+      "summary": "Carpet plus pad, priced per square foot of floor. Bedrooms only are a common rental scope; the planning quantity is smaller than the LVP quantity.",
+      "unit": "sq ft",
+      "qty": {
+        "1": 200,
+        "2": 400,
+        "3": 600
+      },
+      "defaultOn": false,
+      "retailers": {
+        "ebay": {
+          "offers": [
+            {
+              "id": "ebay-carpet-a",
+              "title": "Example carpet and pad per square foot",
+              "itemPrice": 2.15,
+              "shipping": 0,
+              "currency": "USD",
+              "condition": "New",
+              "url": "https://www.ebay.com/sch/i.html?_nkw=carpet%20and%20pad%20per%20square%20foot",
+              "checkedAt": "2026-11-22T01:00:00.000Z",
+              "example": true
+            }
+          ]
+        },
+        "walmart": {
+          "offers": [
+            {
+              "id": "wmt-carpet-a",
+              "title": "Example carpet and pad per square foot",
+              "itemPrice": 2.4,
+              "shipping": 0,
+              "currency": "USD",
+              "condition": "New",
+              "url": "https://www.walmart.com/search?q=carpet%20and%20pad%20per%20square%20foot",
+              "checkedAt": "2026-11-22T01:00:00.000Z",
+              "example": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "transition",
+      "category": "flooring",
+      "name": "Transition strips",
+      "summary": "T-molding or reducer where LVP meets tile or carpet. Buy the extra inch of overlap.",
+      "unit": "strip",
+      "qty": {
+        "1": 2,
+        "2": 3,
+        "3": 4
+      },
+      "defaultOn": false,
+      "retailers": {
+        "ebay": {
+          "offers": [
+            {
+              "id": "ebay-trans-a",
+              "title": "Example flooring transition strip",
+              "itemPrice": 14.5,
+              "shipping": 5,
+              "currency": "USD",
+              "condition": "New",
+              "url": "https://www.ebay.com/sch/i.html?_nkw=flooring%20transition%20strip",
+              "checkedAt": "2026-11-22T01:00:00.000Z",
+              "example": true
+            }
+          ]
+        },
+        "walmart": {
+          "offers": [
+            {
+              "id": "wmt-trans-a",
+              "title": "Example flooring transition strip",
+              "itemPrice": 16.88,
+              "shipping": 0,
+              "currency": "USD",
+              "condition": "New",
+              "url": "https://www.walmart.com/search?q=flooring%20transition%20strip",
+              "checkedAt": "2026-11-22T01:00:00.000Z",
+              "example": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "underlayment",
+      "category": "flooring",
+      "name": "Underlayment roll",
+      "summary": "Foam or vapor underlayment when the plank does not already have an attached pad. One roll is typically about 100 square feet.",
+      "unit": "roll",
+      "qty": {
+        "1": 5,
+        "2": 8,
+        "3": 11
+      },
+      "defaultOn": false,
+      "retailers": {
+        "ebay": {
+          "offers": [
+            {
+              "id": "ebay-under-a",
+              "title": "Example flooring underlayment roll",
+              "itemPrice": 18,
+              "shipping": 0,
+              "currency": "USD",
+              "condition": "New",
+              "url": "https://www.ebay.com/sch/i.html?_nkw=flooring%20underlayment%20roll",
+              "checkedAt": "2026-11-22T01:00:00.000Z",
+              "example": true
+            }
+          ]
+        },
+        "walmart": {
+          "offers": [
+            {
+              "id": "wmt-under-a",
+              "title": "Example flooring underlayment roll",
+              "itemPrice": 21.97,
+              "shipping": 0,
+              "currency": "USD",
+              "condition": "New",
+              "url": "https://www.walmart.com/search?q=flooring%20underlayment%20roll",
+              "checkedAt": "2026-11-22T01:00:00.000Z",
+              "example": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "keypad-deadbolt",
+      "category": "locks",
+      "name": "Keypad deadbolt",
+      "summary": "A keypad deadbolt that still uses a physical key for backup. The usual first upgrade before a full smart lock.",
+      "unit": "each",
+      "qty": {
+        "1": 1,
+        "2": 1,
+        "3": 2
+      },
+      "defaultOn": true,
+      "retailers": {
+        "ebay": {
+          "offers": [
+            {
+              "id": "ebay-keypad-a",
+              "title": "Example keypad deadbolt",
+              "itemPrice": 49.99,
+              "shipping": 0,
+              "currency": "USD",
+              "condition": "New",
+              "url": "https://www.ebay.com/sch/i.html?_nkw=keypad%20deadbolt",
+              "checkedAt": "2026-11-22T01:00:00.000Z",
+              "example": true
+            },
+            {
+              "id": "ebay-keypad-b",
+              "title": "Example electronic keypad deadbolt",
+              "itemPrice": 42,
+              "shipping": 8.95,
+              "currency": "USD",
+              "condition": "New",
+              "url": "https://www.ebay.com/sch/i.html?_nkw=electronic%20keypad%20deadbolt",
+              "checkedAt": "2026-11-22T01:00:00.000Z",
+              "example": true
+            }
+          ]
+        },
+        "walmart": {
+          "offers": [
+            {
+              "id": "wmt-keypad-a",
+              "title": "Example keypad deadbolt",
+              "itemPrice": 54,
+              "shipping": 0,
+              "currency": "USD",
+              "condition": "New",
+              "url": "https://www.walmart.com/search?q=keypad%20deadbolt",
+              "checkedAt": "2026-11-22T01:00:00.000Z",
+              "example": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "smart-lock",
+      "category": "locks",
+      "name": "Smart lock (Wi-Fi or Z-Wave)",
+      "summary": "A lock you can code from your phone. Wi-Fi needs a signal at the door. Z-Wave needs a hub. See the smart-lock guide before you buy a case of them.",
+      "unit": "each",
+      "qty": {
+        "1": 1,
+        "2": 1,
+        "3": 1
+      },
+      "defaultOn": false,
+      "retailers": {
+        "ebay": {
+          "offers": [
+            {
+              "id": "ebay-smart-a",
+              "title": "Example wifi smart lock",
+              "itemPrice": 129,
+              "shipping": 0,
+              "currency": "USD",
+              "condition": "New",
+              "url": "https://www.ebay.com/sch/i.html?_nkw=wifi%20smart%20lock",
+              "checkedAt": "2026-11-22T01:00:00.000Z",
+              "example": true
+            }
+          ]
+        },
+        "walmart": {
+          "offers": [
+            {
+              "id": "wmt-smart-a",
+              "title": "Example wifi smart lock",
+              "itemPrice": 118,
+              "shipping": 0,
+              "currency": "USD",
+              "condition": "New",
+              "url": "https://www.walmart.com/search?q=wifi%20smart%20lock",
+              "checkedAt": "2026-11-22T01:00:00.000Z",
+              "example": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "rekey-kit",
+      "category": "locks",
+      "name": "Rekey kit",
+      "summary": "A kit to rekey the existing cylinders to one key. Often cheaper than new hardware when the lock still works.",
+      "unit": "kit",
+      "qty": {
+        "1": 1,
+        "2": 2,
+        "3": 3
+      },
+      "defaultOn": false,
+      "retailers": {
+        "ebay": {
+          "offers": [
+            {
+              "id": "ebay-rekey-a",
+              "title": "Example lock rekey kit",
+              "itemPrice": 18.5,
+              "shipping": 4.25,
+              "currency": "USD",
+              "condition": "New",
+              "url": "https://www.ebay.com/sch/i.html?_nkw=lock%20rekey%20kit",
+              "checkedAt": "2026-11-22T01:00:00.000Z",
+              "example": true
+            }
+          ]
+        },
+        "walmart": {
+          "offers": [
+            {
+              "id": "wmt-rekey-a",
+              "title": "Example lock rekey kit",
+              "itemPrice": 16.97,
+              "shipping": 0,
+              "currency": "USD",
+              "condition": "New",
+              "url": "https://www.walmart.com/search?q=lock%20rekey%20kit",
+              "checkedAt": "2026-11-22T01:00:00.000Z",
+              "example": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "lockbox",
+      "category": "locks",
+      "name": "Lockbox",
+      "summary": "A lockbox for vendors and showings. Not a substitute for rekeying between tenants.",
+      "unit": "each",
+      "qty": {
+        "1": 1,
+        "2": 1,
+        "3": 1
+      },
+      "defaultOn": false,
+      "retailers": {
+        "ebay": {
+          "offers": [
+            {
+              "id": "ebay-box-a",
+              "title": "Example realtor lockbox",
+              "itemPrice": 22,
+              "shipping": 0,
+              "currency": "USD",
+              "condition": "New",
+              "url": "https://www.ebay.com/sch/i.html?_nkw=realtor%20lockbox",
+              "checkedAt": "2026-11-22T01:00:00.000Z",
+              "example": true
+            }
+          ]
+        },
+        "walmart": {
+          "offers": [
+            {
+              "id": "wmt-box-a",
+              "title": "Example key lockbox",
+              "itemPrice": 27.84,
+              "shipping": 0,
+              "currency": "USD",
+              "condition": "New",
+              "url": "https://www.walmart.com/search?q=key%20lockbox",
+              "checkedAt": "2026-11-22T01:00:00.000Z",
+              "example": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "smoke-co",
+      "category": "locks",
+      "name": "Smoke and CO alarm",
+      "summary": "Combination smoke and carbon monoxide alarm. Replace expired units during the turnover. Local code, not this page, decides placement.",
+      "unit": "each",
+      "qty": {
+        "1": 2,
+        "2": 3,
+        "3": 4
+      },
+      "defaultOn": true,
+      "retailers": {
+        "ebay": {
+          "offers": [
+            {
+              "id": "ebay-smoke-a",
+              "title": "Example smoke and carbon monoxide alarm",
+              "itemPrice": 28,
+              "shipping": 0,
+              "currency": "USD",
+              "condition": "New",
+              "url": "https://www.ebay.com/sch/i.html?_nkw=smoke%20and%20carbon%20monoxide%20alarm",
+              "checkedAt": "2026-11-22T01:00:00.000Z",
+              "example": true
+            }
+          ]
+        },
+        "walmart": {
+          "offers": [
+            {
+              "id": "wmt-smoke-a",
+              "title": "Example smoke and carbon monoxide alarm",
+              "itemPrice": 24.96,
+              "shipping": 0,
+              "currency": "USD",
+              "condition": "New",
+              "url": "https://www.walmart.com/search?q=smoke%20and%20carbon%20monoxide%20alarm",
+              "checkedAt": "2026-11-22T01:00:00.000Z",
+              "example": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "faucet",
+      "category": "basics",
+      "name": "Kitchen or bath faucet",
+      "summary": "A cartridge faucet. Match the hole count (1, 2, or 3) before you order.",
+      "unit": "each",
+      "qty": {
+        "1": 1,
+        "2": 2,
+        "3": 2
+      },
+      "defaultOn": false,
+      "retailers": {
+        "ebay": {
+          "offers": [
+            {
+              "id": "ebay-faucet-a",
+              "title": "Example kitchen faucet",
+              "itemPrice": 46,
+              "shipping": 0,
+              "currency": "USD",
+              "condition": "New",
+              "url": "https://www.ebay.com/sch/i.html?_nkw=kitchen%20faucet",
+              "checkedAt": "2026-11-22T01:00:00.000Z",
+              "example": true
+            }
+          ]
+        },
+        "walmart": {
+          "offers": [
+            {
+              "id": "wmt-faucet-a",
+              "title": "Example kitchen faucet",
+              "itemPrice": 39,
+              "shipping": 0,
+              "currency": "USD",
+              "condition": "New",
+              "url": "https://www.walmart.com/search?q=kitchen%20faucet",
+              "checkedAt": "2026-11-22T01:00:00.000Z",
+              "example": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "toilet-kit",
+      "category": "basics",
+      "name": "Toilet and fill-valve kit",
+      "summary": "A two-piece toilet plus a fill valve. The valve alone fixes a running toilet; the whole toilet is for a cracked bowl.",
+      "unit": "kit",
+      "qty": {
+        "1": 1,
+        "2": 1,
+        "3": 2
+      },
+      "defaultOn": false,
+      "retailers": {
+        "ebay": {
+          "offers": [
+            {
+              "id": "ebay-toilet-a",
+              "title": "Example toilet and fill valve kit",
+              "itemPrice": 128,
+              "shipping": 0,
+              "currency": "USD",
+              "condition": "New",
+              "url": "https://www.ebay.com/sch/i.html?_nkw=toilet%20and%20fill%20valve%20kit",
+              "checkedAt": "2026-11-22T01:00:00.000Z",
+              "example": true
+            }
+          ]
+        },
+        "walmart": {
+          "offers": [
+            {
+              "id": "wmt-toilet-a",
+              "title": "Example two piece toilet",
+              "itemPrice": 109,
+              "shipping": 0,
+              "currency": "USD",
+              "condition": "New",
+              "url": "https://www.walmart.com/search?q=two%20piece%20toilet",
+              "checkedAt": "2026-11-22T01:00:00.000Z",
+              "example": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "lights",
+      "category": "basics",
+      "name": "Light fixtures",
+      "summary": "A simple flush-mount or vanity light. LED bulbs are a separate trip if the fixture does not include them.",
+      "unit": "each",
+      "qty": {
+        "1": 2,
+        "2": 4,
+        "3": 6
+      },
+      "defaultOn": false,
+      "retailers": {
+        "ebay": {
+          "offers": [
+            {
+              "id": "ebay-light-a",
+              "title": "Example flush mount light fixture",
+              "itemPrice": 24,
+              "shipping": 5.5,
+              "currency": "USD",
+              "condition": "New",
+              "url": "https://www.ebay.com/sch/i.html?_nkw=flush%20mount%20light%20fixture",
+              "checkedAt": "2026-11-22T01:00:00.000Z",
+              "example": true
+            }
+          ]
+        },
+        "walmart": {
+          "offers": [
+            {
+              "id": "wmt-light-a",
+              "title": "Example flush mount light fixture",
+              "itemPrice": 18.96,
+              "shipping": 0,
+              "currency": "USD",
+              "condition": "New",
+              "url": "https://www.walmart.com/search?q=flush%20mount%20light%20fixture",
+              "checkedAt": "2026-11-22T01:00:00.000Z",
+              "example": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "outlets-gfci",
+      "category": "basics",
+      "name": "Outlets and GFCI receptacles",
+      "summary": "A standard receptacle or a GFCI for kitchen, bath, and exterior. Turn the breaker off. If you are not comfortable with wiring, this is a handyman or electrician line.",
+      "unit": "each",
+      "qty": {
+        "1": 2,
+        "2": 3,
+        "3": 4
+      },
+      "defaultOn": true,
+      "retailers": {
+        "ebay": {
+          "offers": [
+            {
+              "id": "ebay-gfci-a",
+              "title": "Example GFCI outlet",
+              "itemPrice": 15.99,
+              "shipping": 3.5,
+              "currency": "USD",
+              "condition": "New",
+              "url": "https://www.ebay.com/sch/i.html?_nkw=GFCI%20outlet",
+              "checkedAt": "2026-11-22T01:00:00.000Z",
+              "example": true
+            }
+          ]
+        },
+        "walmart": {
+          "offers": [
+            {
+              "id": "wmt-gfci-a",
+              "title": "Example GFCI outlet",
+              "itemPrice": 13.44,
+              "shipping": 0,
+              "currency": "USD",
+              "condition": "New",
+              "url": "https://www.walmart.com/search?q=GFCI%20outlet",
+              "checkedAt": "2026-11-22T01:00:00.000Z",
+              "example": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "blinds",
+      "category": "basics",
+      "name": "Window blinds",
+      "summary": "Vinyl or faux-wood blinds. Widths are inside-mount measurements; the planning quantity is a count of windows, not a custom size.",
+      "unit": "each",
+      "qty": {
+        "1": 3,
+        "2": 5,
+        "3": 7
+      },
+      "defaultOn": false,
+      "retailers": {
+        "ebay": {
+          "offers": [
+            {
+              "id": "ebay-blind-a",
+              "title": "Example vinyl window blind",
+              "itemPrice": 16.5,
+              "shipping": 0,
+              "currency": "USD",
+              "condition": "New",
+              "url": "https://www.ebay.com/sch/i.html?_nkw=vinyl%20window%20blind",
+              "checkedAt": "2026-11-22T01:00:00.000Z",
+              "example": true
+            }
+          ]
+        },
+        "walmart": {
+          "offers": [
+            {
+              "id": "wmt-blind-a",
+              "title": "Example vinyl window blind",
+              "itemPrice": 14.88,
+              "shipping": 0,
+              "currency": "USD",
+              "condition": "New",
+              "url": "https://www.walmart.com/search?q=vinyl%20window%20blind",
+              "checkedAt": "2026-11-22T01:00:00.000Z",
+              "example": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "hvac-filter",
+      "category": "basics",
+      "name": "HVAC filters",
+      "summary": "The filter size is printed on the old one. A turnover is the right time to start a change schedule.",
+      "unit": "each",
+      "qty": {
+        "1": 2,
+        "2": 4,
+        "3": 6
+      },
+      "defaultOn": true,
+      "retailers": {
+        "ebay": {
+          "offers": [
+            {
+              "id": "ebay-filter-a",
+              "title": "Example furnace filter",
+              "itemPrice": 8.25,
+              "shipping": 4.99,
+              "currency": "USD",
+              "condition": "New",
+              "url": "https://www.ebay.com/sch/i.html?_nkw=furnace%20filter",
+              "checkedAt": "2026-11-22T01:00:00.000Z",
+              "example": true
+            }
+          ]
+        },
+        "walmart": {
+          "offers": [
+            {
+              "id": "wmt-filter-a",
+              "title": "Example furnace filter",
+              "itemPrice": 6.97,
+              "shipping": 0,
+              "currency": "USD",
+              "condition": "New",
+              "url": "https://www.walmart.com/search?q=furnace%20filter",
+              "checkedAt": "2026-11-22T01:00:00.000Z",
+              "example": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "leak-sensor",
+      "category": "basics",
+      "name": "Water-leak sensor",
+      "summary": "A battery sensor under the water heater, the sink, and the washer. It does not shut the water off by itself unless you buy that kind.",
+      "unit": "each",
+      "qty": {
+        "1": 1,
+        "2": 2,
+        "3": 2
+      },
+      "defaultOn": false,
+      "retailers": {
+        "ebay": {
+          "offers": [
+            {
+              "id": "ebay-leak-a",
+              "title": "Example water leak sensor",
+              "itemPrice": 19.95,
+              "shipping": 0,
+              "currency": "USD",
+              "condition": "New",
+              "url": "https://www.ebay.com/sch/i.html?_nkw=water%20leak%20sensor",
+              "checkedAt": "2026-11-22T01:00:00.000Z",
+              "example": true
+            }
+          ]
+        },
+        "walmart": {
+          "offers": [
+            {
+              "id": "wmt-leak-a",
+              "title": "Example water leak sensor",
+              "itemPrice": 17.48,
+              "shipping": 0,
+              "currency": "USD",
+              "condition": "New",
+              "url": "https://www.walmart.com/search?q=water%20leak%20sensor",
+              "checkedAt": "2026-11-22T01:00:00.000Z",
+              "example": true
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

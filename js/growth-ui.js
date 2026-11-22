@@ -29,6 +29,7 @@
           ${link("/new-listings/", "Listings", "new-listings")}
           ${link("/room-builder/", "3D Room", "room-builder")}
           ${link("/hire/", "Listing copy", "hire")}
+          ${link("/turnover-prices/", "Turnover prices", "turnover")}
           ${link("/apps/", "Apps", "apps")}
           ${link("/terms.html", "Terms", "terms")}
         </nav>
@@ -61,6 +62,7 @@
           <a href="/buy/">Buy</a>
           <a href="/sell/">Sell</a>
           <a href="/hire/">Listing copy</a>
+          <a href="/turnover-prices/">Turnover prices</a>
         </div>
         <div>
           <h5>Apps &amp; tools</h5>

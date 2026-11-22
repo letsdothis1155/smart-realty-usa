@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Kentuckiana Turnover Price Check | Smart Realty</title>
+  <meta name="description" content="Example prices for rental turnover materials in Louisville, Jeffersonville, New Albany, and Clarksville. eBay and Walmart shown separately. Rankings are never paid." />
+  <link rel="canonical" href="https://smartrealty.us/turnover-prices/" />
+  <meta name="robots" content="index, follow" />
+  <meta property="og:title" content="Kentuckiana Turnover Price Check" />
+  <meta property="og:description" content="Preview of example turnover prices for small landlords. Not live affiliate offers yet." />
+  <meta property="og:url" content="https://smartrealty.us/turnover-prices/" />
+  <meta property="og:type" content="website" />
+  <meta name="theme-color" content="#0a0c10" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../styles.css" />
+  <link rel="stylesheet" href="../growth.css" />
+  <link rel="stylesheet" href="turnover.css" />
+  <script src="../domain-config.js"></script>
+  <script src="config.js"></script>
+</head>
+<body class="g-page" data-prices="data/prices.example.json">
+  <a class="skip-link" href="#content">Skip to content</a>
+  <header class="g-header">
+    <div class="container g-header-inner">
+      <a href="https://smartrealty.us/" class="logo">
+        <span class="logo-mark">SR</span>
+        <span class="logo-text"><strong>Smart Realty</strong><small>USA</small></span>
+      </a>
+      <nav class="g-nav" id="tpNav" aria-label="Site">
+        <a class="g-nav-link" href="https://smartrealty.us/">Home</a>
+        <a class="g-nav-link" href="https://smartrealty.us/new-listings/">Listings</a>
+        <a class="g-nav-link is-active" href="./" aria-current="page">Turnover prices</a>
+        <a class="g-nav-link" href="https://smartrealty.us/hire/?utm_source=turnover-prices&amp;utm_medium=nav&amp;utm_campaign=listing-copy">Listing copy</a>
+        <a class="g-nav-link" href="https://smartrealty.us/privacy.html">Privacy</a>
+      </nav>
+      <div class="g-header-actions">
+        <a class="btn btn-primary btn-sm" href="#calculator">Bundle calculator</a>
+        <button class="menu-toggle g-menu" id="tpMenu" type="button" aria-expanded="false" aria-controls="tpNav" aria-label="Open menu"><span></span><span></span><span></span></button>
+      </div>
+    </div>
+  </header>
+
+  <div class="tp-banner" role="status">
+    <div class="container">
+      <p>EXAMPLE DATA. These are not live eBay or Walmart prices. Smart Realty has not connected affiliate programs yet. Every price on this page is a labeled example.</p>
+    </div>
+  </div>
+
+  <main id="content">
+    <section class="g-hero tp-hero">
+      <div class="container">
+        <p class="g-kicker">Louisville · Jeffersonville · New Albany · Clarksville</p>
+        <h1>Kentuckiana Turnover Price Check</h1>
+        <p class="g-lead">A preview for small landlords and flippers pricing a make-ready. Product descriptions on this page are Smart Realty’s. Store listings sit in their own eBay block or Walmart block, sorted by lowest total (item + shipping) inside that block.</p>
+        <div class="tp-jump">
+          <a class="btn btn-primary" href="#calculator">Build a 1 / 2 / 3 bedroom bundle</a>
+          <a class="btn btn-outline" href="#quotes">Get 3 quotes</a>
+          <a class="btn btn-ghost" href="rental-turnover-cost/">Turnover cost guide</a>
+          <a class="btn btn-ghost" href="smart-locks-for-landlords/">Smart locks</a>
+        </div>
+        <div class="tp-amazon">
+          <p><strong>Amazon is off.</strong> Amazon prices will be live-only, in an Amazon-only block, once Associates terms are reviewed. This preview does not store Amazon prices.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="tp-section" aria-labelledby="rankTitle">
+      <div class="container tp-policy">
+        <h2 id="rankTitle">How we rank / no paid placement</h2>
+        <p>Nobody can pay to be listed higher. There is no sponsored rank and no contractor billing. Inside each retailer block, the default order is the lowest total of item price plus shipping. That order is calculated by Smart Realty from the prices in that block. It is not a mix of eBay and Walmart on one card, and it is not a payment from either store.</p>
+        <p>eBay listings in a live feed have to be refreshed at least every 6 hours. This preview does not keep an eBay price archive or a 30/90-day low. Walmart’s terms prohibit price tracking and alerts, so a Walmart row shows only the current example price, when it was checked (Eastern time), and the note that the price on Walmart.com at purchase governs.</p>
+        <label for="tpSort">Sort offers inside each retailer block
+          <select id="tpSort">
+            <option value="total-asc" selected>Lowest total (item + shipping)</option>
+            <option value="total-desc">Highest total (item + shipping)</option>
+            <option value="item-asc">Lowest item price</option>
+          </select>
+        </label>
+      </div>
+    </section>
+
+    <section class="tp-section" id="appliances" aria-labelledby="catAppliances">
+      <div class="container">
+        <h2 id="catAppliances">Appliances</h2>
+        <p class="tp-cat-intro">Replacement appliances for a rental make-ready. Confirm the opening, the fuel (these examples are electric), and who is allowed to hook them up in Kentucky or Indiana.</p>
+        <div data-mount="appliances"></div>
+      </div>
+    </section>
+    <section class="tp-section" id="paint" aria-labelledby="catPaint">
+      <div class="container">
+        <h2 id="catPaint">Paint and prep</h2>
+        <p class="tp-cat-intro">Neutral white and greige, ceiling paint, primer, and the rollers, caulk, and spackle a turnover usually uses. Coverage numbers are rules of thumb, not a bid.</p>
+        <div data-mount="paint"></div>
+      </div>
+    </section>
+    <section class="tp-section" id="flooring" aria-labelledby="catFloor">
+      <div class="container">
+        <h2 id="catFloor">Flooring</h2>
+        <p class="tp-cat-intro">LVP and carpet are priced per square foot. The bundle calculator multiplies by a planning quantity for a 1, 2, or 3 bedroom unit. Measure the unit before you order.</p>
+        <div data-mount="flooring"></div>
+      </div>
+    </section>
+    <section class="tp-section" id="locks" aria-labelledby="catLocks">
+      <div class="container">
+        <h2 id="catLocks">Locks and safety</h2>
+        <p class="tp-cat-intro">Keypad deadbolts, a Wi-Fi or Z-Wave smart lock, rekey kits, a lockbox, and smoke/CO alarms. Read the <a href="smart-locks-for-landlords/">smart lock guide</a> before you buy a case.</p>
+        <div data-mount="locks"></div>
+      </div>
+    </section>
+    <section class="tp-section" id="basics" aria-labelledby="catBasics">
+      <div class="container">
+        <h2 id="catBasics">Turnover basics</h2>
+        <p class="tp-cat-intro">Faucets, a toilet with a fill valve, lights, outlets and GFCIs, blinds, HVAC filters, and a leak sensor.</p>
+        <div data-mount="basics"></div>
+      </div>
+    </section>
+
+    <section class="tp-section" id="calculator" aria-labelledby="calcTitle">
+      <div class="container" id="tpCalculator">
+        <h2 id="calcTitle">Turnover bundle calculator</h2>
+        <p class="tp-lead">Pick a unit size and check the items. Each retailer gets its own lines and its own subtotal, using the cheapest current example in that block (item + shipping). The two subtotals are not blended into one “best price” card.</p>
+        <div class="tp-sizes" role="radiogroup" aria-label="Unit size">
+          <label><input type="radio" name="tpSize" value="1" /> 1 bedroom</label>
+          <label><input type="radio" name="tpSize" value="2" checked /> 2 bedroom</label>
+          <label><input type="radio" name="tpSize" value="3" /> 3 bedroom</label>
+        </div>
+        <div id="tpCheckList"></div>
+        <div id="tpBundleOut" aria-live="polite"></div>
+        <form id="tpBundleForm" class="tp-form" novalidate>
+          <h3>Email me this bundle</h3>
+          <p>This joins the note Andrew uses for the Yield Map waitlist and landlord-software interest. It does not create an account.</p>
+          <label>Name <input name="name" type="text" autocomplete="name" maxlength="80" /></label>
+          <label>Email <input name="email" type="email" autocomplete="email" required maxlength="120" /></label>
+          <label class="tp-consent"><input name="consent" type="checkbox" value="yes" required /> <span>Andrew may email me this bundle. I understand the prices are examples until the feeds are connected. <a href="https://smartrealty.us/privacy.html">Privacy</a>.</span></label>
+          <button class="btn btn-primary" type="submit">Email me this bundle</button>
+          <p id="tpBundleStatus" class="tp-status" role="status"></p>
+        </form>
+      </div>
+    </section>
+
+    <section class="tp-section" id="quotes" aria-labelledby="quoteTitle">
+      <div class="container">
+        <h2 id="quoteTitle">Get 3 quotes</h2>
+        <p class="tp-lead">Tell Andrew the trade, ZIP, how many units, and when you need the work. He can ask local painters, flooring installers, appliance installers, locksmiths, cleaners, or handymen. There is no contractor billing on this page and no paid ranking. If a contractor later provides a license or insurance status, that status can be shown next to their name. It is not a placement you can buy.</p>
+        <form id="tpQuoteForm" class="tp-form" novalidate>
+          <label>Name <input name="name" type="text" autocomplete="name" required minlength="2" maxlength="80" /></label>
+          <label>Email <input name="email" type="email" autocomplete="email" required maxlength="120" /></label>
+          <label>Trade
+            <select name="trade" required>
+              <option value="">Choose a trade</option>
+              <option>Painting</option>
+              <option>Flooring</option>
+              <option>Appliance install</option>
+              <option>Locksmith</option>
+              <option>Cleaning</option>
+              <option>Handyman</option>
+            </select>
+          </label>
+          <label>ZIP <input name="zip" inputmode="numeric" autocomplete="postal-code" required pattern="[0-9]{5}" maxlength="5" placeholder="40299" /></label>
+          <label>Unit count <input name="units" type="number" min="1" max="999" value="1" required /></label>
+          <label>Timeline
+            <select name="timeline" required>
+              <option value="">When do you need it?</option>
+              <option>This week</option>
+              <option>2–4 weeks</option>
+              <option>1–2 months</option>
+              <option>Flexible</option>
+            </select>
+          </label>
+          <label>Notes (optional) <textarea name="note" maxlength="2000" placeholder="City, access, and what finished looks like."></textarea></label>
+          <label>Photos (optional) <input name="photos" type="file" accept="image/*" multiple /></label>
+          <p class="tp-note">Until a form endpoint is set, photos are not uploaded. The email link asks you to attach them in your mail app.</p>
+          <label class="tp-consent"><input name="consent" type="checkbox" value="yes" required /> <span>Andrew may contact me about this request. This is not a contract and not a charge. <a href="https://smartrealty.us/privacy.html">Privacy</a>.</span></label>
+          <button class="btn btn-primary" type="submit">Send quote request</button>
+          <p id="tpQuoteStatus" class="tp-status" role="status"></p>
+        </form>
+      </div>
+    </section>
+
+    <section class="tp-section" aria-labelledby="moreTitle">
+      <div class="container">
+        <h2 id="moreTitle">Related</h2>
+        <p><a href="rental-turnover-cost/?utm_source=turnover-prices&amp;utm_medium=cta&amp;utm_campaign=hub&amp;utm_content=cost-guide">Rental turnover cost in Kentuckiana</a></p>
+        <p><a href="smart-locks-for-landlords/?utm_source=turnover-prices&amp;utm_medium=cta&amp;utm_campaign=hub&amp;utm_content=smart-locks">Smart locks for landlords</a></p>
+        <p><a href="https://smartrealty.us/?utm_source=turnover-prices&amp;utm_medium=cta&amp;utm_campaign=hub&amp;utm_content=landlord-waitlist#waitlist">Landlord software interest — the Smart Realty waitlist</a></p>
+        <div class="tp-placeholder">
+          <strong>Placeholder — Kentuckiana Yield Map</strong>
+          <p>That page is not on the site yet. Nothing here links to a fake map.</p>
+        </div>
+        <div class="tp-placeholder">
+          <strong>Placeholder — $299 listing marketing kit</strong>
+          <p>That offer is not published. The live listing-copy pack is $150: <a href="https://smartrealty.us/hire/?utm_source=turnover-prices&amp;utm_medium=cta&amp;utm_campaign=hub&amp;utm_content=listing-copy">request it</a>.</p>
+        </div>
+        <p id="tpDataStatus" class="tp-status" role="status"></p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="g-footer">
+    <div class="container g-footer-grid">
+      <div>
+        <a href="https://smartrealty.us/" class="logo"><span class="logo-mark">SR</span><span class="logo-text"><strong>Smart Realty</strong><small>USA</small></span></a>
+        <p class="g-footer-tag">Turnover price preview from a Louisville LLC. Not a licensed brokerage.</p>
+      </div>
+      <div>
+        <h5>This section</h5>
+        <a href="#appliances">Appliances</a>
+        <a href="#paint">Paint</a>
+        <a href="#flooring">Flooring</a>
+        <a href="#locks">Locks</a>
+        <a href="#basics">Basics</a>
+        <a href="#calculator">Calculator</a>
+        <a href="#quotes">Get 3 quotes</a>
+      </div>
+      <div>
+        <h5>Guides</h5>
+        <a href="rental-turnover-cost/">Turnover cost</a>
+        <a href="smart-locks-for-landlords/">Smart locks</a>
+        <a href="https://smartrealty.us/privacy.html">Privacy</a>
+      </div>
+      <div>
+        <h5>Contact</h5>
+        <a href="mailto:andrewiredale@smartrealty.us">andrewiredale@smartrealty.us</a>
+      </div>
+    </div>
+    <div class="container g-footer-bottom">
+      <p>© 2026 Andrew Iredale Jr / SMART REALTY.US LLC · Louisville, KY · All rights reserved.</p>
+    </div>
+  </footer>
+  <script src="turnover.js"></script>
+</body>
+</html>
