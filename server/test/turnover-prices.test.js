@@ -92,8 +92,7 @@ test("pages keep retailers apart and disclose every price link", () => {
   assert.match(read("turnover-prices/turnover.js"), /Price on Walmart.com at time of purchase governs/);
   assert.doesNotMatch(read("turnover-prices/turnover.js"), /#affiliate/);
   assert.match(read("turnover-prices/config.js"), /dataMode:\s*"sample"/);
-  assert.match(read("turnover-prices/config.js"), /YOUR_WEB3FORMS_ACCESS_KEY/);
-  assert.doesNotMatch(read("turnover-prices/config.js"), /web3formsAccessKey:\s*"[0-9a-f]{8}-/);
+  assert.match(read("turnover-prices/config.js"), /web3formsAccessKey:\s*"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"/);
 });
 
 test("sitemap, privacy, and the refresh job match the terms", async () => {
@@ -148,7 +147,10 @@ test("quote and bundle forms post to Web3Forms only after a real key is set", as
   const html = read("turnover-prices/index.html");
   const src = read("turnover-prices/turnover.js");
   assert.equal((html.match(/name="botcheck"/g) || []).length, 2);
-  assert.equal((html.match(/name="access_key" value="YOUR_WEB3FORMS_ACCESS_KEY"/g) || []).length, 2);
+  const uuid = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
+  assert.equal((html.match(/name="access_key" value="[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"/g) || []).length, 2);
+  assert.match(read("turnover-prices/config.js"), uuid);
+  assert.match(src, /YOUR_WEB3FORMS_ACCESS_KEY/);
   assert.ok((html.match(/mailto:andrewiredale@smartrealty\.us/g) || []).length >= 2);
   assert.match(html, /id="tpQuoteStatus"[^>]*aria-live="polite"/);
   assert.match(html, /id="tpBundleStatus"[^>]*aria-live="polite"/);

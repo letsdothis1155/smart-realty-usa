@@ -30,10 +30,10 @@ The prices in `data/prices.example.json` are sample layout data. `dataMode` in `
 Both the bundle email and Get 3 quotes post to `https://api.web3forms.com/submit`. The access key lives in one place, `turnover-prices/config.js`:
 
 ```js
-web3formsAccessKey: "YOUR_WEB3FORMS_ACCESS_KEY",
+web3formsAccessKey: "75233f3d-6aa6-414f-9125-dceff14826da",
 ```
 
-That value is a placeholder. Generate a key at [web3forms.com](https://web3forms.com/) and replace it. Do not commit a real key. While the placeholder is still there, the page does not send the request and tells the visitor to email andrewiredale@smartrealty.us. Each form also shows that mailto address as a plain-text fallback. A hidden `botcheck` checkbox is the honeypot. The quote request includes the calculator’s selected items and marks the total as a sample estimate.
+A real Web3Forms access key is configured. It is public by design. To rotate it, create a new key at [web3forms.com](https://web3forms.com/) and replace this value in `config.js` and in both hidden `access_key` inputs. If the value is set back to `YOUR_WEB3FORMS_ACCESS_KEY`, the page does not send the request and tells the visitor to email andrewiredale@smartrealty.us. Each form also shows that mailto address as a plain-text fallback. A hidden `botcheck` checkbox is the honeypot. The quote request includes the calculator’s selected items and marks the total as a sample estimate.
 
 There is no contractor billing and no paid ranking.
 
