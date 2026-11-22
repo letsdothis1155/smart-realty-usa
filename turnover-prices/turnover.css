@@ -8,6 +8,35 @@
   font-weight: 650;
 }
 .tp-banner p { margin: 0; }
+.tp-sample-banner {
+  background: #f3c969;
+  color: #1c1404;
+  font-weight: 800;
+  font-size: 1.08rem;
+  line-height: 1.35;
+  padding: 0.9rem 0;
+}
+.tp-sample-banner p { margin: 0; }
+.tp-estimate {
+  display: inline-block;
+  margin: 0.85rem 0 0.35rem;
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  background: #f3c969;
+  color: #1c1404;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 0.78rem;
+}
+html.tp-is-live .tp-sample-only { display: none !important; }
+html:not(.tp-is-live) .tp-live-only { display: none !important; }
+button.tp-out:disabled {
+  opacity: 1;
+  cursor: not-allowed;
+  color: var(--text-muted);
+  border-style: dashed;
+}
 .tp-hero { padding-top: 2.2rem; }
 .tp-hero h1 { max-width: 18ch; }
 .tp-note, .tp-summary, .tp-lead, .tp-policy p, .tp-form p { color: var(--text-muted); }

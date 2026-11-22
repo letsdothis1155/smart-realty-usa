@@ -18,6 +18,12 @@
   <link rel="stylesheet" href="../turnover.css" />
   <script src="../../domain-config.js"></script>
   <script src="../config.js"></script>
+  <script>
+    (function () {
+      var mode = (window.TURNOVER_CONFIG && window.TURNOVER_CONFIG.dataMode) || "sample";
+      if (mode === "live") document.documentElement.classList.add("tp-is-live");
+    })();
+  </script>
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -36,7 +42,7 @@
         "name": "Are the turnover prices live?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "No. The preview uses example prices. Each example shows when it was last checked in Eastern time. Live eBay listings would have to be refreshed at least every 6 hours. Walmart prices on the page are current examples only, and the price on Walmart.com at purchase governs."
+          "text": "Not yet. The public page uses sample prices for layout. Each sample row says Sample price, and the retailer button does not leave the site. When a live feed is connected, each row shows when it was last checked in Eastern time, and the price on Walmart.com at purchase still governs."
         }
       },
       {
@@ -73,7 +79,8 @@
       <button class="menu-toggle g-menu" id="tpMenu" type="button" aria-expanded="false" aria-controls="tpNav" aria-label="Open menu"><span></span><span></span><span></span></button>
     </div>
   </header>
-  <div class="tp-banner"><div class="container"><p>EXAMPLE DATA. Subtotals below are not live prices and not a quote for labor.</p></div></div>
+  <div class="tp-sample-banner tp-sample-only" role="status"><div class="container"><p>Sample prices for layout only, not real offers. Live eBay and Walmart prices are coming soon.</p></div></div>
+  <div class="tp-banner tp-live-only" role="status"><div class="container"><p>EXAMPLE DATA. Subtotals below are not a quote for labor.</p></div></div>
   <main id="content" class="container tp-section">
     <p class="g-kicker">Louisville · Jeffersonville · New Albany · Clarksville</p>
     <h1>Rental turnover cost in Kentuckiana</h1>
@@ -96,7 +103,7 @@
     <h2>Questions</h2>
     <div class="tp-faq">
       <details open><summary>What does a rental turnover cost in Louisville?</summary><p>Use the subtotals above as a materials sketch for the starter list. Add labor from local quotes. The figures are example data until eBay and Walmart feeds are connected.</p></details>
-      <details><summary>Are these prices live?</summary><p>No. Each offer on the price check is tagged EXAMPLE DATA and shows “Last checked” in Eastern time. Live eBay copy has to be no more than 6 hours old. Walmart rows do not keep a price history.</p></details>
+      <details><summary>Are these prices live?</summary><p>Not yet. Rows say Sample price, and the retailer button stays on this site. A connected feed will show Last checked in Eastern time instead.</p></details>
       <details><summary>Can a store pay for a higher spot?</summary><p>No. Rankings are never paid. An affiliate link, once a program is approved, may earn a commission. That is disclosed next to the link.</p></details>
       <details><summary>How do I hire the work?</summary><p>Send a trade, ZIP, unit count, and timeline. Andrew reads it. There is no billing and no paid contractor list.</p></details>
     </div>

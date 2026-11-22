@@ -20,6 +20,12 @@
   <link rel="stylesheet" href="turnover.css" />
   <script src="../domain-config.js"></script>
   <script src="config.js"></script>
+  <script>
+    (function () {
+      var mode = (window.TURNOVER_CONFIG && window.TURNOVER_CONFIG.dataMode) || "sample";
+      if (mode === "live") document.documentElement.classList.add("tp-is-live");
+    })();
+  </script>
 </head>
 <body class="g-page" data-prices="data/prices.example.json">
   <a class="skip-link" href="#content">Skip to content</a>
@@ -43,7 +49,12 @@
     </div>
   </header>
 
-  <div class="tp-banner" role="status">
+  <div class="tp-sample-banner tp-sample-only" role="status">
+    <div class="container">
+      <p>Sample prices for layout only, not real offers. Live eBay and Walmart prices are coming soon.</p>
+    </div>
+  </div>
+  <div class="tp-banner tp-live-only" role="status">
     <div class="container">
       <p>EXAMPLE DATA. These are not live eBay or Walmart prices. Smart Realty has not connected affiliate programs yet. Every price on this page is a labeled example.</p>
     </div>
@@ -54,7 +65,7 @@
       <div class="container">
         <p class="g-kicker">Louisville · Jeffersonville · New Albany · Clarksville</p>
         <h1>Kentuckiana Turnover Price Check</h1>
-        <p class="g-lead">A preview for small landlords and flippers pricing a make-ready. Product descriptions on this page are Smart Realty’s. Store listings sit in their own eBay block or Walmart block, sorted by lowest total (item + shipping) inside that block.</p>
+        <p class="g-lead">A price check for local landlords in Louisville, Jeffersonville, New Albany, and Clarksville. Start with the turnover bundle calculator, or send the Get 3 quotes form. Store listings sit in their own eBay block or Walmart block, sorted by lowest total (item + shipping) inside that block.</p>
         <div class="tp-jump">
           <a class="btn btn-primary" href="#calculator">Build a 1 / 2 / 3 bedroom bundle</a>
           <a class="btn btn-outline" href="#quotes">Get 3 quotes</a>
@@ -71,7 +82,7 @@
       <div class="container tp-policy">
         <h2 id="rankTitle">How we rank / no paid placement</h2>
         <p>Nobody can pay to be listed higher. There is no sponsored rank and no contractor billing. Inside each retailer block, the default order is the lowest total of item price plus shipping. That order is calculated by Smart Realty from the prices in that block. It is not a mix of eBay and Walmart on one card, and it is not a payment from either store.</p>
-        <p>eBay listings in a live feed have to be refreshed at least every 6 hours. This preview does not keep an eBay price archive or a 30/90-day low. Walmart’s terms prohibit price tracking and alerts, so a Walmart row shows only the current example price, when it was checked (Eastern time), and the note that the price on Walmart.com at purchase governs.</p>
+        <p>A Walmart row shows the current price and the note that the price on Walmart.com at the time of purchase governs. eBay rows in a connected feed have to be refreshed at least every 6 hours. The two stores are never combined on one card.</p>
         <label for="tpSort">Sort offers inside each retailer block
           <select id="tpSort">
             <option value="total-asc" selected>Lowest total (item + shipping)</option>
@@ -120,6 +131,10 @@
 
     <section class="tp-section" id="calculator" aria-labelledby="calcTitle">
       <div class="container" id="tpCalculator">
+        <div class="tp-sample-banner tp-sample-only" role="status">
+          <p>Sample prices for layout only, not real offers. Live eBay and Walmart prices are coming soon.</p>
+        </div>
+        <p class="tp-estimate tp-sample-only">Sample estimate</p>
         <h2 id="calcTitle">Turnover bundle calculator</h2>
         <p class="tp-lead">Pick a unit size and check the items. Each retailer gets its own lines and its own subtotal, using the cheapest current example in that block (item + shipping). The two subtotals are not blended into one “best price” card.</p>
         <div class="tp-sizes" role="radiogroup" aria-label="Unit size">

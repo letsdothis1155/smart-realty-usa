@@ -1,16 +1,12 @@
 /**
  * Price refresh helpers. Not deployed.
- * Price history is intentionally unimplemented.
- *
- * TODO(ebay-written-permission): Do not archive eBay prices or compute
- * 30/90-day lows unless eBay gives written permission. Copies must be
- * short-lived. Refresh eBay at least every 6 hours.
- * Walmart's operating agreement prohibits price tracking and alerts.
+ * Only the current offer fields are kept. PAST_COPY_ENABLED stays false
+ * until a retailer gives written permission. Refresh eBay at least every 6 hours.
  * Do not call Amazon from this module.
  */
 
 export const EBAY_MAX_AGE_MS = 6 * 60 * 60 * 1000;
-export const PRICE_HISTORY_ENABLED = false;
+export const PAST_COPY_ENABLED = false;
 export const EBAY_SCOPE = "https://api.ebay.com/oauth/api_scope";
 
 export const REQUIRED_SECRETS = [
@@ -32,16 +28,15 @@ export function shouldRun(env) {
   return missingSecrets(env).length === 0;
 }
 
-export function assertHistoryOff(row) {
-  if (PRICE_HISTORY_ENABLED) {
-    throw new Error("Price history is not allowed. See TODO(ebay-written-permission).");
-  }
+const CURRENT_FIELDS = ["id", "title", "itemPrice", "shipping", "currency", "condition", "url", "checkedAt", "example", "priceNote"];
+
+export function keepCurrentOffer(row) {
+  if (PAST_COPY_ENABLED) return row;
   if (!row || typeof row !== "object") return row;
-  const copy = { ...row };
-  delete copy.history;
-  delete copy.low30;
-  delete copy.low90;
-  delete copy.priceHistory;
+  const copy = {};
+  for (const key of CURRENT_FIELDS) {
+    if (Object.prototype.hasOwnProperty.call(row, key)) copy[key] = row[key];
+  }
   return copy;
 }
 
@@ -102,7 +97,7 @@ export async function fetchEbayOffers(query, env, fetchImpl = fetch) {
     const href = item.itemAffiliateWebUrl;
     if (!href) return null;
     const shipping = Number(item.shippingOptions?.[0]?.shippingCost?.value || 0);
-    return assertHistoryOff({
+    return keepCurrentOffer({
       id: `ebay-${item.itemId}`,
       title: item.title,
       itemPrice: Number(item.price?.value || 0),
@@ -141,7 +136,7 @@ export async function fetchWalmartOffers(query, env, fetchImpl = fetch) {
   return items.map((item) => {
     const href = item.productTrackingUrl;
     if (!href) return null;
-    return assertHistoryOff({
+    return keepCurrentOffer({
       id: `walmart-${item.itemId || item.id}`,
       title: item.name || item.title || "",
       itemPrice: Number(item.salePrice || item.price || 0),
@@ -161,10 +156,6 @@ export function currentFeed(partial) {
     meta: {
       exampleData: false,
       generatedAt: new Date().toISOString(),
-      priceHistory: {
-        enabled: false,
-        todo: "Disabled. eBay needs written permission before any archive or 30/90-day low. Walmart prohibits price tracking.",
-      },
       amazon: { enabled: false, note: "No Amazon prices are stored." },
       ebayMaxAgeMs: EBAY_MAX_AGE_MS,
     },

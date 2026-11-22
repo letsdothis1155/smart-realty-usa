@@ -1,6 +1,6 @@
 /**
  * Cloudflare Worker entry. Not deployed. Disabled until the required
- * secrets exist. Do not attach a KV history namespace.
+ * secrets exist. Do not keep older copies in KV.
  *
  * Suggested cron once Andrew enables it: every hour, and never slower
  * than every 6 hours, because eBay listings must be <= 6 hours stale.

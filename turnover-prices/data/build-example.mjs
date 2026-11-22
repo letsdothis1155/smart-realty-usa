@@ -1,6 +1,6 @@
 /**
  * Builds prices.example.json. Example prices only — not a live feed.
- * No price history. eBay and Walmart offers stay in separate arrays.
+ * eBay and Walmart offers stay in separate arrays.
  */
 import { writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -389,11 +389,7 @@ const doc = {
     label: "EXAMPLE DATA",
     generatedAt: CHECKED,
     currency: "USD",
-    note: "Placeholder prices for the preview. Not live eBay or Walmart offers. No affiliate campaign IDs are included. Do not treat this file as a price archive.",
-    priceHistory: {
-      enabled: false,
-      todo: "Keep disabled. eBay's API license allows only short-lived copies and needs written permission before any average or 30/90-day low. Walmart's operating agreement prohibits price tracking and price alerts.",
-    },
+    note: "Placeholder prices for layout. Not live eBay or Walmart offers. No affiliate campaign IDs are included.",
     amazon: {
       enabled: false,
       note: "Amazon prices will be live-only once Associates terms are reviewed. This file stores no Amazon prices.",
@@ -402,11 +398,9 @@ const doc = {
       ebay: {
         label: "From eBay",
         maxAgeHours: 6,
-        history: false,
       },
       walmart: {
         label: "From Walmart",
-        history: false,
         priceNote: "Price on Walmart.com at time of purchase governs.",
       },
     },

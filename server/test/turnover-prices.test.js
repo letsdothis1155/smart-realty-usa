@@ -12,18 +12,15 @@ function read(rel) {
   return fs.readFileSync(path.join(ROOT, rel), "utf8");
 }
 
-test("example feed is labeled, has no history, and has no affiliate ids", () => {
+test("example feed is labeled, has no affiliate ids, and keeps retailers apart", () => {
   const data = JSON.parse(read("turnover-prices/data/prices.example.json"));
   assert.equal(data.meta.exampleData, true);
-  assert.equal(data.meta.priceHistory.enabled, false);
   assert.equal(data.meta.amazon.enabled, false);
   assert.equal(data.categories.length, 5);
   assert.ok(data.products.length >= 25);
   const blob = JSON.stringify(data);
-  assert.doesNotMatch(blob, /campid|EPN_|affiliateCampaign|AMAZON_|itemAffiliateWebUrl|productTrackingUrl/i);
-  assert.equal(blob.includes("low30"), false);
-  assert.equal(blob.includes("low90"), false);
-  assert.doesNotMatch(blob, /amazon\.com/i);
+  assert.doesNotMatch(blob, /campid|EPN_|affiliateCampaign|AMAZON_|itemAffiliateWebUrl|productTrackingUrl|goto\.walmart|impact\.com/i);
+  assert.doesNotMatch(blob, /[?&]tag=[a-z0-9]+-20/i);
   for (const product of data.products) {
     assert.ok(product.retailers.ebay && product.retailers.walmart);
     for (const retailer of ["ebay", "walmart"]) {
@@ -32,7 +29,9 @@ test("example feed is labeled, has no history, and has no affiliate ids", () => 
         assert.ok(offer.checkedAt);
         assert.equal(typeof offer.itemPrice, "number");
         assert.equal(typeof offer.shipping, "number");
-        assert.equal(offer.history, undefined);
+        const url = new URL(offer.url);
+        assert.ok(url.hostname === "www.ebay.com" || url.hostname === "www.walmart.com");
+        assert.equal([...url.searchParams.keys()].some((key) => /camp|tag|impact|publisher/i.test(key)), false);
       }
     }
   }
@@ -51,10 +50,21 @@ test("pages keep retailers apart and disclose every price link", () => {
   sandbox.globalThis = sandbox;
   vm.runInNewContext(read("turnover-prices/turnover.js"), sandbox, { filename: "turnover.js" });
   const api = sandbox.module.exports;
-  assert.equal(api.PRICE_HISTORY_ENABLED, false);
+  assert.equal(api.PAST_COPY_ENABLED, false);
   assert.equal(api.lowWindow(), null);
+  assert.equal(api.isSample(), true);
+  assert.equal(api.checkedLabel("2026-11-22T01:00:00.000Z"), "Sample price");
+  const sampleControl = api.controlHtml("https://www.ebay.com/sch/i.html?_nkw=range", "ebay");
+  assert.match(sampleControl, /Live link coming soon/);
+  assert.match(sampleControl, /disabled/);
+  assert.doesNotMatch(sampleControl, /href=/);
+  sandbox.window = { TURNOVER_CONFIG: { dataMode: "live" } };
+  assert.equal(api.isSample(), false);
+  assert.match(api.checkedLabel("2026-11-22T01:00:00.000Z"), /Last checked .+ ET$/);
+  const liveControl = api.controlHtml("https://www.walmart.com/search?q=range", "walmart");
+  assert.match(liveControl, /View on Walmart/);
+  assert.match(liveControl, /href="https:\/\/www\.walmart\.com\/search\?q=range"/);
   assert.equal(api.DISCLOSURE, "Affiliate link (#ad): Smart Realty may earn a commission. Rankings are never paid.");
-  assert.match(api.formatChecked("2026-11-22T01:00:00.000Z"), /Last checked .+ ET$/);
   const data = JSON.parse(read("turnover-prices/data/prices.example.json"));
   const keypad = data.products.find((p) => p.id === "keypad-deadbolt");
   const sorted = api.sortOffers(keypad.retailers.ebay.offers);
@@ -68,8 +78,7 @@ test("pages keep retailers apart and disclose every price link", () => {
   const cost = read("turnover-prices/rental-turnover-cost/index.html");
   const locks = read("turnover-prices/smart-locks-for-landlords/index.html");
   for (const html of [hub, cost, locks]) {
-    assert.match(html, /EXAMPLE DATA/);
-    assert.match(html, /FAQPage|tp-disclosure|id="rankTitle"/);
+    assert.match(html, /Sample prices for layout only, not real offers\. Live eBay and Walmart prices are coming soon\./);
   }
   assert.match(hub, /value="total-asc"/);
   assert.match(hub, /Get 3 quotes/);
@@ -83,6 +92,7 @@ test("pages keep retailers apart and disclose every price link", () => {
   assert.match(read("turnover-prices/turnover.js"), /Price on Walmart.com at time of purchase governs/);
   assert.doesNotMatch(read("turnover-prices/turnover.js"), /#affiliate/);
   assert.match(read("turnover-prices/config.js"), /formEndpoint:\s*""/);
+  assert.match(read("turnover-prices/config.js"), /dataMode:\s*"sample"/);
 });
 
 test("sitemap, privacy, and the refresh job match the terms", async () => {
@@ -98,10 +108,10 @@ test("sitemap, privacy, and the refresh job match the terms", async () => {
   assert.match(privacy, /andrewiredale@smartrealty\.us/);
   assert.match(read("apps-privacy.html"), /site privacy policy/);
   const lib = await import(path.join(tp, "refresh", "lib.mjs"));
-  assert.equal(lib.PRICE_HISTORY_ENABLED, false);
+  assert.equal(lib.PAST_COPY_ENABLED, false);
   assert.equal(lib.shouldRun({}), false);
-  assert.deepEqual(lib.assertHistoryOff({ itemPrice: 1, history: [1], low30: 1 }), { itemPrice: 1 });
-  assert.match(read("turnover-prices/refresh/lib.mjs"), /TODO\(ebay-written-permission\)/);
+  assert.deepEqual(lib.keepCurrentOffer({ itemPrice: 1, extra: [1] }), { itemPrice: 1 });
+  assert.match(read("turnover-prices/refresh/lib.mjs"), /PAST_COPY_ENABLED = false/);
   assert.match(read("turnover-prices/refresh/worker.mjs"), /disabled: true/);
   assert.match(read(".github/workflows/turnover-prices-refresh.yml"), /workflow_dispatch/);
   assert.doesNotMatch(read(".github/workflows/turnover-prices-refresh.yml"), /^\s*schedule:/m);

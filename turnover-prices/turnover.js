@@ -1,6 +1,6 @@
 /* Kentuckiana Turnover Price Check
-   Renders example (or later, short-lived) eBay and Walmart prices in
-   separate blocks. No blended listing cards. No price history. */
+   Renders eBay and Walmart prices in separate blocks. No blended listing cards.
+   dataMode "sample" (the default) does not send people to retailers. */
 (function (root, factory) {
   const api = factory();
   if (typeof module !== "undefined" && module.exports) module.exports = api;
@@ -15,13 +15,8 @@
 
   var DISCLOSURE = "Affiliate link (#ad): Smart Realty may earn a commission. Rankings are never paid.";
   var EBAY_MAX_AGE_MS = 6 * 60 * 60 * 1000;
-  /**
-   * TODO(ebay-written-permission): 30/90-day lows and any eBay price archive
-   * stay off. The Browse API license allows only short-lived copies, and
-   * deriving averages needs eBay's written permission. Walmart's operating
-   * agreement prohibits price tracking and alerts. Do not flip this on.
-   */
-  var PRICE_HISTORY_ENABLED = false;
+  /* Disabled. Do not enable without written permission from the retailer. */
+  var PAST_COPY_ENABLED = false;
 
   function cents(n) {
     var value = Number(n);
@@ -57,6 +52,11 @@
     });
   }
 
+  function isSample() {
+    var cfg = typeof window !== "undefined" ? window.TURNOVER_CONFIG : null;
+    return !cfg || cfg.dataMode !== "live";
+  }
+
   function formatChecked(iso) {
     var dt = new Date(iso);
     if (Number.isNaN(dt.getTime())) return "Last checked — ET";
@@ -71,18 +71,31 @@
     return "Last checked " + parts + " ET";
   }
 
+  function checkedLabel(iso) {
+    return isSample() ? "Sample price" : formatChecked(iso);
+  }
+
+  function controlHtml(url, retailer) {
+    if (isSample()) {
+      return '<p class="tp-go"><button type="button" class="tp-out" disabled>Live link coming soon</button></p>';
+    }
+    return (
+      '<p class="tp-go"><a class="tp-out" href="' +
+      esc(url) +
+      '" target="_blank" rel="sponsored noopener noreferrer">' +
+      linkLabel(retailer) +
+      "</a></p>"
+    );
+  }
+
   function isStaleEbay(iso, now) {
     var dt = new Date(iso);
     if (Number.isNaN(dt.getTime())) return true;
     return (now || Date.now()) - dt.getTime() > EBAY_MAX_AGE_MS;
   }
 
-  /**
-   * History stays unreachable while PRICE_HISTORY_ENABLED is false.
-   * Returning null is the supported behavior.
-   */
   function lowWindow() {
-    if (!PRICE_HISTORY_ENABLED) return null;
+    if (!PAST_COPY_ENABLED) return null;
     return null;
   }
 
@@ -136,7 +149,7 @@
       '<article class="tp-offer">' +
       '<p class="tp-offer-title">' +
       esc(offer.title) +
-      (offer.example ? ' <span class="tp-tag">EXAMPLE DATA</span>' : "") +
+      ( !isSample() && offer.example ? ' <span class="tp-tag">EXAMPLE DATA</span>' : "") +
       "</p>" +
       '<p class="tp-price"><strong>' +
       moneyFromCents(totalCents(offer)) +
@@ -146,19 +159,15 @@
       (ship ? moneyFromCents(ship) + " shipping" : "free shipping") +
       "</span></p>" +
       '<p class="tp-checked">' +
-      esc(formatChecked(offer.checkedAt)) +
+      esc(checkedLabel(offer.checkedAt)) +
       "</p>" +
       (retailer === "walmart"
         ? '<p class="tp-govern">Price on Walmart.com at time of purchase governs.</p>'
         : "") +
-      (stale
-        ? '<p class="tp-stale">This eBay example is more than 6 hours old. A live eBay listing has to be refreshed at least every 6 hours.</p>'
+      (!isSample() && stale
+        ? '<p class="tp-stale">This eBay listing is more than 6 hours old. Refresh it before treating it as current.</p>'
         : "") +
-      '<p class="tp-go"><a class="tp-out" href="' +
-      esc(offer.url) +
-      '" target="_blank" rel="sponsored noopener noreferrer">' +
-      linkLabel(retailer) +
-      "</a></p>" +
+      controlHtml(offer.url, retailer) +
       disclosureHtml() +
       "</article>"
     );
@@ -232,16 +241,13 @@
       qty +
       "</td><td>" +
       moneyFromCents(line.lineCents) +
-      '</td><td><a class="tp-out" href="' +
-      esc(line.offer.url) +
-      '" target="_blank" rel="sponsored noopener noreferrer">' +
-      linkLabel(retailer) +
-      "</a>" +
+      "</td><td>" +
+      controlHtml(line.offer.url, retailer) +
       disclosureHtml() +
       '<p class="tp-checked">' +
-      esc(formatChecked(line.offer.checkedAt)) +
+      esc(checkedLabel(line.offer.checkedAt)) +
       "</p>" +
-      (line.offer.example ? '<p><span class="tp-tag">EXAMPLE DATA</span></p>' : "") +
+      (!isSample() && line.offer.example ? '<p><span class="tp-tag">EXAMPLE DATA</span></p>' : "") +
       (retailer === "walmart" ? '<p class="tp-govern">Price on Walmart.com at time of purchase governs.</p>' : "") +
       "</td></tr>"
     );
@@ -535,10 +541,14 @@
         '<div class="tp-blocks">' +
         '<section class="tp-retailer tp-retailer-ebay" aria-label="From eBay"><h3>From eBay</h3><p class="tp-price"><strong>' +
         moneyFromCents(ebay.totalCents) +
-        '</strong></p><p class="tp-checked">Example subtotal for the checked starter list. <span class="tp-tag">EXAMPLE DATA</span></p></section>' +
+        '</strong></p><p class="tp-checked">' +
+        esc(checkedLabel(data.meta.generatedAt)) +
+        "</p></section>" +
         '<section class="tp-retailer tp-retailer-walmart" aria-label="From Walmart"><h3>From Walmart</h3><p class="tp-price"><strong>' +
         moneyFromCents(walmart.totalCents) +
-        '</strong></p><p class="tp-govern">Price on Walmart.com at time of purchase governs.</p><p class="tp-checked">Example subtotal. <span class="tp-tag">EXAMPLE DATA</span></p></section>' +
+        '</strong></p><p class="tp-govern">Price on Walmart.com at time of purchase governs.</p><p class="tp-checked">' +
+        esc(checkedLabel(data.meta.generatedAt)) +
+        "</p></section>" +
         "</div>";
     });
   }
@@ -559,11 +569,9 @@
     if (!pricesUrl) return;
     var status = document.getElementById("tpDataStatus");
     loadData().then(function (data) {
-      if (!data || !data.meta || data.meta.exampleData !== true) {
-        throw new Error("This preview only renders a file marked exampleData.");
-      }
-      if (data.meta.priceHistory && data.meta.priceHistory.enabled) {
-        throw new Error("Price history is disabled.");
+      if (!data || !data.meta) throw new Error("Could not read the price file.");
+      if (isSample() && data.meta.exampleData !== true) {
+        throw new Error("Sample mode only renders the sample file.");
       }
       var sort = document.getElementById("tpSort");
       var paint = function () { fillCatalog(data, document, sort ? sort.value : "total-asc"); };
@@ -582,7 +590,10 @@
 
   return {
     DISCLOSURE: DISCLOSURE,
-    PRICE_HISTORY_ENABLED: PRICE_HISTORY_ENABLED,
+    PAST_COPY_ENABLED: PAST_COPY_ENABLED,
+    isSample: isSample,
+    checkedLabel: checkedLabel,
+    controlHtml: controlHtml,
     EBAY_MAX_AGE_MS: EBAY_MAX_AGE_MS,
     cents: cents,
     totalCents: totalCents,
