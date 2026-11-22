@@ -5,6 +5,6 @@
 window.TURNOVER_CONFIG = {
   /* "sample" is the public preview. "live" turns on retailer links and Last checked times. */
   dataMode: "sample",
-  web3formsAccessKey: "75233f3d-6aa6-414f-9125-dceff14826da",
+  web3formsAccessKey: "78c7edf0-8420-4b1a-99f3-601a6ccdb4a5",
   contactEmail: "andrewiredale@smartrealty.us",
 };
