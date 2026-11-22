@@ -1,0 +1,36 @@
+# Disabled until secrets exist. workflow_dispatch only — no schedule.
+# eBay listings must be refreshed at least every 6 hours once this is live.
+# Hourly is safer. To turn the schedule on, add:
+#   on:
+#     schedule:
+#       - cron: "0 * * * *"
+# and confirm eBay and Walmart terms still allow the copy you store.
+# Do not commit prices.live.json. It is a short-lived copy, not an archive.
+name: Turnover price refresh
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Refresh current prices or skip
+        env:
+          EBAY_CLIENT_ID: ${{ secrets.EBAY_CLIENT_ID }}
+          EBAY_CLIENT_SECRET: ${{ secrets.EBAY_CLIENT_SECRET }}
+          EBAY_DEV_ID: ${{ secrets.EBAY_DEV_ID }}
+          EBAY_CAMPAIGN_ID: ${{ secrets.EBAY_CAMPAIGN_ID }}
+          EBAY_AFFILIATE_REF_ID: ${{ secrets.EBAY_AFFILIATE_REF_ID }}
+          WALMART_CONSUMER_ID: ${{ secrets.WALMART_CONSUMER_ID }}
+          WALMART_PRIVATE_KEY: ${{ secrets.WALMART_PRIVATE_KEY }}
+          WALMART_KEY_VERSION: ${{ secrets.WALMART_KEY_VERSION }}
+          WALMART_PUBLISHER_ID: ${{ secrets.WALMART_PUBLISHER_ID }}
+        run: node turnover-prices/refresh/refresh.mjs

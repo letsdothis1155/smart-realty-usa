@@ -33,7 +33,7 @@
   <main class="container legal-main">
     <p class="eyebrow">Legal</p>
     <h1>Privacy Policy</h1>
-    <p class="legal-updated">Last updated: August 19, 2026 · Applies to smartrealty.us and this demo platform</p>
+    <p class="legal-updated">Last updated: November 22, 2026 · Applies to smartrealty.us and this demo platform</p>
 
     <div class="legal-prose glass">
       <h2>1. Who we are</h2>
@@ -60,6 +60,9 @@
         <li><strong>Invoices</strong> — bill-to name, email, and line item you type on the invoice page stay in the browser until you print. We do not collect cards, routing numbers, or bank account numbers on this site.</li>
         <li><strong>Technical data</strong> — browser type, approximate IP (server logs), cookies/local storage for session and preferences.</li>
         <li><strong>Usage on your device</strong> — saved homes, recent views, demo unlock flags, property goals you create, referral identifiers, notification preferences, and product-analytics events stored in your browser.</li>
+        <li><strong>Turnover bundle email</strong> — the name and email you type, the unit size, the items you checked, and the separate eBay and Walmart example subtotals. The note is tagged for the Yield Map waitlist and landlord-software interest. It is emailed to <a href="mailto:andrewiredale@smartrealty.us">andrewiredale@smartrealty.us</a> when you use the mail link, or posted to the single form endpoint configured for that page once one is set.</li>
+        <li><strong>Get 3 quotes</strong> — name, email, trade, ZIP, unit count, timeline, an optional note, and the count of photos you select. Photos are not uploaded while the form endpoint is empty; the mail link asks you to attach them yourself. Requests are not sold, not billed, and not used to rank a contractor. If a contractor later gives us a license or insurance status, we may show that status next to their name.</li>
+        <li><strong>Affiliate programs</strong> — if you follow a price link, that click goes to eBay or Walmart (and, later, possibly Amazon). Those sites may set their own cookies, including affiliate cookies from eBay Partner Network, Walmart through Impact, and, once terms are reviewed and a program is approved, Amazon Associates. We do not put affiliate campaign IDs in this repository. The preview prices are labeled example data and are not a live click to an enrolled program yet. We do not store Amazon prices.</li>
       </ul>
 
       <h2>4. How we use information</h2>
@@ -68,6 +71,8 @@
         <li>Respond to waitlist and concierge requests</li>
         <li>Improve the demo and fix bugs</li>
         <li>Send transactional or waitlist-related email when you submit a form</li>
+        <li>Reply to a turnover-bundle or contractor-quote request you send</li>
+        <li>Show current eBay and Walmart prices, once those programs are connected, with the affiliate disclosure next to the link</li>
       </ul>
 
       <h2>5. Sharing</h2>
@@ -80,6 +85,12 @@
       <p>
         We use browser storage for login sessions, saved homes, compare lists, and demo preferences.
         You can clear site data in your browser settings.
+      </p>
+      <p>
+        Product analytics, when enabled in <code>domain-config.js</code>, keeps a short list of events in this browser’s local storage and may send them to <code>/api/events.php</code> on this host if that endpoint exists. The static GitHub Pages site does not run a third-party analytics account of its own. If that beacon cannot be delivered, the event stays on your device.
+      </p>
+      <p>
+        eBay, Walmart (including Impact, the network Walmart’s affiliate program uses), and a future Amazon Associates integration can set cookies on their own sites after you click a disclosed affiliate link. Those cookies are governed by those companies. We do not copy them into this site. Amazon affiliate cookies are not in use; they are listed here so the policy covers them before any Amazon links are turned on.
       </p>
 
       <h2>7. Security</h2>

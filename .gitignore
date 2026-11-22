@@ -9,6 +9,7 @@ server/data/listings-cache.json
 server/data/*.tmp
 server/.env
 .env
+turnover-prices/data/prices.live.json
 android/.gradle/
 android/build/
 android/app/build/

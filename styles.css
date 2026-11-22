@@ -4369,7 +4369,14 @@ html.auth-open-boot #demoGate {
   position: fixed;
   right: 1.25rem;
   bottom: 1.25rem;
-  z-index: 150;
+  z-index: 160;
+}
+/* Keep the corner button above the compare bar and the phone sign-in bar. */
+body:has(.compare-bar:not(.hidden)) .chat-widget,
+body:has(.member-sticky-cta:not([hidden])) .chat-widget {
+  z-index: 9100;
+  bottom: calc(5.6rem + env(safe-area-inset-bottom));
+}
   display: flex;
   flex-direction: column;
   align-items: flex-end;

@@ -56,6 +56,21 @@
     <priority>0.4</priority>
   </url>
   <url>
+    <loc>https://smartrealty.us/turnover-prices/</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://smartrealty.us/turnover-prices/rental-turnover-cost/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://smartrealty.us/turnover-prices/smart-locks-for-landlords/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://smartrealty.us/privacy.html</loc>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
