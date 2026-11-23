@@ -73,7 +73,10 @@
           <label>Baths <input id="cBaths" type="number" min="0" step="0.5" value="2" /></label>
           <label>Sqft <input id="cSqft" type="number" min="0" value="1800" /></label>
         </div>
-        <label>Facts the owner confirmed <textarea id="cFeats" rows="3" placeholder="Updated kitchen, fenced yard…"></textarea></label>
+        <label for="cFeats">Facts the owner confirmed
+          <textarea id="cFeats" rows="3" aria-describedby="copyFactHelp" placeholder="Covered front porch, fenced backyard…"></textarea>
+        </label>
+        <p class="muted" id="copyFactHelp">Describe details you can verify, such as which rooms get morning light, whether the entry has steps, or what outdoor space comes with the home. Check the example bed, bath, and square footage values above before using your draft.</p>
         <label>Your email (for the $150 job) <input id="cEmail" type="email" autocomplete="email" placeholder="you@email.com" /></label>
         <button type="submit" class="btn btn-outline">Refresh draft</button>
       </form>
