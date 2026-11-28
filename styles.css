@@ -4652,6 +4652,10 @@ body:has(.member-sticky-cta:not([hidden])) .chat-widget {
 
   .nav.open {
     display: flex;
+    max-height: calc(100vh - var(--nav-top, var(--header-h)));
+    max-height: calc(100dvh - var(--nav-top, var(--header-h)));
+    overflow-y: auto;
+    overscroll-behavior: contain;
   }
 
   .nav-drop {

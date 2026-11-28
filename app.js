@@ -2765,31 +2765,45 @@ function initUI() {
   );
 
   const menuBtn = $("#menuToggle");
-  menuBtn?.setAttribute("aria-controls", "nav");
-  if (menuBtn && !menuBtn.hasAttribute("aria-expanded")) menuBtn.setAttribute("aria-expanded", "false");
-  menuBtn?.addEventListener("click", () => {
-    const nav = $("#nav");
-    const open = !!nav?.classList.toggle("open");
-    menuBtn.setAttribute("aria-expanded", open ? "true" : "false");
-    menuBtn.setAttribute("aria-label", open ? "Close menu" : "Open menu");
-  });
-
-  $$("#nav a").forEach((link) => {
-    link.addEventListener("click", () => $("#nav")?.classList.remove("open"));
-  });
-
+  const nav = $("#nav");
   const toolsBtn = $("#navToolsBtn");
   const toolsMenu = $("#navToolsMenu");
-  toolsBtn?.addEventListener("click", (e) => {
-    e.stopPropagation();
-    const open = toolsBtn.getAttribute("aria-expanded") === "true";
-    toolsBtn.setAttribute("aria-expanded", open ? "false" : "true");
-    if (toolsMenu) toolsMenu.hidden = open;
+  function setToolsOpen(open) {
+    toolsBtn?.setAttribute("aria-expanded", String(open));
+    if (toolsMenu) toolsMenu.hidden = !open;
+  }
+  function fitMenu() {
+    if (nav?.classList.contains("open")) {
+      nav.style.setProperty("--nav-top", nav.getBoundingClientRect().top + "px");
+    }
+  }
+  function setMenuOpen(open) {
+    nav?.classList.toggle("open", open);
+    menuBtn?.setAttribute("aria-expanded", String(open));
+    menuBtn?.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+    if (open) fitMenu();
+    else setToolsOpen(false);
+  }
+  menuBtn?.addEventListener("click", () => setMenuOpen(!nav?.classList.contains("open")));
+  toolsBtn?.addEventListener("click", () => setToolsOpen(toolsMenu?.hidden));
+  document.addEventListener("click", (event) => {
+    if (menuBtn?.contains(event.target)) return;
+    if (!nav?.contains(event.target) || event.target.closest("a")) setMenuOpen(false);
   });
-  document.addEventListener("click", () => {
-    if (!toolsBtn || !toolsMenu) return;
-    toolsBtn.setAttribute("aria-expanded", "false");
-    toolsMenu.hidden = true;
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape") return;
+    if (toolsMenu && !toolsMenu.hidden) {
+      setToolsOpen(false);
+      toolsBtn?.focus();
+    } else if (nav?.classList.contains("open")) {
+      setMenuOpen(false);
+      menuBtn?.focus();
+    }
+  });
+  window.addEventListener("scroll", fitMenu, { passive: true });
+  window.addEventListener("resize", () => {
+    if (menuBtn && !menuBtn.getClientRects().length) setMenuOpen(false);
+    else fitMenu();
   });
 
   $$("#styleFilters .filter-btn").forEach((btn) => {
